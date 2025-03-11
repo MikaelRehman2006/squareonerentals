@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+ Use ShadCN as the UI component library for buttons, forms, modals, and UI elements.
+ 

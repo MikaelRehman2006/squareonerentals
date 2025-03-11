@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 17, 24, 39;
+  --background-rgb: 249, 250, 251;
+}
+
+body {
+  background: rgb(var(--background-rgb));
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 222 47% 11%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 0 0% 100%;
+    --ring: 221 83% 53%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 210 40% 98%;
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Override for section headers */
+  h2, h3, .section-header {
+    @apply text-foreground !important;
+  }
+}
+
+/* Form styling stability fixes */
+.form-container {
+  isolation: isolate !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Force proper rendering on inputs */
+input, textarea, select {
+  width: 100% !important;
+  transition: none !important;
+  position: relative !important;
+  z-index: 2 !important;
+  color: rgb(17, 24, 39) !important;
+  background-color: white !important;
+}
+
+/* Fix checkbox alignment */
+.checkbox-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Ensure proper spacing */
+.form-grid {
+  display: grid !important;
+  gap: 1.25rem !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure label consistency */
+.form-label {
+  font-weight: 500 !important;
+  margin-bottom: 0.375rem !important;
+  display: block !important;
+  position: relative !important;
+  z-index: 2 !important;
+  color: rgb(17, 24, 39) !important;
+}
+
+/* Card and section headers */
+.card-title, .section-title, [class*="CardTitle"], [class*="DialogTitle"] {
+  color: rgb(17, 24, 39) !important;
+}
+
+/* Ensure rendering stability during database operations */
+*[data-state], *[data-highlighted], *[data-placeholder] {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Additional stability fixes */
+.form-stable {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+/* Prevent animations during form transitions */
+.form-container * {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* Fix shadcn component stability */
+[cmdk-input] {
+  transition: none !important;
+}
+
+/* Prevent layout shifts */
+.form-stable-layout {
+  contain: layout !important;
+}
+
+/* Fix checkbox alignment */
+.checkbox-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+/* Ensure proper spacing */
+.form-grid {
+  display: grid !important;
+  gap: 1.25rem !important;
+}
+
+/* Ensure label consistency */
+.form-label {
+  font-weight: 500 !important;
+  margin-bottom: 0.375rem !important;
+  display: block !important;
+}
+
+/* Ensure rendering stability during database operations */
+*[data-state], *[data-highlighted], *[data-placeholder] {
+  transition: none !important;
+} 
