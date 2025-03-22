@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 type Props = {
   params: {
-    id: string
+    reportId: string
   }
 }
 
@@ -33,7 +33,7 @@ async function verifyAdmin() {
 
 // GET a specific report
 export async function GET(request: NextRequest, { params }: Props) {
-  if (!params?.id) {
+  if (!params?.reportId) {
     return NextResponse.json(
       { error: 'Missing report ID' },
       { status: 400 }
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get report details
     const report = await prisma.report.findUnique({
-      where: { id: params.id },
+      where: { id: params.reportId },
       include: {
         reporter: {
           select: {
@@ -122,11 +122,11 @@ export async function PATCH(
       )
     }
 
-    const { id } = params
+    const { reportId } = params
     
     // Find report
     const report = await prisma.report.findUnique({
-      where: { id: id },
+      where: { id: reportId },
     })
 
     if (!report) {
@@ -149,7 +149,7 @@ export async function PATCH(
 
     // Update report status
     const updatedReport = await prisma.report.update({
-      where: { id: id },
+      where: { id: reportId },
       data: {
         status: newStatus
       }
@@ -197,11 +197,11 @@ export async function DELETE(
       )
     }
 
-    const { id } = params
+    const { reportId } = params
     
     // Find report
     const report = await prisma.report.findUnique({
-      where: { id: id },
+      where: { id: reportId },
     })
 
     if (!report) {
@@ -213,7 +213,7 @@ export async function DELETE(
 
     // Delete report
     await prisma.report.delete({
-      where: { id: id }
+      where: { id: reportId }
     })
 
     // Not creating activity logs to simplify implementation

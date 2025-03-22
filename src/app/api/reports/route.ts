@@ -1,172 +1,161 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
-import { Session } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import connectToDatabase from '@/lib/mongodb';
+import { Collection, ObjectId } from 'mongodb';
+import { z } from 'zod';
 
-interface CustomSession {
-  user: {
-    id: string;
-    email: string | null;
-    name?: string | null;
-    image?: string | null;
-    role: "USER" | "ADMIN";
-  };
-  expires: string;
+const reportSchema = z.object({
+  type: z.string(),
+  targetId: z.string(),
+  reason: z.string(),
+  description: z.string().optional(),
+});
+
+interface Report {
+  _id: ObjectId;
+  id: string;
+  type: string;
+  targetId: string;
+  userId: string;
+  reason: string;
+  description: string | null;
+  status: 'PENDING' | 'RESOLVED' | 'REJECTED';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Listing {
+  _id: ObjectId;
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  status: string;
+  userId: string;
+}
+
+interface User {
+  _id: ObjectId;
+  id: string;
+  email: string | null;
+  name: string | null;
+  image: string | null;
+  role: 'USER' | 'ADMIN';
 }
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'You must be logged in to report content' },
-        { status: 401 }
-      );
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const data = await request.json();
-    console.log('Report submission data:', data);
-    
+    const json = await request.json();
+    const body = reportSchema.parse(json);
+
+    const { db } = await connectToDatabase();
+    const listingsCollection: Collection<Listing> = db.collection('listings');
+    const usersCollection: Collection<User> = db.collection('users');
+    const reportsCollection: Collection<Report> = db.collection('reports');
+
     // Validate required fields
-    if (!data.type || !data.targetId || !data.reason) {
-      console.error('Missing required fields for report:', { 
-        type: data.type, 
-        targetId: data.targetId, 
-        reason: data.reason 
-      });
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+    if (!body.type || !body.targetId || !body.reason) {
+      return new NextResponse('Missing required fields', { status: 400 });
     }
 
     // Check if type is valid
-    if (data.type !== 'LISTING' && data.type !== 'USER') {
-      console.error('Invalid report type:', data.type);
-      return NextResponse.json(
-        { error: 'Invalid report type' },
-        { status: 400 }
-      );
+    if (body.type !== 'LISTING' && body.type !== 'USER') {
+      return new NextResponse('Invalid report type', { status: 400 });
     }
 
     // Verify that the target exists if it's a listing
-    if (data.type === 'LISTING') {
-      const listing = await prisma.listing.findUnique({
-        where: { id: data.targetId }
-      });
-      
+    if (body.type === 'LISTING') {
+      const listing = await listingsCollection.findOne({ id: body.targetId });
       if (!listing) {
-        console.error('Listing not found for report:', data.targetId);
-        return NextResponse.json(
-          { error: 'Listing not found' },
-          { status: 404 }
-        );
+        return new NextResponse('Listing not found', { status: 404 });
       }
     }
 
-    // Create the report
-    const report = await prisma.report.create({
-      data: {
-        type: data.type,
-        targetId: data.targetId,
-        reason: data.reason,
-        description: data.description || null,
-        reporterId: session.user.id,
-        status: 'PENDING',
-        // If it's a listing report, connect it to the listing
-        ...(data.type === 'LISTING' && {
-          listingId: data.targetId
-        })
-      }
-    });
+    // Create report
+    const newReport = {
+      _id: new ObjectId(),
+      id: new ObjectId().toString(),
+      type: body.type,
+      targetId: body.targetId,
+      userId: session.user.id,
+      reason: body.reason,
+      description: body.description || null,
+      status: 'PENDING' as const,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    console.log('Report created successfully:', report.id);
+    await reportsCollection.insertOne(newReport);
+
     return NextResponse.json({ 
       success: true, 
       message: 'Report submitted successfully',
-      reportId: report.id
+      reportId: newReport.id
     });
-    
+
   } catch (error) {
-    console.error('Error creating report:', error);
-    return NextResponse.json(
-      { error: 'Failed to create report' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return new NextResponse('Invalid request data', { status: 400 });
+    }
+
+    console.error('[REPORTS_POST]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
 }
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
-
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
-    
-    // Only allow access to admin users
-    // This would require implementing admin role check in your application
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    });
 
+    const { db } = await connectToDatabase();
+    const reportsCollection: Collection<Report> = db.collection('reports');
+    const listingsCollection: Collection<Listing> = db.collection('listings');
+    const usersCollection: Collection<User> = db.collection('users');
+
+    // Only allow access to admin users
+    const user = await usersCollection.findOne({ id: session.user.id });
     if (user?.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
+      return new NextResponse('Unauthorized', { status: 403 });
     }
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
     const status = searchParams.get('status');
 
-    // Build filter based on query parameters
-    const filter: any = {};
-    if (type) filter.type = type;
+    // Build filter
+    const filter: { [key: string]: string } = {};
     if (status) filter.status = status;
 
     // Fetch reports with filters
-    const reports = await prisma.report.findMany({
-      where: filter,
-      include: {
-        reporter: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true
-          }
-        },
-        Listing: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            location: true,
-            status: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const reports = await reportsCollection
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .toArray();
 
-    return NextResponse.json(reports);
-    
+    // Populate reports with listing and user data
+    const populatedReports = await Promise.all(reports.map(async (report) => {
+      const listing = await listingsCollection.findOne({ id: report.targetId });
+      const user = await usersCollection.findOne({ id: report.userId });
+      return {
+        ...report,
+        listing: listing,
+        user: user,
+      };
+    }));
+
+    return NextResponse.json(populatedReports);
+
   } catch (error) {
-    console.error('Error fetching reports:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch reports' },
-      { status: 500 }
-    );
+    console.error('[REPORTS_GET]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
-} 
+}

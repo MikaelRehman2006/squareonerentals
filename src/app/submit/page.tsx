@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -30,36 +30,35 @@ const listingSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   price: z.number().min(0, 'Price must be positive'),
   location: z.string().min(1, 'Location is required'),
-  size: z.number().min(0, 'Size must be positive'),
+  address: z.string().min(1, 'Address is required'),
+  squareFeet: z.number().min(0, 'Square feet must be positive'),
   images: z.array(z.string()).default([]),
   bedrooms: z.number().min(0, 'Number of bedrooms must be positive'),
   bathrooms: z.number().min(0, 'Number of bathrooms must be positive'),
   amenities: z.array(z.string()).default([]),
   buildingAmenities: z.array(z.string()).default([]),
   propertyType: z.string().min(1, 'Property type is required'),
-  leaseType: z.string().min(1, 'Lease type is required'),
-  availabilityDate: z.date(),
-  petFriendly: z.boolean().default(false),
-  parking: z.boolean().default(false),
-  landlord: z.object({
-    name: z.string().min(1, 'Landlord name is required'),
-    email: z.string().email('Invalid email'),
-    phone: z.string().min(1, 'Phone number is required'),
-  }),
+  listingType: z.string().min(1, 'Listing type is required'),
+  availableFrom: z.date(),
+  parking: z.string().default('None'),
+  featured: z.boolean().default(false),
+  status: z.string().default('AVAILABLE'),
   features: z.object({
     wifi: z.boolean().default(false),
-    laundry: z.boolean().default(false),
-    furnished: z.boolean().default(false),
     airConditioning: z.boolean().default(false),
+    laundry: z.boolean().default(false),
     heating: z.boolean().default(false),
-  }),
+    furnished: z.boolean().default(false),
+    smartHomeFeatures: z.boolean().default(false),
+    walkInCloset: z.boolean().default(false),
+  }).default({}),
   utilities: z.object({
     electricity: z.boolean().default(false),
+    gas: z.boolean().default(false),
     water: z.boolean().default(false),
     internet: z.boolean().default(false),
-    gas: z.boolean().default(false),
-    heating: z.boolean().default(false),
-  }),
+    trashCollection: z.boolean().default(false),
+  }).default({}),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
@@ -67,24 +66,49 @@ type ListingFormData = z.infer<typeof listingSchema>;
 const AMENITIES = [
   'Parking',
   'Pet-friendly',
-  'WiFi',
-  'Laundry',
+  'WiFi Available',
+  'On-site Laundry',
   'Furnished',
   'Air Conditioning',
   'Gym',
   'Pool',
   'Security',
-  'Storage',
   'Balcony',
   'Elevator'
 ];
 
+const FEATURES = [
+  'WiFi Included',
+  'Air Conditioning',
+  'In-unit Laundry',
+  'Heating',
+  'Furnished',
+  'Smart Home Features',
+  'Walk-in Closet'
+];
+
+const UTILITIES = [
+  'Electricity',
+  'Gas',
+  'Water',
+  'Internet',
+  'Trash Collection'
+];
+
 export default function SubmitListingPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      window.location.href = '/api/auth/signin';
+    },
+  });
+  
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedUtilities, setSelectedUtilities] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -95,36 +119,21 @@ export default function SubmitListingPage() {
       description: '',
       price: 0,
       location: '',
-      size: 0,
+      address: '',
+      squareFeet: 0,
       images: [],
       bedrooms: 0,
       bathrooms: 0,
       amenities: [],
       buildingAmenities: [],
-      propertyType: '',
-      leaseType: '',
-      availabilityDate: new Date(),
-      petFriendly: false,
-      parking: false,
-      landlord: {
-        name: '',
-        email: '',
-        phone: '',
-      },
-      features: {
-        wifi: false,
-        laundry: false,
-        furnished: false,
-        airConditioning: false,
-        heating: false,
-      },
-      utilities: {
-        electricity: false,
-        water: false,
-        internet: false,
-        gas: false,
-        heating: false,
-      },
+      propertyType: 'APARTMENT',
+      listingType: 'LONG_TERM',
+      availableFrom: new Date(),
+      parking: 'None',
+      featured: false,
+      status: 'AVAILABLE',
+      features: {},
+      utilities: {},
     },
   });
 
@@ -133,10 +142,10 @@ export default function SubmitListingPage() {
   }, []);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (session === null) {
       router.push('/auth/signin');
     }
-  }, [status, router]);
+  }, [session, router]);
 
   const handleAmenityToggle = (amenity: string) => {
     setSelectedAmenities(prev => {
@@ -145,6 +154,26 @@ export default function SubmitListingPage() {
         : [...prev, amenity];
       form.setValue('amenities', newAmenities);
       return newAmenities;
+    });
+  };
+
+  const handleFeatureToggle = (feature: string) => {
+    setSelectedFeatures(prev => {
+      const newFeatures = prev.includes(feature)
+        ? prev.filter(a => a !== feature)
+        : [...prev, feature];
+      form.setValue('features', newFeatures.reduce((acc, curr) => ({ ...acc, [curr]: true }), {}));
+      return newFeatures;
+    });
+  };
+
+  const handleUtilityToggle = (utility: string) => {
+    setSelectedUtilities(prev => {
+      const newUtilities = prev.includes(utility)
+        ? prev.filter(a => a !== utility)
+        : [...prev, utility];
+      form.setValue('utilities', newUtilities.reduce((acc, curr) => ({ ...acc, [curr]: true }), {}));
+      return newUtilities;
     });
   };
 
@@ -226,17 +255,20 @@ export default function SubmitListingPage() {
       const loadingToast = toast.loading('Submitting your listing...');
 
       // Format the availability date to ISO DateTime
-      const formattedDate = new Date(data.availabilityDate);
+      const formattedDate = new Date(data.availableFrom);
       formattedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
 
-      // Prepare the data
+      // Format the data
       const formattedData = {
         ...data,
-        availabilityDate: formattedDate.toISOString(),
+        availableFrom: formattedDate.toISOString(),
         images: JSON.stringify(uploadedImages),
         amenities: JSON.stringify(selectedAmenities),
         buildingAmenities: JSON.stringify(data.buildingAmenities),
-        leaseDuration: data.leaseType,
+        squareFeet: Number(data.squareFeet),
+        price: Number(data.price),
+        bedrooms: Number(data.bedrooms),
+        bathrooms: Number(data.bathrooms),
       };
 
       console.log('Final submit data:', formattedData);
@@ -259,11 +291,8 @@ export default function SubmitListingPage() {
       }
 
       toast.dismiss(loadingToast);
-      toast.success('Listing submitted successfully! Redirecting to listings page...');
-      
-      setTimeout(() => {
-        router.push('/listings');
-      }, 2000);
+      toast.success('Listing submitted successfully!');
+      router.push(`/listings/${result.id}`);
       
     } catch (error) {
       console.error('Submission error:', error);
@@ -273,7 +302,7 @@ export default function SubmitListingPage() {
     }
   };
 
-  if (status === 'loading') {
+  if (session === null) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">Loading...</div>
@@ -315,7 +344,7 @@ export default function SubmitListingPage() {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Title</FormLabel>
+                        <FormLabel className="text-black dark:text-black">Title</FormLabel>
                         <FormControl>
                           <Input {...field} className="shadow-sm" />
                         </FormControl>
@@ -329,7 +358,7 @@ export default function SubmitListingPage() {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Price (per month)</FormLabel>
+                        <FormLabel className="text-black dark:text-black">Price (per month)</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -376,10 +405,26 @@ export default function SubmitListingPage() {
 
                   <FormField
                     control={form.control}
-                    name="size"
+                    name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Size (sq ft)</FormLabel>
+                        <FormLabel className="text-black dark:text-white">Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="shadow-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="squareFeet"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-black dark:text-white">Square Feet</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
@@ -491,19 +536,21 @@ export default function SubmitListingPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-black dark:text-white">Property Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="shadow-sm">
-                              <SelectValue placeholder="Select property type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Apartment">Apartment</SelectItem>
-                            <SelectItem value="Condo">Condo</SelectItem>
-                            <SelectItem value="House">House</SelectItem>
-                            <SelectItem value="Townhouse">Townhouse</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="shadow-sm">
+                                <SelectValue placeholder="Select property type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="APARTMENT">Apartment</SelectItem>
+                              <SelectItem value="CONDO">Condo</SelectItem>
+                              <SelectItem value="HOUSE">House</SelectItem>
+                              <SelectItem value="TOWNHOUSE">Townhouse</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -511,22 +558,23 @@ export default function SubmitListingPage() {
 
                   <FormField
                     control={form.control}
-                    name="leaseType"
+                    name="listingType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Lease Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="shadow-sm">
-                              <SelectValue placeholder="Select lease type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="12 Months">12 Months</SelectItem>
-                            <SelectItem value="6 Months">6 Months</SelectItem>
-                            <SelectItem value="Month-to-Month">Month-to-Month</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel className="text-black dark:text-white">Listing Type</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="shadow-sm">
+                                <SelectValue placeholder="Select listing type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="LONG_TERM">Long Term</SelectItem>
+                              <SelectItem value="SHORT_TERM">Short Term</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -536,10 +584,10 @@ export default function SubmitListingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="availabilityDate"
+                    name="availableFrom"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Availability Date</FormLabel>
+                        <FormLabel>Available From</FormLabel>
                         <FormControl>
                           <Input
                             type="date"
@@ -557,24 +605,32 @@ export default function SubmitListingPage() {
                 <div className="flex space-x-6">
                   <FormField
                     control={form.control}
-                    name="petFriendly"
+                    name="parking"
                     render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
+                      <FormItem>
+                        <FormLabel className="text-black dark:text-white">Parking</FormLabel>
                         <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="shadow-sm"
-                          />
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="shadow-sm">
+                                <SelectValue placeholder="Select parking" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="None">None</SelectItem>
+                              <SelectItem value="Street Parking">Street Parking</SelectItem>
+                              <SelectItem value="Private Parking">Private Parking</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
-                        <FormLabel className="font-normal text-gray-700 dark:text-gray-300">Pet Friendly</FormLabel>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
 
                   <FormField
                     control={form.control}
-                    name="parking"
+                    name="featured"
                     render={({ field }) => (
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
@@ -584,7 +640,7 @@ export default function SubmitListingPage() {
                             className="shadow-sm"
                           />
                         </FormControl>
-                        <FormLabel className="font-normal text-gray-700 dark:text-gray-300">Parking Available</FormLabel>
+                        <FormLabel className="font-normal text-gray-700 dark:text-gray-300">Featured Listing</FormLabel>
                       </FormItem>
                     )}
                   />
@@ -594,7 +650,8 @@ export default function SubmitListingPage() {
 
             <Card className="shadow-md">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Amenities</CardTitle>
+                <CardTitle className="text-xl font-semibold text-black">Building Amenities</CardTitle>
+                <CardDescription className="text-gray-600">What the property/building offers</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -605,7 +662,7 @@ export default function SubmitListingPage() {
                         onCheckedChange={() => handleAmenityToggle(amenity)}
                         className="shadow-sm"
                       />
-                      <label className="text-sm font-normal text-black dark:text-white">{amenity}</label>
+                      <label className="text-sm font-normal text-black dark:text-black">{amenity}</label>
                     </div>
                   ))}
                 </div>
@@ -614,121 +671,42 @@ export default function SubmitListingPage() {
 
             <Card className="shadow-md">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Features and Utilities</CardTitle>
+                <CardTitle className="text-xl font-semibold text-black">Unit Features & Utilities</CardTitle>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div>
-                  <h3 className="text-lg font-medium text-black mb-4">Features</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries({
-                      wifi: 'WiFi Included',
-                      laundry: 'In-unit Laundry',
-                      furnished: 'Furnished',
-                      airConditioning: 'Air Conditioning',
-                      heating: 'Heating'
-                    }).map(([key, label]) => (
-                      <FormField
-                        key={key}
-                        control={form.control}
-                        name={`features.${key}` as any}
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                className="shadow-sm"
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal text-black dark:text-white">{label}</FormLabel>
-                          </FormItem>
-                        )}
-                      />
+                  <h3 className="text-lg font-medium text-black mb-2">Features</h3>
+                  <CardDescription className="text-gray-600 mb-4">What's inside the unit</CardDescription>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {FEATURES.map((feature) => (
+                      <div key={feature} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedFeatures.includes(feature)}
+                          onCheckedChange={() => handleFeatureToggle(feature)}
+                          className="shadow-sm"
+                        />
+                        <label className="text-sm font-normal text-black dark:text-black">{feature}</label>
+                      </div>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-black mb-4">Utilities Included</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries({
-                      electricity: 'Electricity',
-                      water: 'Water',
-                      internet: 'Internet',
-                      gas: 'Gas',
-                      heating: 'Heating'
-                    }).map(([key, label]) => (
-                      <FormField
-                        key={key}
-                        control={form.control}
-                        name={`utilities.${key}` as any}
-                        render={({ field }) => (
-                          <FormItem className="flex items-center space-x-2">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                className="shadow-sm"
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal text-black dark:text-white">{label}</FormLabel>
-                          </FormItem>
-                        )}
-                      />
+                  <h3 className="text-lg font-medium text-black mb-2">Utilities Included</h3>
+                  <CardDescription className="text-gray-600 mb-4">What's covered in the rent</CardDescription>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {UTILITIES.map((utility) => (
+                      <div key={utility} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedUtilities.includes(utility)}
+                          onCheckedChange={() => handleUtilityToggle(utility)}
+                          className="shadow-sm"
+                        />
+                        <label className="text-sm font-normal text-black dark:text-black">{utility}</label>
+                      </div>
                     ))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-md">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Landlord Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="landlord.name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-black dark:text-white">Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} className="shadow-sm" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="landlord.phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-black dark:text-white">Phone</FormLabel>
-                        <FormControl>
-                          <Input type="tel" {...field} className="shadow-sm" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="landlord.email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-black dark:text-white">Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" {...field} className="shadow-sm" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </CardContent>
             </Card>
 
@@ -754,4 +732,4 @@ export default function SubmitListingPage() {
       </div>
     </div>
   );
-} 
+}

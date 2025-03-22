@@ -1,35 +1,43 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import connectToDatabase from '@/lib/mongodb';
+import { Collection } from 'mongodb';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || session.user.role !== 'ADMIN') {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
   try {
-    const [totalUsers, totalListings, totalReports, activeListings] = await Promise.all([
-      prisma.user.count(),
-      prisma.listing.count(),
-      prisma.report.count(),
-      prisma.listing.count({
-        where: {
-          status: 'ACTIVE',
-        },
-      }),
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+
+    const { db } = await connectToDatabase();
+    const usersCollection: Collection = db.collection('users');
+    const listingsCollection: Collection = db.collection('listings');
+    const reportsCollection: Collection = db.collection('reports');
+
+    // Get counts
+    const [
+      totalUsers,
+      totalListings,
+      totalReports,
+      activeListings
+    ] = await Promise.all([
+      usersCollection.countDocuments(),
+      listingsCollection.countDocuments(),
+      reportsCollection.countDocuments(),
+      listingsCollection.countDocuments({ status: 'ACTIVE' })
     ]);
 
     return NextResponse.json({
       totalUsers,
       totalListings,
       totalReports,
-      activeListings,
+      activeListings
     });
+
   } catch (error) {
-    console.error('Error fetching admin stats:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error('[ADMIN_STATS]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
-} 
+}

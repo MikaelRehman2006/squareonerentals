@@ -1,59 +1,82 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { randomBytes } from 'crypto';
-import { sendEmail } from '@/lib/email';
+import connectToDatabase from '@/lib/mongodb';
+import { Collection, ObjectId } from 'mongodb';
+import { z } from 'zod';
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+interface User {
+  _id: ObjectId;
+  id: string;
+  email: string;
+}
+
+interface PasswordReset {
+  _id: ObjectId;
+  id: string;
+  token: string;
+  userId: string;
+  used: boolean;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const json = await request.json();
+    const body = forgotPasswordSchema.parse(json);
+
+    const { db } = await connectToDatabase();
+    const usersCollection: Collection<User> = db.collection('users');
+    const passwordResetsCollection: Collection<PasswordReset> = db.collection('password_resets');
 
     // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    // Don't reveal if user exists or not
+    const user = await usersCollection.findOne({ email: body.email });
     if (!user) {
+      // Return success even if user not found to prevent email enumeration
       return NextResponse.json({
-        message: 'If an account exists with this email, you will receive a password reset link',
+        success: true,
+        message: 'If an account exists with that email, a password reset link will be sent.'
       });
     }
 
     // Generate reset token
     const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000); // 1 hour from now
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
-    // Save reset token
-    await prisma.passwordReset.create({
-      data: {
-        userId: user.id,
-        token,
-        expires,
-      },
-    });
+    // Create password reset record
+    const passwordReset = {
+      _id: new ObjectId(),
+      id: new ObjectId().toString(),
+      token,
+      userId: user.id,
+      used: false,
+      expiresAt,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    // Send reset email
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${token}`;
-    await sendEmail({
-      to: email,
-      subject: 'Reset Your Password',
-      html: `
-        <p>Hello,</p>
-        <p>You have requested to reset your password. Click the link below to set a new password:</p>
-        <p><a href="${resetLink}">Reset Password</a></p>
-        <p>This link will expire in 1 hour.</p>
-        <p>If you didn't request this, please ignore this email.</p>
-      `,
-    });
+    await passwordResetsCollection.insertOne(passwordReset);
+
+    // TODO: Send email with reset link
+    // This would be implemented with your email service provider
+    console.log('Reset token for development:', token);
 
     return NextResponse.json({
-      message: 'If an account exists with this email, you will receive a password reset link',
+      success: true,
+      message: 'If an account exists with that email, a password reset link will be sent.'
     });
+
   } catch (error) {
-    console.error('Forgot password error:', error);
-    return NextResponse.json(
-      { error: 'Failed to process request' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return new NextResponse('Invalid email address', { status: 400 });
+    }
+
+    console.error('[FORGOT_PASSWORD]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
-} 
+}

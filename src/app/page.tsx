@@ -25,72 +25,64 @@ export default function Home() {
         setIsLoading(false);
       }
     }
-
     fetchFeaturedListings();
   }, []);
 
-  // Sample testimonials data
   const testimonials = [
     {
       id: 1,
       text: "Found my dream apartment through Square One Rentals. The process was smooth and efficient!",
-      author: "Sarah M.",
+      author: "Lakshveer Chaniana",
       role: "Tenant"
     },
     {
       id: 2,
       text: "As a landlord, I appreciate how easy it is to list and manage my properties on this platform.",
-      author: "John D.",
+      author: "Owais N.",
       role: "Landlord"
     }
   ];
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-gray-100">
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center text-white">
+      <section className="relative h-[550px] flex items-center justify-center text-white">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="https://source.unsplash.com/featured/?mississauga,skyline"
-            alt="Mississauga Skyline"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/50" />
+          <Image src="/images/Skyscraper.jpg" alt="Square One Area" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
-        
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-5xl font-bold mb-4">Welcome to Square One Rentals</h1>
-          <p className="text-xl mb-8">The Largest Real Estate Community in Mississauga</p>
-          <div className="flex gap-4 justify-center">
-            <Link 
-              href="/listings"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition"
-            >
-              Find Listings
+
+        <div className="relative z-10 text-center max-w-3xl mx-auto px-6">
+          <h1 className="text-6xl font-extrabold tracking-tight mb-5">Square One Rentals</h1>
+          <p className="text-lg font-light opacity-90 mb-8">
+            Find your perfect rental in the heart of Mississauga.
+          </p>
+          <div className="flex gap-5 justify-center">
+            <Link href="/listings">
+              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+                Browse Listings
+              </Button>
             </Link>
-            <Link 
-              href="/submit"
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition"
-            >
-              Submit Your Listing
+            <Link href="/submit">
+              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+                Submit Listing
+              </Button>
             </Link>
           </div>
         </div>
       </section>
 
       {/* Featured Listings Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Listings</h2>
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-gray-900 mb-10 text-center">Featured Listings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
           <div className="mt-12 text-center">
-            <Button asChild>
+            <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
               <Link href="/listings">View All Listings</Link>
             </Button>
           </div>
@@ -98,85 +90,62 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
-              <h3 className="text-xl font-semibold mb-2">Search Listings</h3>
-              <p className="text-gray-600">Browse through our extensive collection of rental properties in the Square One area.</p>
-            </div>
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
-              <h3 className="text-xl font-semibold mb-2">Connect with Landlords</h3>
-              <p className="text-gray-600">Directly communicate with property owners to schedule viewings and ask questions.</p>
-            </div>
-            <div className="bg-white p-8 rounded-lg shadow-md text-center">
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
-              <h3 className="text-xl font-semibold mb-2">Secure Your Home</h3>
-              <p className="text-gray-600">Complete the rental process with confidence, knowing you've found the perfect place.</p>
-            </div>
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl font-bold mb-12">How It Works</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {["Search Listings", "Connect with Landlords", "Secure Your Home"].map((step, index) => (
+              <div key={index} className="bg-white p-8 rounded-lg shadow-lg text-center">
+                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-5">
+                  {index + 1}
+                </div>
+                <h3 className="text-2xl font-semibold mb-3">{step}</h3>
+                <p className="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">What Our Users Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-4">JD</div>
-                <div>
-                  <h4 className="font-semibold">John Doe</h4>
-                  <p className="text-gray-500 text-sm">Tenant</p>
-                </div>
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-12">What Our Users Say</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.id} className="bg-gray-100 p-6 rounded-lg shadow-md">
+                <p className="text-gray-700 italic mb-4">&ldquo;{testimonial.text}&rdquo;</p>
+                <p className="font-bold text-gray-900">{testimonial.author}</p>
+                <p className="text-gray-500 text-sm">{testimonial.role}</p>
               </div>
-              <p className="text-gray-600">"I found my dream apartment near Square One in just a few days. The platform made it so easy to filter exactly what I was looking for."</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-4">JS</div>
-                <div>
-                  <h4 className="font-semibold">Jane Smith</h4>
-                  <p className="text-gray-500 text-sm">Landlord</p>
-                </div>
-              </div>
-              <p className="text-gray-600">"As a property owner, I've had great success listing my properties here. I receive quality inquiries and the process is streamlined."</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 mr-4">RP</div>
-                <div>
-                  <h4 className="font-semibold">Robert Patel</h4>
-                  <p className="text-gray-500 text-sm">Tenant</p>
-                </div>
-              </div>
-              <p className="text-gray-600">"The detailed listings and neighborhood information helped me make an informed decision. I'm very happy with my new place!"</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Call to Action Section */}
-      <section className="py-16 px-4 bg-blue-600 text-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Find Your Perfect Home?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">Join thousands of satisfied tenants who found their dream home in Mississauga.</p>
-          <div className="flex gap-4 justify-center">
-            <Link 
-              href="/listings"
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition"
-            >
-              Browse Listings
+      <section
+        className="relative py-24 text-white text-center bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/condos-at-square-one-district-12.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 max-w-3xl mx-auto px-4">
+          <h2 className="text-4xl md:text-5xl font-bold !text-white mb-6">
+            Ready to Find Your Perfect Home?
+          </h2>
+          <p className="text-lg md:text-xl opacity-100 mb-10 bg-black/10 px-3 py-1 inline-block rounded-md">
+            Join thousands of satisfied tenants who found their dream home in Mississauga.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/listings">
+              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+                Browse Listings
+              </Button>
             </Link>
-            <Link 
-              href="/submit"
-              className="bg-transparent border-2 border-white text-white hover:bg-white/10 px-8 py-3 rounded-lg font-semibold transition"
-            >
-              Submit a Listing
+            <Link href="/submit">
+              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+                Submit Listing
+              </Button>
             </Link>
           </div>
         </div>

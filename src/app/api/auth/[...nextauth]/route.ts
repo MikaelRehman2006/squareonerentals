@@ -1,44 +1,31 @@
 import NextAuth from 'next-auth';
 import { NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import { DefaultSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import { User, IUser } from '@/models/User';
+import connectDB from '@/lib/mongodb';
 
-// Extend the User type to include role
 declare module 'next-auth' {
   interface User {
+    id: string;
     role?: string;
   }
+  
   interface Session {
     user: {
       id: string;
-      role: string;
-      email: string;
-      name?: string | null;
-      image?: string | null;
-    }
+      role?: string;
+    } & DefaultSession['user'];
   }
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: 'jwt',
-  },
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
-        }
-      }
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -48,110 +35,88 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter your email and password');
+          throw new Error('Invalid credentials');
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            image: true,
-            hashedPassword: true,
-            role: true,
-          },
-        });
+        await connectDB();
+
+        const user = await User.findOne({ email: credentials.email }).lean() as IUser | null;
 
         if (!user || !user.hashedPassword) {
-          throw new Error('No user found with this email');
+          throw new Error('Invalid credentials');
         }
 
-        const isPasswordValid = await bcrypt.compare(
+        const isCorrectPassword = await bcrypt.compare(
           credentials.password,
           user.hashedPassword
         );
 
-        if (!isPasswordValid) {
-          throw new Error('Invalid password');
+        if (!isCorrectPassword) {
+          throw new Error('Invalid credentials');
         }
 
         return {
-          id: user.id,
+          id: user._id.toString(),
           email: user.email,
           name: user.name,
           image: user.image,
           role: user.role,
         };
       },
-    })
+    }),
   ],
-  pages: {
-    signIn: '/auth/signin',
-    error: '/auth/error',
-  },
   callbacks: {
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role || 'USER';
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.role = (token.role as string) || 'USER';
+        session.user.role = token.role as string;
       }
       return session;
     },
-    async signIn({ user, account, profile }) {
-      if (!user.email) return false;
-
-      try {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            image: true,
-            role: true,
-            emailVerified: true,
-          },
-        });
-
-        if (!existingUser) {
-          await prisma.user.create({
-            data: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          await connectDB();
+          
+          // Check if user exists
+          const existingUser = await User.findOne({ email: user.email }).lean() as IUser | null;
+          
+          if (!existingUser) {
+            // Create new user
+            await User.create({
               email: user.email,
-              name: user.name || '',
-              image: user.image || '',
+              name: user.name,
+              image: user.image,
               role: 'USER',
               emailVerified: new Date(),
-            },
-          });
-        } else {
-          await prisma.user.update({
-            where: { email: user.email },
-            data: {
-              name: user.name || existingUser.name,
-              image: user.image || existingUser.image,
-              emailVerified: existingUser.emailVerified || new Date(),
-            },
-          });
+            });
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error in signIn callback:', error);
+          return false;
         }
-        return true;
-      } catch (error) {
-        console.error('Error in signIn callback:', error);
-        return false;
       }
+      
+      return true;
     },
   },
-  debug: process.env.NODE_ENV === 'development',
+  pages: {
+    signIn: '/auth/signin',
+  },
+  session: {
+    strategy: 'jwt',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };

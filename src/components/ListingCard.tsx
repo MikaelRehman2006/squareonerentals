@@ -31,14 +31,36 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
     }
   };
 
-  // Parse images and amenities from strings to arrays
+  // Parse images, amenities, features, and utilities from strings to arrays
   const images = parseStringToArray(listing.images);
   const amenities = parseStringToArray(listing.amenities);
+  const features = parseStringToArray(listing.features);
+  const utilities = parseStringToArray(listing.utilities);
   
   // Get the first valid image URL or use default
   const imageUrl = images.length > 0 && images[0] && images[0].startsWith('http') 
     ? images[0] 
     : defaultImage;
+
+  // Get key highlights to show (prioritize certain amenities and features)
+  const getHighlights = () => {
+    const highlights = [];
+    
+    // Check for key amenities
+    if (amenities.includes('Parking')) highlights.push('Parking');
+    if (amenities.includes('Pet-friendly')) highlights.push('Pet-friendly');
+    if (amenities.includes('Gym')) highlights.push('Gym');
+    
+    // Check for key features
+    if (features.includes('In-unit Laundry')) highlights.push('In-unit Laundry');
+    if (features.includes('Furnished')) highlights.push('Furnished');
+    
+    // Check for utilities included
+    if (utilities.length > 0) highlights.push('Utilities Included');
+    
+    // Return up to 3 highlights
+    return highlights.slice(0, 3);
+  };
 
   return (
     <Link href={`/listings/${listing.id}`} className="block">
@@ -64,7 +86,7 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
             />
             <FavoriteButton
               listingId={listing.id}
-              initialFavorited={isFavorited}
+              isFavorited={isFavorited}
               className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
             />
           </div>
@@ -85,25 +107,27 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
               <span>•</span>
               <span>{listing.bathrooms} bath</span>
               <span>•</span>
-              <span>{listing.size.toLocaleString()} ft²</span>
+              <span>{listing.squareFeet?.toLocaleString() || 0} ft²</span>
             </div>
           </div>
           <p className="mt-2 text-gray-600 line-clamp-2">{listing.description}</p>
-          {amenities.length > 0 && (
+          
+          {/* Property Highlights */}
+          {getHighlights().length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {amenities.slice(0, 3).map((amenity: string, index: number) => (
+              {getHighlights().map((highlight, index) => (
                 <span 
                   key={index}
                   className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
                 >
-                  {amenity}
+                  {highlight}
                 </span>
               ))}
             </div>
           )}
           <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
             <span>{listing.propertyType}</span>
-            <span>{listing.leaseType}</span>
+            <span>{listing.listingType}</span>
           </div>
         </div>
       </div>

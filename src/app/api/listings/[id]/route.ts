@@ -1,7 +1,10 @@
-import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
+import connectDB from '@/lib/mongodb'
+import { Listing } from '@/models/Listing'
+import mongoose from 'mongoose'
+import { User, IUser } from '@/models/User'
 
 type Props = {
   params: { id: string }
@@ -40,305 +43,288 @@ const validateImageUrls = (images: string[]): string[] => {
     .filter(Boolean); // Remove any empty strings
 };
 
-export async function GET(request: NextRequest, { params }: Props) {
-  // Make sure params.id is awaited before use
-  const id = params?.id;
-  if (!id) {
-    return NextResponse.json(
-      { error: 'Missing listing ID' },
-      { status: 400 }
-    )
+// Helper function to get user data safely
+const getUserData = (userId: mongoose.Types.ObjectId | IUser) => {
+  if ('name' in userId) {
+    return {
+      id: userId._id.toString(),
+      name: userId.name || 'Anonymous',
+      email: userId.email || '',
+      image: userId.image || '',
+    };
   }
+  return {
+    id: userId.toString(),
+    name: 'Anonymous',
+    email: '',
+    image: '',
+  };
+};
 
+export async function GET(request: NextRequest, { params }: Props) {
   try {
-    const listing = await prisma.listing.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-      },
-    })
+    await connectDB();
+    
+    const id = params?.id;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid listing ID' },
+        { status: 400 }
+      );
+    }
 
+    const listing = await Listing.findById(id).populate('userId', 'name email image');
     if (!listing) {
       return NextResponse.json(
         { error: 'Listing not found' },
         { status: 404 }
-      )
+      );
     }
 
     // Parse and validate array fields
-    const images = validateImageUrls(safeParseJSON(listing.images));
-    const amenities = safeParseJSON(listing.amenities);
-    const buildingAmenities = safeParseJSON(listing.buildingAmenities);
+    const images = validateImageUrls(listing.images);
+    const amenities = listing.amenities || [];
+    const buildingAmenities = listing.buildingAmenities || [];
+    const features = listing.features || [];
+    const utilities = listing.utilities || [];
 
     // Format the response
+    const userData = getUserData(listing.userId);
     const parsedListing = {
-      ...listing,
+      id: listing._id.toString(),
+      title: listing.title,
+      description: listing.description,
+      price: Number(listing.price),
+      location: listing.location,
+      address: listing.location, // Use location as address for now
       images,
       amenities,
       buildingAmenities,
-      price: Number(listing.price),
-      size: Number(listing.size),
+      features,
+      utilities,
       bedrooms: Number(listing.bedrooms),
       bathrooms: Number(listing.bathrooms),
-      featured: Boolean(listing.featured),
-      // Add default values for optional fields
-      status: listing.status || 'AVAILABLE',
+      squareFeet: Number(listing.size || 0),
       propertyType: listing.propertyType || 'APARTMENT',
-      leaseType: listing.leaseType || 'LONG_TERM',
-      user: {
-        ...listing.user,
-        image: listing.user.image || null,
-      },
+      listingType: listing.leaseType || 'LONG_TERM',
+      availableFrom: listing.availableDate,
+      parking: 'Available', // Default parking value
+      createdAt: listing.createdAt,
+      updatedAt: listing.updatedAt,
+      userId: userData.id,
+      status: listing.status || 'AVAILABLE',
+      featured: Boolean(listing.featured),
+      userName: userData.name,
+      userEmail: userData.email,
+      userImage: userData.image,
+      user: userData,
     };
 
-    return NextResponse.json(parsedListing)
+    return NextResponse.json(parsedListing);
   } catch (error) {
-    console.error('Error fetching listing:', error)
+    console.error('Error fetching listing:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: 'Failed to fetch listing' },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: Props) {
-  if (!params?.id) {
-    return NextResponse.json(
-      { error: 'Missing listing ID' },
-      { status: 400 }
-    )
-  }
-
   try {
-    // Get user session to verify ownership
-    const session = await getServerSession(authOptions)
+    await connectDB();
     
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Not logged in' },
-        { status: 401 }
-      )
-    }
-
-    console.log('Delete request for listing:', params.id);
-    console.log('User session:', JSON.stringify({
-      email: session.user.email,
-      name: session.user.name
-    }));
-
-    // Check if listing exists 
-    const listing = await prisma.listing.findUnique({
-      where: { id: params.id },
-      include: { user: true }
-    })
-
-    if (!listing) {
-      return NextResponse.json(
-        { error: 'Listing not found' },
-        { status: 404 }
-      )
-    }
-
-    console.log('Listing owner:', listing.user.email);
-
-    // Only allow the listing owner or admin to delete
-    const userEmail = session.user.email as string
-    
-    // Check if user is the owner or an admin
-    const isOwner = listing.user.email?.toLowerCase() === userEmail?.toLowerCase();
-    
-    // Get user role from database
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { role: true }
-    })
-
-    const isAdmin = user?.role === 'ADMIN'
-
-    console.log('Authorization check:', { isOwner, isAdmin, userRole: user?.role });
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json(
-        { error: 'Unauthorized - you can only delete your own listings' },
-        { status: 403 }
-      )
-    }
-
-    // Delete the listing
-    await prisma.listing.delete({
-      where: { id: params.id }
-    })
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error deleting listing:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete listing' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function PATCH(request: NextRequest, { params }: Props) {
-  if (!params?.id) {
-    return NextResponse.json(
-      { error: 'Missing listing ID' },
-      { status: 400 }
-    )
-  }
-
-  try {
-    console.log('Updating listing with ID:', params.id);
-    
-    // Get user session to verify ownership
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      )
+      );
     }
 
-    // Check if listing exists
-    const listing = await prisma.listing.findUnique({
-      where: { id: params.id },
-      include: { user: true }
-    })
-
-    if (!listing) {
+    const id = params?.id;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: 'Listing not found' },
-        { status: 404 }
-      )
+        { error: 'Invalid listing ID' },
+        { status: 400 }
+      );
     }
 
-    // Only allow the listing owner or admin to update
-    const userEmail = session.user.email as string
-    const user = await prisma.user.findUnique({
-      where: { email: userEmail },
-      select: { id: true, email: true, role: true }
-    })
-
+    // Get the user
+    const user = await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
-      )
+      );
     }
 
-    // Check if user is the owner or an admin
-    const isOwner = listing.user.email === user.email
-    const isAdmin = user.role === 'ADMIN'
-
-    if (!isOwner && !isAdmin) {
+    // Get the listing
+    const listing = await Listing.findById(id);
+    if (!listing) {
       return NextResponse.json(
-        { error: 'Unauthorized - you can only update your own listings' },
+        { error: 'Listing not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if the user owns the listing
+    if (listing.userId.toString() !== user._id.toString()) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
         { status: 403 }
-      )
-    }
-
-    // Get update data from request
-    let body;
-    try {
-      body = await request.json();
-      console.log('Update data received:', JSON.stringify(body, null, 2));
-    } catch (e) {
-      console.error('Error parsing request body:', e);
-      return NextResponse.json(
-        { error: 'Invalid request body - could not parse JSON' },
-        { status: 400 }
       );
     }
 
-    // Validate data structure
-    if (!body || typeof body !== 'object') {
-      return NextResponse.json(
-        { error: 'Invalid request data' },
-        { status: 400 }
-      );
-    }
+    await listing.deleteOne();
 
-    // Prepare data for database update - only include fields that exist in database
-    const updateData: any = {};
-    
-    // Basic fields
-    if (body.title !== undefined) updateData.title = body.title;
-    if (body.description !== undefined) updateData.description = body.description;
-    if (body.price !== undefined && !isNaN(Number(body.price))) updateData.price = Number(body.price);
-    if (body.location !== undefined) updateData.location = body.location;
-    if (body.bedrooms !== undefined && !isNaN(Number(body.bedrooms))) updateData.bedrooms = Number(body.bedrooms);
-    if (body.bathrooms !== undefined && !isNaN(Number(body.bathrooms))) updateData.bathrooms = Number(body.bathrooms);
-    if (body.size !== undefined && !isNaN(Number(body.size))) updateData.size = Number(body.size);
-    if (body.propertyType !== undefined) updateData.propertyType = body.propertyType;
-    if (body.leaseType !== undefined) updateData.leaseType = body.leaseType;
-    
-    // Arrays that need to be stringified for storage
-    if (body.amenities !== undefined) {
-      try {
-        updateData.amenities = Array.isArray(body.amenities) 
-          ? JSON.stringify(body.amenities) 
-          : JSON.stringify([]);
-      } catch (e) {
-        console.error('Error stringifying amenities:', e);
-      }
-    }
-    
-    if (body.buildingAmenities !== undefined) {
-      try {
-        updateData.buildingAmenities = Array.isArray(body.buildingAmenities) 
-          ? JSON.stringify(body.buildingAmenities) 
-          : JSON.stringify([]);
-      } catch (e) {
-        console.error('Error stringifying buildingAmenities:', e);
-      }
-    }
-    
-    if (body.images !== undefined) {
-      try {
-        updateData.images = Array.isArray(body.images) 
-          ? JSON.stringify(validateImageUrls(body.images)) 
-          : JSON.stringify([]);
-      } catch (e) {
-        console.error('Error stringifying images:', e);
-      }
-    }
-
-    console.log('Prepared update data:', updateData);
-
-    // Update the listing
-    try {
-      const updatedListing = await prisma.listing.update({
-        where: { id: params.id },
-        data: updateData
-      });
-      
-      console.log('Listing updated successfully');
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Listing updated successfully',
-        listing: updatedListing
-      });
-    } catch (dbError) {
-      console.error('Database error updating listing:', dbError);
-      return NextResponse.json(
-        { error: 'Database error: ' + (dbError instanceof Error ? dbError.message : 'Unknown error') },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json({ message: 'Listing deleted successfully' });
   } catch (error) {
-    console.error('Error updating listing:', error);
+    console.error('Error deleting listing:', error);
     return NextResponse.json(
-      { error: 'Failed to update listing: ' + (error instanceof Error ? error.message : 'Unknown error') },
+      { error: 'Failed to delete listing' },
       { status: 500 }
     );
   }
-} 
+}
+
+export async function PATCH(request: NextRequest, { params }: Props) {
+  try {
+    await connectDB();
+    
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const id = params?.id;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: 'Invalid listing ID' },
+        { status: 400 }
+      );
+    }
+
+    // Get the user
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get the listing
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      return NextResponse.json(
+        { error: 'Listing not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if the user owns the listing
+    if (listing.userId.toString() !== user._id.toString()) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+
+    // Process arrays before saving
+    const processedImages = validateImageUrls(
+      Array.isArray(body.images) ? body.images : safeParseJSON(body.images)
+    );
+    
+    const processedAmenities = Array.isArray(body.amenities) 
+      ? body.amenities 
+      : safeParseJSON(body.amenities);
+    
+    const processedBuildingAmenities = Array.isArray(body.buildingAmenities) 
+      ? body.buildingAmenities 
+      : safeParseJSON(body.buildingAmenities);
+
+    const processedFeatures = Array.isArray(body.features)
+      ? body.features
+      : safeParseJSON(body.features);
+
+    const processedUtilities = Array.isArray(body.utilities)
+      ? body.utilities
+      : safeParseJSON(body.utilities);
+
+    // Update the listing
+    const updatedListing = await Listing.findByIdAndUpdate(
+      id,
+      {
+        title: body.title,
+        description: body.description,
+        price: Number(body.price),
+        location: body.location,
+        images: processedImages,
+        bedrooms: Number(body.bedrooms),
+        bathrooms: Number(body.bathrooms),
+        size: Number(body.squareFeet),
+        amenities: processedAmenities,
+        buildingAmenities: processedBuildingAmenities,
+        features: processedFeatures,
+        utilities: processedUtilities,
+        propertyType: body.propertyType || 'APARTMENT',
+        leaseType: body.listingType || 'LONG_TERM',
+        availableDate: body.availableFrom ? new Date(body.availableFrom) : new Date(),
+        status: body.status || 'ACTIVE',
+        featured: Boolean(body.featured),
+      },
+      { new: true }
+    ).populate('userId');
+
+    if (!updatedListing) {
+      return NextResponse.json(
+        { error: 'Failed to update listing' },
+        { status: 500 }
+      );
+    }
+
+    // Format the response
+    const userData = getUserData(updatedListing.userId);
+    const formattedListing = {
+      id: updatedListing._id.toString(),
+      title: updatedListing.title,
+      description: updatedListing.description,
+      price: Number(updatedListing.price),
+      location: updatedListing.location,
+      images: updatedListing.images,
+      amenities: updatedListing.amenities,
+      buildingAmenities: updatedListing.buildingAmenities,
+      features: updatedListing.features,
+      utilities: updatedListing.utilities,
+      bedrooms: Number(updatedListing.bedrooms),
+      bathrooms: Number(updatedListing.bathrooms),
+      squareFeet: Number(updatedListing.size || 0),
+      propertyType: updatedListing.propertyType,
+      listingType: updatedListing.leaseType,
+      availableFrom: updatedListing.availableDate,
+      createdAt: updatedListing.createdAt,
+      updatedAt: updatedListing.updatedAt,
+      userId: userData.id,
+      status: updatedListing.status,
+      featured: updatedListing.featured,
+      userName: userData.name,
+      userEmail: userData.email,
+      userImage: userData.image,
+      user: userData,
+    };
+
+    return NextResponse.json(formattedListing);
+  } catch (error) {
+    console.error('Error updating listing:', error);
+    return NextResponse.json(
+      { error: 'Failed to update listing' },
+      { status: 500 }
+    );
+  }
+}

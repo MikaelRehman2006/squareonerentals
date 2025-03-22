@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 type Props = {
   params: {
-    id: string
+    listingId: string
   }
 }
 
@@ -33,7 +33,7 @@ async function verifyAdmin() {
 
 // GET a specific listing
 export async function GET(request: NextRequest, { params }: Props) {
-  if (!params?.id) {
+  if (!params?.listingId) {
     return NextResponse.json(
       { error: 'Missing listing ID' },
       { status: 400 }
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get listing details
     const listing = await prisma.listing.findUnique({
-      where: { id: params.id },
+      where: { id: params.listingId },
       include: {
         user: {
           select: {
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
 // PATCH a specific listing
 export async function PATCH(request: NextRequest, { params }: Props) {
-  if (!params?.id) {
+  if (!params?.listingId) {
     return NextResponse.json(
       { error: 'Missing listing ID' },
       { status: 400 }
@@ -117,7 +117,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     
     // Update the listing
     const updatedListing = await prisma.listing.update({
-      where: { id: params.id },
+      where: { id: params.listingId },
       data: update
     })
 
@@ -133,7 +133,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
 // DELETE a listing
 export async function DELETE(request: NextRequest, { params }: Props) {
-  if (!params?.id) {
+  if (!params?.listingId) {
     return NextResponse.json(
       { error: 'Missing listing ID' },
       { status: 400 }
@@ -152,7 +152,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
 
     // Check if listing exists
     const listing = await prisma.listing.findUnique({
-      where: { id: params.id }
+      where: { id: params.listingId }
     })
 
     if (!listing) {
@@ -164,7 +164,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
 
     // Delete the listing
     await prisma.listing.delete({
-      where: { id: params.id }
+      where: { id: params.listingId }
     })
 
     return NextResponse.json({ success: true })
@@ -175,4 +175,4 @@ export async function DELETE(request: NextRequest, { params }: Props) {
       { status: 500 }
     )
   }
-} 
+}

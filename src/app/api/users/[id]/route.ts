@@ -1,64 +1,65 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import type { CustomSession } from '@/types/session';
+import connectToDatabase from '@/lib/mongodb';
+import { Collection, ObjectId } from 'mongodb';
+
+interface User {
+  _id: ObjectId;
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  image: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface Message {
+  _id: ObjectId;
+  id: string;
+  content: string;
+  senderId: string;
+  receiverId: string;
+  createdAt: Date;
+  read: boolean;
+}
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
-
+    const session = await getServerSession(authOptions) as any;
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Get user info
-    const user = await prisma.user.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        name: true,
-        image: true
-      }
-    });
+    const { db } = await connectToDatabase();
+    const usersCollection: Collection<User> = db.collection('users');
+    const messagesCollection: Collection<Message> = db.collection('messages');
 
+    const user = await usersCollection.findOne({ id: params.id });
+    
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return new NextResponse(JSON.stringify({ error: 'User not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Get last message and unread count
-    const [lastMessage, unreadCount] = await Promise.all([
-      prisma.message.findFirst({
-        where: {
-          OR: [
+    // Get latest message and unread count
+    const [latestMessage, unreadCount] = await Promise.all([
+      messagesCollection.findOne(
+        {
+          $or: [
             { senderId: session.user.id, receiverId: params.id },
             { senderId: params.id, receiverId: session.user.id }
           ]
         },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        select: {
-          content: true,
-          createdAt: true,
-          senderId: true
-        }
-      }),
-      prisma.message.count({
-        where: {
-          senderId: params.id,
-          receiverId: session.user.id,
-          read: false
-        }
+        { sort: { createdAt: -1 } }
+      ),
+      messagesCollection.countDocuments({
+        senderId: params.id,
+        receiverId: session.user.id,
+        read: false
       })
     ]);
 
@@ -66,14 +67,12 @@ export async function GET(
       id: user.id,
       name: user.name,
       image: user.image,
-      lastMessage,
+      latestMessage,
       unreadCount
     });
+
   } catch (error) {
-    console.error('Error fetching user:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch user' },
-      { status: 500 }
-    );
+    console.error('[USER_GET]', error);
+    return new NextResponse(JSON.stringify({ error: 'Internal error' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
-} 
+}

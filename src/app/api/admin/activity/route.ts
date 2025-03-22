@@ -1,48 +1,50 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import connectToDatabase from '@/lib/mongodb';
+import { Collection, ObjectId } from 'mongodb';
 
 interface Activity {
+  _id: ObjectId;
   id: string;
+  userId: string | null;
   type: string;
-  description: string;
+  data: {
+    description: string;
+    metadata?: any;
+  };
   createdAt: Date;
+  updatedAt: Date;
 }
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || session.user.role !== 'ADMIN') {
-    return new NextResponse('Unauthorized', { status: 401 });
-  }
-
+export async function GET(request: Request) {
   try {
-    // Fetch recent activities (last 10)
-    const recentActivities = await prisma.activity.findMany({
-      take: 10,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      select: {
-        id: true,
-        type: true,
-        description: true,
-        createdAt: true,
-      },
-    });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
 
-    // Format the activities for the frontend
-    const formattedActivities = recentActivities.map((activity: Activity) => ({
-      id: activity.id,
-      type: activity.type,
-      description: activity.description,
-      timestamp: activity.createdAt.toISOString(),
-    }));
+    const { db } = await connectToDatabase();
+    const usersCollection: Collection = db.collection('users');
+    const activitiesCollection: Collection<Activity> = db.collection('activities');
 
-    return NextResponse.json(formattedActivities);
+    // Check if user is admin
+    const user = await usersCollection.findOne({ id: session.user.id });
+    if (user?.role !== 'ADMIN') {
+      return new NextResponse('Unauthorized', { status: 403 });
+    }
+
+    // Get recent activities
+    const recentActivities = await activitiesCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray();
+
+    return NextResponse.json(recentActivities);
+
   } catch (error) {
-    console.error('Error fetching recent activities:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error('[ADMIN_ACTIVITY]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
-} 
+}

@@ -1,57 +1,57 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
-import { Session } from 'next-auth';
-
-interface CustomSession extends Session {
-  user: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  }
-}
+import { authOptions } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import { User, IUser } from '@/models/User';
+import { Listing, IListing } from '@/models/Listing';
+import mongoose from 'mongoose';
 
 export async function POST(
   request: Request,
   { params }: { params: { listingId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
+    await connectDB();
+    const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const listing = await prisma.listing.findUnique({
-      where: {
-        id: params.listingId,
-      },
-    });
+    // Check if listing exists
+    const listing = await Listing.findById(params.listingId).lean() as IListing & { _id: mongoose.Types.ObjectId } | null;
 
     if (!listing) {
-      return new NextResponse('Listing not found', { status: 404 });
+      return NextResponse.json(
+        { error: 'Listing not found' },
+        { status: 404 }
+      );
     }
 
-    // Add to favorites
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
-      data: {
-        favorites: {
-          connect: {
-            id: params.listingId,
-          },
-        },
-      },
-    });
+    // Add listing to user's favorites
+    const user = await User.findByIdAndUpdate(
+      session.user.id,
+      { $addToSet: { favorites: params.listingId } },
+      { new: true }
+    ).lean() as IUser & { _id: mongoose.Types.ObjectId } | null;
 
-    return new NextResponse('Added to favorites', { status: 200 });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: 'Listing added to favorites' });
   } catch (error) {
     console.error('Error adding to favorites:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to add to favorites' },
+      { status: 500 }
+    );
   }
 }
 
@@ -60,29 +60,36 @@ export async function DELETE(
   { params }: { params: { listingId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
+    await connectDB();
+    const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Remove from favorites
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
-      data: {
-        favorites: {
-          disconnect: {
-            id: params.listingId,
-          },
-        },
-      },
-    });
+    // Remove listing from user's favorites
+    const user = await User.findByIdAndUpdate(
+      session.user.id,
+      { $pull: { favorites: params.listingId } },
+      { new: true }
+    ).lean() as IUser & { _id: mongoose.Types.ObjectId } | null;
 
-    return new NextResponse('Removed from favorites', { status: 200 });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: 'Listing removed from favorites' });
   } catch (error) {
     console.error('Error removing from favorites:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to remove from favorites' },
+      { status: 500 }
+    );
   }
-} 
+}

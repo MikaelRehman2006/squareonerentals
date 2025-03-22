@@ -2,19 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      }
+    domains: [
+      'lh3.googleusercontent.com', 
+      'res.cloudinary.com',
+      'source.unsplash.com',
+      'placehold.co'
     ],
     dangerouslyAllowSVG: true,
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
-  },
 }
 
-module.exports = nextConfig 
+module.exports = nextConfig

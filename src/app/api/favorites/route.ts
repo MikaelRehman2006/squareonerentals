@@ -1,59 +1,55 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
-import { Session } from 'next-auth';
-
-interface CustomSession extends Session {
-  user: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  }
-}
+import { authOptions } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import { User, IUser } from '@/models/User';
+import { Listing, IListing } from '@/models/Listing';
+import mongoose from 'mongoose';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
+    await connectDB();
+    const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const favorites = await prisma.user.findUnique({
-      where: {
-        id: session.user.id,
-      },
-      select: {
-        favorites: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    // Get user with favorites
+    const user = await User.findById(session.user.id)
+      .populate<{ favorites: Array<IListing & { _id: mongoose.Types.ObjectId }> }>({
+        path: 'favorites',
+        select: 'title price images location _id'
+      })
+      .lean() as IUser & { 
+        _id: mongoose.Types.ObjectId;
+        favorites: Array<IListing & { _id: mongoose.Types.ObjectId }>;
+      };
 
-    if (!favorites) {
-      return new NextResponse('User not found', { status: 404 });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    // Parse JSON strings for each listing
-    const parsedFavorites = favorites.favorites.map(listing => ({
-      ...listing,
-      images: JSON.parse(listing.images || '[]'),
-      amenities: JSON.parse(listing.amenities || '[]'),
-      buildingAmenities: JSON.parse(listing.buildingAmenities || '[]')
+    const favorites = user.favorites.map(listing => ({
+      id: listing._id.toString(),
+      title: listing.title,
+      price: listing.price,
+      image: listing.images[0],
+      location: listing.location,
     }));
 
-    return NextResponse.json(parsedFavorites);
+    return NextResponse.json(favorites);
   } catch (error) {
     console.error('Error fetching favorites:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch favorites' },
+      { status: 500 }
+    );
   }
-} 
+}

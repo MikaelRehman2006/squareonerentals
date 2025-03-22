@@ -1,4 +1,25 @@
-import { prisma } from './prisma';
+import { Collection, ObjectId } from 'mongodb';
+import connectToDatabase from './mongodb';
+
+interface Activity {
+  _id: ObjectId;
+  id: string;
+  userId: string | null;
+  type: string;
+  data: {
+    description: string;
+    metadata?: ActivityMetadata;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ActivityMetadata {
+  userId?: string;
+  listingId?: string;
+  reportId?: string;
+  [key: string]: any;
+}
 
 export type ActivityType = 
   | 'USER_CREATED'
@@ -9,28 +30,32 @@ export type ActivityType =
   | 'REPORT_CREATED'
   | 'REPORT_RESOLVED';
 
-interface ActivityMetadata {
-  userId?: string;
-  listingId?: string;
-  reportId?: string;
-  [key: string]: any;
-}
-
 export async function logActivity(
   type: ActivityType,
   description: string,
   metadata?: ActivityMetadata
 ) {
   try {
-    await prisma.activity.create({
+    const { db } = await connectToDatabase();
+    const activitiesCollection: Collection<Activity> = db.collection('activities');
+
+    const activity: Activity = {
+      _id: new ObjectId(),
+      id: new ObjectId().toString(),
+      userId: metadata?.userId || null,
+      type,
       data: {
-        type,
         description,
-        metadata: metadata ? JSON.stringify(metadata) : null,
+        metadata,
       },
-    });
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    await activitiesCollection.insertOne(activity);
+
   } catch (error) {
-    console.error('Error logging activity:', error);
-    // Don't throw the error to prevent disrupting the main flow
+    console.error('[LOG_ACTIVITY]', error);
+    // Don't throw error to prevent disrupting main flow
   }
-} 
+}

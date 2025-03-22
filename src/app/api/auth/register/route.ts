@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
+import connectDB from '@/lib/mongodb';
+import { User } from '@/models/User';
 
 export async function POST(request: Request) {
   try {
+    await connectDB();
     const { name, email, password } = await request.json();
 
+    // Validate input
     if (!name || !email || !password) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -14,13 +17,10 @@ export async function POST(request: Request) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { error: 'Email already registered' },
         { status: 400 }
       );
     }
@@ -29,23 +29,26 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        hashedPassword,
-      },
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: 'USER',
+      emailVerified: null,
     });
 
-    return NextResponse.json(
-      { message: 'User created successfully' },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+      }
+    });
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(
-      { error: 'Error creating user' },
+      { error: 'Failed to register user' },
       { status: 500 }
     );
   }
-} 
+}

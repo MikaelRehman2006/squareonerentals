@@ -23,6 +23,8 @@ export default function Navbar() {
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Listings', href: '/listings' },
+    { name: 'Submit Listing', href: '/submit' },
+    { name: 'Dashboard', href: '/dashboard' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ];

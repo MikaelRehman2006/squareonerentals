@@ -14,6 +14,9 @@ interface FilterState {
   bathrooms: number | null;
   propertyType: string | null;
   amenities: string[];
+  features: string[];
+  utilities: string[];
+  showAdditionalOptions: boolean;
 }
 
 export default function ListingsPage() {
@@ -93,22 +96,36 @@ export default function ListingsPage() {
         return false;
       }
 
-      // Filter by amenities
-      if (filters.amenities.length > 0) {
-        const listingAmenities = Array.isArray(listing.amenities) 
-          ? listing.amenities 
-          : typeof listing.amenities === 'string' 
-            ? JSON.parse(listing.amenities || '[]') 
+      // Helper function to check array filters
+      const checkArrayFilter = (filterArray: string[], listingArray: any) => {
+        if (filterArray.length === 0) return true;
+        
+        const normalizedListingArray = Array.isArray(listingArray)
+          ? listingArray
+          : typeof listingArray === 'string'
+            ? JSON.parse(listingArray || '[]')
             : [];
-        
-        // Check if any selected amenities match the listing
-        const hasAmenities = filters.amenities.some(amenity => 
-          listingAmenities.some((a: string) => a.toLowerCase().includes(amenity.toLowerCase()))
+
+        return filterArray.some(item =>
+          normalizedListingArray.some((listingItem: string) =>
+            listingItem.toLowerCase().includes(item.toLowerCase())
+          )
         );
-        
-        if (!hasAmenities) {
-          return false;
-        }
+      };
+
+      // Filter by amenities
+      if (!checkArrayFilter(filters.amenities, listing.amenities)) {
+        return false;
+      }
+
+      // Filter by features
+      if (!checkArrayFilter(filters.features, listing.features)) {
+        return false;
+      }
+
+      // Filter by utilities
+      if (!checkArrayFilter(filters.utilities, listing.utilities)) {
+        return false;
       }
 
       return true;
@@ -127,7 +144,7 @@ export default function ListingsPage() {
   const featuredListings = listings.filter(listing => listing.featured);
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Featured Listings Section */}
       {featuredListings.length > 0 && (
         <div className="mb-12">
@@ -172,13 +189,11 @@ export default function ListingsPage() {
         </div>
       )}
 
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Listings</h1>
-        <p className="text-gray-600">Browse through our collection of verified rental properties in Mississauga.</p>
-      </div>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Available Listings</h1>
+      <p className="text-lg text-gray-600 mb-8">Browse through our collection of verified rental properties.</p>
       
       <div className="flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-1/4">
+        <div className="lg:w-1/3 xl:w-1/4">
           <ListingFilters onFilterChange={handleFilterChange} />
         </div>
         

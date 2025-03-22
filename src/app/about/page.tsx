@@ -10,9 +10,9 @@ export default function AboutPage() {
       </div>
 
       {/* Hero Section */}
-      <div className="relative w-full h-96 mb-16 rounded-xl overflow-hidden">
+      <div className="relative h-[400px] mb-16 rounded-xl overflow-hidden">
         <Image
-          src="https://source.unsplash.com/featured/?mississauga,skyline"
+          src="/images/Mississauga skyline 2.jpg"
           alt="Mississauga Skyline"
           fill
           className="object-cover"
@@ -50,8 +50,8 @@ export default function AboutPage() {
           </div>
           <div className="relative h-80 rounded-xl overflow-hidden">
             <Image
-              src="https://source.unsplash.com/featured/?apartment,building"
-              alt="Modern apartment building"
+              src="/images/Modern Building.jpg"
+              alt="Modern Apartment Building"
               fill
               className="object-cover"
             />
@@ -170,4 +170,4 @@ export default function AboutPage() {
       </div>
     </div>
   );
-} 
+}

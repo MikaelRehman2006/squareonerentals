@@ -1,57 +1,78 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import connectToDatabase from '@/lib/mongodb';
+import { Collection, ObjectId } from 'mongodb';
+import { z } from 'zod';
+
+const resetPasswordSchema = z.object({
+  token: z.string(),
+  password: z.string().min(8),
+});
+
+interface PasswordReset {
+  _id: ObjectId;
+  id: string;
+  token: string;
+  userId: string;
+  used: boolean;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface User {
+  _id: ObjectId;
+  id: string;
+  email: string;
+  password: string;
+}
 
 export async function POST(request: Request) {
   try {
-    const { token, password } = await request.json();
+    const json = await request.json();
+    const body = resetPasswordSchema.parse(json);
+
+    const { db } = await connectToDatabase();
+    const passwordResetsCollection: Collection<PasswordReset> = db.collection('password_resets');
+    const usersCollection: Collection<User> = db.collection('users');
 
     // Find valid reset token
-    const resetToken = await prisma.passwordReset.findFirst({
-      where: {
-        token,
-        expires: {
-          gt: new Date(),
-        },
-        used: false,
-      },
-      include: {
-        user: true,
-      },
+    const resetToken = await passwordResetsCollection.findOne({
+      token: body.token,
+      used: false,
+      expiresAt: { $gt: new Date() }
     });
 
     if (!resetToken) {
-      return NextResponse.json(
-        { error: 'Invalid or expired reset token' },
-        { status: 400 }
-      );
+      return new NextResponse('Invalid or expired token', { status: 400 });
     }
 
     // Hash new password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(body.password, 12);
 
-    // Update user's password
-    await prisma.user.update({
-      where: { id: resetToken.userId },
-      data: {
-        hashedPassword,
-      },
-    });
+    // Update user password
+    await usersCollection.updateOne(
+      { id: resetToken.userId },
+      { $set: { password: hashedPassword } }
+    );
 
     // Mark token as used
-    await prisma.passwordReset.update({
-      where: { id: resetToken.id },
-      data: { used: true },
-    });
+    await passwordResetsCollection.updateOne(
+      { _id: resetToken._id },
+      { $set: { used: true, updatedAt: new Date() } }
+    );
 
     return NextResponse.json({
-      message: 'Password reset successfully',
+      success: true,
+      message: 'Password reset successfully'
     });
+
   } catch (error) {
-    console.error('Reset password error:', error);
-    return NextResponse.json(
-      { error: 'Failed to reset password' },
-      { status: 500 }
-    );
+    if (error instanceof z.ZodError) {
+      return new NextResponse('Invalid request data', { status: 400 });
+    }
+
+    console.error('[RESET_PASSWORD]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
-} 
+}

@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import type { CustomSession } from '@/types/session';
+import connectDB from '@/lib/mongodb';
+import { Notification } from '@/models/Notification';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
+    await connectDB();
+    const session = await getServerSession(authOptions) as any;
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -15,14 +16,11 @@ export async function GET() {
       );
     }
 
-    const notifications = await prisma.notification.findMany({
-      where: {
-        userId: session.user.id
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const notifications = await Notification.find({ 
+      userId: session.user.id 
+    })
+    .sort({ createdAt: -1 })
+    .lean();
 
     return NextResponse.json(notifications);
   } catch (error) {
@@ -32,4 +30,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-} 
+}

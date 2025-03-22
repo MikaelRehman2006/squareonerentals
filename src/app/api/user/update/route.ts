@@ -1,95 +1,103 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/lib/auth';
+import connectDB from '@/lib/mongodb';
+import { User, IUser } from '@/models/User';
 import bcrypt from 'bcryptjs';
-import { Session } from 'next-auth';
-
-interface CustomSession extends Session {
-  user: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  }
-}
+import mongoose from 'mongoose';
 
 export async function PATCH(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as CustomSession | null;
+    await connectDB();
+    const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const data = await request.json();
-    const { name, email, currentPassword, newPassword, image } = data;
+    const body = await request.json();
+    const { name, email, currentPassword, newPassword } = body;
 
-    // Get the current user
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    });
+    // Get current user
+    const user = await User.findById(session.user.id).lean() as IUser & { _id: mongoose.Types.ObjectId };
 
     if (!user) {
-      return new NextResponse('User not found', { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
     // Prepare update data
-    const updateData: any = {};
-
-    // Handle profile picture update
-    if (image) {
-      updateData.image = image;
-    }
-
-    // Handle name update
+    const updateData: Partial<{
+      name: string;
+      email: string;
+      password: string;
+    }> = {};
+    
+    // Update name if provided
     if (name) {
       updateData.name = name;
     }
 
-    // Handle email update
+    // Update email if provided
     if (email && email !== user.email) {
       // Check if email is already taken
-      const existingUser = await prisma.user.findUnique({
-        where: { email },
-      });
-
+      const existingUser = await User.findOne({ email }).lean() as IUser | null;
       if (existingUser) {
-        return new NextResponse('Email already in use', { status: 400 });
+        return NextResponse.json(
+          { error: 'Email already taken' },
+          { status: 400 }
+        );
       }
-
       updateData.email = email;
     }
 
-    // Handle password update
-    if (newPassword && currentPassword) {
+    // Update password if provided
+    if (currentPassword && newPassword && user.password) {
       // Verify current password
-      if (!user.hashedPassword) {
-        return new NextResponse('Cannot update password for social login', { status: 400 });
-      }
-
-      const isValidPassword = await bcrypt.compare(currentPassword, user.hashedPassword);
-      if (!isValidPassword) {
-        return new NextResponse('Current password is incorrect', { status: 400 });
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        return NextResponse.json(
+          { error: 'Current password is incorrect' },
+          { status: 400 }
+        );
       }
 
       // Hash new password
-      updateData.hashedPassword = await bcrypt.hash(newPassword, 12);
+      updateData.password = await bcrypt.hash(newPassword, 12);
     }
 
     // Update user
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: updateData,
-    });
+    const updatedUser = await User.findByIdAndUpdate(
+      session.user.id,
+      { $set: updateData },
+      { new: true }
+    ).lean() as IUser & { _id: mongoose.Types.ObjectId };
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: 'Failed to update user' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
-      name: updatedUser.name,
-      email: updatedUser.email,
-      image: updatedUser.image,
+      user: {
+        id: updatedUser._id.toString(),
+        name: updatedUser.name,
+        email: updatedUser.email,
+        image: updatedUser.image,
+      }
     });
   } catch (error) {
-    console.error('Update user error:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error('Error updating user:', error);
+    return NextResponse.json(
+      { error: 'Failed to update user' },
+      { status: 500 }
+    );
   }
-} 
+}
