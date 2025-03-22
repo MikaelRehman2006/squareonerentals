@@ -19,10 +19,11 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
+    const userId = session.user.id;
     const { name, email, currentPassword, newPassword } = body;
 
     // Get current user
-    const user = await User.findById(session.user.id).lean() as IUser & { _id: mongoose.Types.ObjectId };
+    const user = await User.findById(userId).lean() as IUser & { _id: mongoose.Types.ObjectId };
 
     if (!user) {
       return NextResponse.json(
@@ -73,7 +74,7 @@ export async function PATCH(request: Request) {
 
     // Update user
     const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
+      userId,
       { $set: updateData },
       { new: true }
     ).lean() as IUser & { _id: mongoose.Types.ObjectId };

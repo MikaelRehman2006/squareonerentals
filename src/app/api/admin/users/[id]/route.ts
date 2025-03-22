@@ -6,7 +6,7 @@ import { logActivity } from '@/lib/activity';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { userId: string } }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -28,7 +28,7 @@ export async function PATCH(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id: params.userId },
       data: { role }
     });
 
@@ -36,7 +36,7 @@ export async function PATCH(
     await logActivity({
       action: 'UPDATE_USER_ROLE',
       userId: session.user.id,
-      targetId: params.id,
+      targetId: params.userId,
       details: `Updated user role to ${role}`,
       timestamp: new Date(),
       metadata: { newRole: role }
@@ -54,7 +54,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { userId: string } }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -67,17 +67,17 @@ export async function DELETE(
 
   try {
     await prisma.user.delete({
-      where: { id: params.id }
+      where: { id: params.userId }
     });
 
     // Log the activity
     await logActivity({
       action: 'DELETE_USER',
       userId: session.user.id,
-      targetId: params.id,
+      targetId: params.userId,
       details: 'Deleted user',
       timestamp: new Date(),
-      metadata: { deletedUserId: params.id }
+      metadata: { deletedUserId: params.userId }
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });

@@ -7,7 +7,7 @@ import { Listing, IListing } from '@/models/Listing';
 
 export async function GET(
   request: NextRequest,
-  { params: { id } }: { params: { id: string } }
+  { params: { userId } }: { params: { userId: string } }
 ) {
   try {
     await connectDB();
@@ -59,7 +59,7 @@ export async function GET(
 
     return NextResponse.json(formattedListings);
   } catch (error) {
-    console.error('Error in GET /api/listings/user/[id]:', error);
+    console.error('Error in GET /api/listings/user/[userId]:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch user listings' },
       { status: 500 }
