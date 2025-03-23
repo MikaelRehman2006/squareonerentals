@@ -1,1 +1,12 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/listings/[listingId]/route": "app/api/listings/[listingId]/route.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/listings/route": "app/api/listings/route.js",
+  "/page": "app/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/api/listings/me/route": "app/api/listings/me/route.js",
+  "/auth/signin/page": "app/auth/signin/page.js",
+  "/listings/[listingId]/edit/page": "app/listings/[listingId]/edit/page.js",
+  "/listings/[listingId]/page": "app/listings/[listingId]/page.js"
+}

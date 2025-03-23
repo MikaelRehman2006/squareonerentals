@@ -50,8 +50,9 @@ export default function DashboardPage() {
 
     const fetchListings = async () => {
       try {
-        // First get the user's listings
-        const response = await fetch('/api/listings/me');
+        const response = await fetch('/api/listings/me', {
+          credentials: 'include'
+        });
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error('No listings found');
@@ -87,11 +88,17 @@ export default function DashboardPage() {
       try {
         const response = await fetch(`/api/listings/${id}`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
         });
 
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error('Listing not found');
+          } else if (response.status === 401) {
+            throw new Error('Unauthorized');
           } else {
             const errorData: Error = await response.json();
             throw new Error(errorData.error || 'Failed to delete listing');
