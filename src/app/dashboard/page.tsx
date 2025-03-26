@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { connectDB } from '@/lib/mongodb';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,14 +37,14 @@ interface Error {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!session) {
+    if (status === 'unauthenticated') {
       router.push('/auth/signin');
       return;
     }
@@ -56,12 +57,15 @@ export default function DashboardPage() {
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error('No listings found');
+          } else if (response.status === 401) {
+            router.push('/auth/signin');
+            return;
           } else {
             const errorData: Error = await response.json();
             throw new Error(errorData.error || 'Failed to fetch listings');
           }
         }
-        const data: Listing[] = await response.json();
+        const data = await response.json();
         setListings(data);
       } catch (error) {
         if (error instanceof Error) {
@@ -77,7 +81,7 @@ export default function DashboardPage() {
     };
 
     fetchListings();
-  }, [session, router]);
+  }, [router, status]);
 
   const handleEditListing = (id: string) => {
     router.push(`/listings/${id}/edit`);
@@ -98,7 +102,8 @@ export default function DashboardPage() {
           if (response.status === 404) {
             throw new Error('Listing not found');
           } else if (response.status === 401) {
-            throw new Error('Unauthorized');
+            router.push('/auth/signin');
+            return;
           } else {
             const errorData: Error = await response.json();
             throw new Error(errorData.error || 'Failed to delete listing');
@@ -119,91 +124,121 @@ export default function DashboardPage() {
     }
   };
 
-  if (!session) {
-    return null;
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <span className="ml-2">Loading your listings...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-700">Error</CardTitle>
+            <CardDescription className="text-red-600">{error.error}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => router.push('/')}
+              variant="outline"
+              className="mt-4"
+            >
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <main className="container mx-auto py-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>My Listings</CardTitle>
-          <CardDescription>
-            Manage your property listings
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <Button onClick={() => router.push('/submit')}>
-              Add New Listing
-            </Button>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">My Listings</h1>
+          <p className="text-gray-600 mt-2">Manage your rental listings</p>
+        </div>
+        <Button
+          onClick={() => router.push('/submit')}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          Add New Listing
+        </Button>
+      </div>
 
-          {isLoading ? (
-            <div className="text-center py-4">Loading...</div>
-          ) : error ? (
-            <div className="text-center py-4 text-gray-500">
-              {error.error}
-            </div>
-          ) : listings.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
-              No listings found. Create your first listing!
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+      {listings.length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-gray-600 mb-4">You haven't created any listings yet.</p>
+            <Button
+              onClick={() => router.push('/submit')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Create Your First Listing
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {listings.map((listing) => (
+                <TableRow key={listing.id}>
+                  <TableCell>{listing.title}</TableCell>
+                  <TableCell>${listing.price.toLocaleString()}</TableCell>
+                  <TableCell>{listing.location}</TableCell>
+                  <TableCell>{new Date(listing.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${listing.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
+                      {listing.status === 'ACTIVE' ? 'Active' : 'Archived'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditListing(listing.id)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteListing(listing.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {listings.map((listing) => (
-                  <TableRow key={listing.id}>
-                    <TableCell>{listing.title}</TableCell>
-                    <TableCell>${listing.price.toLocaleString()}/month</TableCell>
-                    <TableCell>{listing.location}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        listing.status === 'ACTIVE'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {listing.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(listing.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditListing(listing.id)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteListing(listing.id)}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </main>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+    </div>
   );
 }

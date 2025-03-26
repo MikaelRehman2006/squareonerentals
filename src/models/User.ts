@@ -1,6 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
-export interface IUser {
+export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
   email: string;
@@ -13,14 +13,14 @@ export interface IUser {
   updatedAt: Date;
 }
 
-const userSchema = new mongoose.Schema<IUser>({
+const userSchema: Schema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   emailVerified: { type: Date },
   image: { type: String },
   password: { type: String },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
+  favorites: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
 }, {
   timestamps: true,
 });

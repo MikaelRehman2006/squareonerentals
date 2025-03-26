@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import { MuiThemeProvider } from '@/components/mui-theme-provider';
 import { Toaster } from 'sonner';
 import AuthProvider from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
@@ -23,16 +24,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
-          <AuthProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                {children}
-              </main>
-              <Footer />
-            </div>
-            <Toaster />
-          </AuthProvider>
+          <MuiThemeProvider>
+            <AuthProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-grow">
+                  {children}
+                </main>
+                <Footer />
+              </div>
+              <Toaster />
+            </AuthProvider>
+          </MuiThemeProvider>
         </ThemeProvider>
       </body>
     </html>

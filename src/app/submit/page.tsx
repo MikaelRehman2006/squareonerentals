@@ -39,7 +39,8 @@ const listingSchema = z.object({
   buildingAmenities: z.array(z.string()).default([]),
   propertyType: z.string().min(1, 'Property type is required'),
   listingType: z.string().min(1, 'Listing type is required'),
-  availableFrom: z.date(),
+  leaseType: z.string().min(1, 'Lease type is required'),
+  availableDate: z.string().min(1, 'Available date is required'),
   parking: z.string().default('None'),
   featured: z.boolean().default(false),
   status: z.string().default('AVAILABLE'),
@@ -51,14 +52,28 @@ const listingSchema = z.object({
     furnished: z.boolean().default(false),
     smartHomeFeatures: z.boolean().default(false),
     walkInCloset: z.boolean().default(false),
-  }).default({}),
+  }).default({
+    wifi: false,
+    airConditioning: false,
+    laundry: false,
+    heating: false,
+    furnished: false,
+    smartHomeFeatures: false,
+    walkInCloset: false,
+  }),
   utilities: z.object({
     electricity: z.boolean().default(false),
     gas: z.boolean().default(false),
     water: z.boolean().default(false),
     internet: z.boolean().default(false),
     trashCollection: z.boolean().default(false),
-  }).default({}),
+  }).default({
+    electricity: false,
+    gas: false,
+    water: false,
+    internet: false,
+    trashCollection: false,
+  }),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
@@ -128,12 +143,27 @@ export default function SubmitListingPage() {
       buildingAmenities: [],
       propertyType: 'APARTMENT',
       listingType: 'LONG_TERM',
-      availableFrom: new Date(),
+      leaseType: '',
+      availableDate: '',
       parking: 'None',
       featured: false,
       status: 'AVAILABLE',
-      features: {},
-      utilities: {},
+      features: {
+        wifi: false,
+        airConditioning: false,
+        laundry: false,
+        heating: false,
+        furnished: false,
+        smartHomeFeatures: false,
+        walkInCloset: false,
+      },
+      utilities: {
+        electricity: false,
+        gas: false,
+        water: false,
+        internet: false,
+        trashCollection: false,
+      },
     },
   });
 
@@ -162,7 +192,23 @@ export default function SubmitListingPage() {
       const newFeatures = prev.includes(feature)
         ? prev.filter(a => a !== feature)
         : [...prev, feature];
-      form.setValue('features', newFeatures.reduce((acc, curr) => ({ ...acc, [curr]: true }), {}));
+      
+      // Convert feature names to object keys
+      const featureObj = {
+        wifi: false,
+        airConditioning: false,
+        laundry: false,
+        heating: false,
+        furnished: false,
+        smartHomeFeatures: false,
+        walkInCloset: false,
+        ...newFeatures.reduce((acc, curr) => ({
+          ...acc,
+          [curr.toLowerCase().replace(/\s+/g, '')]: true
+        }), {})
+      };
+      
+      form.setValue('features', featureObj);
       return newFeatures;
     });
   };
@@ -172,17 +218,47 @@ export default function SubmitListingPage() {
       const newUtilities = prev.includes(utility)
         ? prev.filter(a => a !== utility)
         : [...prev, utility];
-      form.setValue('utilities', newUtilities.reduce((acc, curr) => ({ ...acc, [curr]: true }), {}));
+      
+      // Convert utility names to object keys
+      const utilityObj = {
+        electricity: false,
+        gas: false,
+        water: false,
+        internet: false,
+        trashCollection: false,
+        ...newUtilities.reduce((acc, curr) => ({
+          ...acc,
+          [curr.toLowerCase().replace(/\s+/g, '')]: true
+        }), {})
+      };
+      
+      form.setValue('utilities', utilityObj);
       return newUtilities;
     });
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
     try {
       toast.loading('Uploading images...');
+      
+      // Check file size before upload (5MB limit)
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      for (let i = 0; i < files.length; i++) {
+        if (files[i].size > MAX_FILE_SIZE) {
+          toast.dismiss();
+          toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
+          return;
+        }
+        
+        if (!files[i].type.startsWith('image/')) {
+          toast.dismiss();
+          toast.error(`File ${files[i].name} is not an image`);
+          return;
+        }
+      }
 
       const uploadPromises = Array.from(files).map(async (file) => {
         const formData = new FormData();
@@ -194,11 +270,13 @@ export default function SubmitListingPage() {
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Upload failed');
+          const errorData = await response.json();
+          console.error('Upload error:', errorData);
+          throw new Error(errorData.error || 'Upload failed');
         }
 
         const data = await response.json();
+        console.log('Upload success:', data);
         return data.secure_url;
       });
 
@@ -254,15 +332,10 @@ export default function SubmitListingPage() {
       setSubmitting(true);
       const loadingToast = toast.loading('Submitting your listing...');
 
-      // Format the availability date to ISO DateTime
-      const formattedDate = new Date(data.availableFrom);
-      formattedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
-
       // Format the data
       const formattedData = {
         ...data,
-        availableFrom: formattedDate.toISOString(),
-        images: JSON.stringify(uploadedImages),
+        images: uploadedImages,
         amenities: JSON.stringify(selectedAmenities),
         buildingAmenities: JSON.stringify(data.buildingAmenities),
         squareFeet: Number(data.squareFeet),
@@ -292,7 +365,11 @@ export default function SubmitListingPage() {
 
       toast.dismiss(loadingToast);
       toast.success('Listing submitted successfully!');
-      router.push(`/listings/${result.id}`);
+      if (result.id) {
+        router.push(`/listings/${result.id}`);
+      } else {
+        router.push('/dashboard'); // Fallback if no ID
+      }
       
     } catch (error) {
       console.error('Submission error:', error);
@@ -584,16 +661,41 @@ export default function SubmitListingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
-                    name="availableFrom"
+                    name="leaseType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Available From</FormLabel>
+                        <FormLabel className="text-black dark:text-white">Lease Type</FormLabel>
                         <FormControl>
-                          <Input
-                            type="date"
-                            {...field}
-                            value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : ''}
-                            onChange={(e) => field.onChange(new Date(e.target.value))}
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="shadow-sm">
+                                <SelectValue placeholder="Select lease type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
+                              <SelectItem value="MONTH_TO_MONTH">Month to Month</SelectItem>
+                              <SelectItem value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
+                              <SelectItem value="OTHER">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="availableDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-black dark:text-white">Available Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            className="shadow-sm" 
                           />
                         </FormControl>
                         <FormMessage />

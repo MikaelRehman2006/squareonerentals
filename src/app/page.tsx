@@ -17,7 +17,7 @@ export default function Home() {
         const response = await fetch('/api/listings?featured=true');
         if (response.ok) {
           const data = await response.json();
-          setFeaturedListings(data);
+          setFeaturedListings(data.listings);
         }
       } catch (error) {
         console.error('Error fetching featured listings:', error);
@@ -53,18 +53,18 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 text-center max-w-3xl mx-auto px-6">
-          <h1 className="text-6xl font-extrabold tracking-tight mb-5">Square One Rentals</h1>
+          <h1 className="text-6xl font-extrabold tracking-tight mb-5 text-white">Square One Rentals</h1>
           <p className="text-lg font-light opacity-90 mb-8">
             Find your perfect rental in the heart of Mississauga.
           </p>
           <div className="flex gap-5 justify-center">
             <Link href="/listings">
-              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
                 Browse Listings
               </Button>
             </Link>
             <Link href="/submit">
-              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
                 Submit Listing
               </Button>
             </Link>
@@ -75,14 +75,14 @@ export default function Home() {
       {/* Featured Listings Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl font-bold text-gray-900 mb-10 text-center">Featured Listings</h2>
+          <h2 className="text-4xl font-bold mb-10 text-center text-black">Featured Listings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
           <div className="mt-12 text-center">
-            <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+            <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
               <Link href="/listings">View All Listings</Link>
             </Button>
           </div>
@@ -92,15 +92,15 @@ export default function Home() {
       {/* How It Works Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-12">How It Works</h2>
+          <h2 className="text-4xl font-bold mb-12 text-black">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {["Search Listings", "Connect with Landlords", "Secure Your Home"].map((step, index) => (
               <div key={index} className="bg-white p-8 rounded-lg shadow-lg text-center">
-                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-5">
+                <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                   {index + 1}
                 </div>
-                <h3 className="text-2xl font-semibold mb-3">{step}</h3>
-                <p className="text-gray-600">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                <h3 className="text-2xl font-semibold mb-3 text-black">{step}</h3>
+                <p className="text-black">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
               </div>
             ))}
           </div>
@@ -110,13 +110,13 @@ export default function Home() {
       {/* Testimonials Section */}
       <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-12">What Our Users Say</h2>
+          <h2 className="text-4xl font-bold mb-12 text-center text-black">What Our Users Say</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {testimonials.map((testimonial) => (
               <div key={testimonial.id} className="bg-gray-100 p-6 rounded-lg shadow-md">
-                <p className="text-gray-700 italic mb-4">&ldquo;{testimonial.text}&rdquo;</p>
-                <p className="font-bold text-gray-900">{testimonial.author}</p>
-                <p className="text-gray-500 text-sm">{testimonial.role}</p>
+                <p className="text-black italic mb-4">&ldquo;{testimonial.text}&rdquo;</p>
+                <p className="font-bold text-black">{testimonial.author}</p>
+                <p className="text-black">{testimonial.role}</p>
               </div>
             ))}
           </div>
@@ -138,12 +138,12 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/listings">
-              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
                 Browse Listings
               </Button>
             </Link>
             <Link href="/submit">
-              <Button className="px-6 py-3 text-lg bg-black text-gray-900 hover:bg-gray-200 border border-gray-300 rounded-lg">
+              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
                 Submit Listing
               </Button>
             </Link>

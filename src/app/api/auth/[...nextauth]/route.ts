@@ -5,7 +5,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { User, IUser } from '@/models/User';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 
 declare module 'next-auth' {
   interface User {
@@ -40,15 +40,15 @@ export const authOptions: NextAuthOptions = {
 
         await connectDB();
 
-        const user = await User.findOne({ email: credentials.email }).lean() as IUser | null;
+        const user = await User.findOne({ email: credentials.email });
 
-        if (!user || !user.hashedPassword) {
+        if (!user || !user.password) {
           throw new Error('Invalid credentials');
         }
 
         const isCorrectPassword = await bcrypt.compare(
           credentials.password,
-          user.hashedPassword
+          user.password
         );
 
         if (!isCorrectPassword) {
@@ -86,7 +86,7 @@ export const authOptions: NextAuthOptions = {
           await connectDB();
           
           // Check if user exists
-          const existingUser = await User.findOne({ email: user.email }).lean() as IUser | null;
+          const existingUser = await User.findOne({ email: user.email });
           
           if (!existingUser) {
             // Create new user
@@ -108,13 +108,25 @@ export const authOptions: NextAuthOptions = {
       
       return true;
     },
+    async redirect({ url, baseUrl }) {
+      // Fix redirect logic
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
+      }
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      return baseUrl;
+    },
   },
   pages: {
     signIn: '/auth/signin',
+    error: '/auth/error',
   },
   session: {
     strategy: 'jwt',
   },
+  debug: true,
   secret: process.env.NEXTAUTH_SECRET,
 };
 

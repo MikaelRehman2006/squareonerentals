@@ -6,7 +6,16 @@ import { ListingCard } from '@/components/ListingCard';
 import { ListingFilters } from '@/components/ListingFilters';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Grid, List, SlidersHorizontal } from 'lucide-react';
+import { BackgroundPattern } from '@/components/BackgroundPattern';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FilterState {
   priceRange: { min: number; max: number };
@@ -23,49 +32,43 @@ export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scrollPosition, setScrollPosition] = useState(0);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState('newest');
+  const [showFilters, setShowFilters] = useState(true);
+  const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
 
-  const scrollFeatured = (direction: 'left' | 'right') => {
-    const container = document.getElementById('featured-listings');
-    if (container) {
-      const scrollAmount = 300;
-      const newPosition = direction === 'left' 
-        ? scrollPosition - scrollAmount 
-        : scrollPosition + scrollAmount;
-      
-      container.scrollTo({
-        left: newPosition,
-        behavior: 'smooth'
-      });
-      setScrollPosition(newPosition);
-    }
-  };
-
+  // Fetch listings
   useEffect(() => {
     async function fetchListings() {
       try {
         setLoading(true);
-        // Use window.location.origin to get the base URL
-        const baseUrl = window.location.origin;
-        const response = await fetch(`${baseUrl}/api/listings`);
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/listings?t=${timestamp}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch listings');
         }
 
         const data = await response.json();
-        // Sort listings to put featured ones first
-        const sortedListings = [...data].sort((a, b) => {
+        console.log('API Response:', data);
+        
+        // Extract listings array from the response
+        const listingsArray = data.listings || [];
+        
+        // Sort to put featured listings first
+        const sortedListings = [...listingsArray].sort((a, b) => {
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
           return 0;
         });
-        
+
         setListings(sortedListings);
         setFilteredListings(sortedListings);
       } catch (error) {
         console.error('Error fetching listings:', error);
-        toast.error('Failed to load listings. Please try again later.');
+        toast.error('Failed to load listings');
+        setListings([]);
+        setFilteredListings([]);
       } finally {
         setLoading(false);
       }
@@ -74,146 +77,247 @@ export default function ListingsPage() {
     fetchListings();
   }, []);
 
-  const handleFilterChange = (filters: FilterState) => {
-    const filtered = listings.filter(listing => {
-      // Filter by price
-      if (listing.price < filters.priceRange.min || listing.price > filters.priceRange.max) {
-        return false;
-      }
+  // Apply sorting
+  useEffect(() => {
+    if (!Array.isArray(filteredListings)) {
+      return;
+    }
 
-      // Filter by bedrooms
-      if (filters.bedrooms !== null && listing.bedrooms !== filters.bedrooms) {
-        return false;
-      }
+    const listingsToSort = [...filteredListings];
+    let sortedListings = listingsToSort;
 
-      // Filter by bathrooms
-      if (filters.bathrooms !== null && listing.bathrooms !== filters.bathrooms) {
-        return false;
-      }
-
-      // Filter by property type
-      if (filters.propertyType !== null && listing.propertyType !== filters.propertyType) {
-        return false;
-      }
-
-      // Helper function to check array filters
-      const checkArrayFilter = (filterArray: string[], listingArray: any) => {
-        if (filterArray.length === 0) return true;
-        
-        const normalizedListingArray = Array.isArray(listingArray)
-          ? listingArray
-          : typeof listingArray === 'string'
-            ? JSON.parse(listingArray || '[]')
-            : [];
-
-        return filterArray.some(item =>
-          normalizedListingArray.some((listingItem: string) =>
-            listingItem.toLowerCase().includes(item.toLowerCase())
-          )
+    switch (sortBy) {
+      case 'price-asc':
+        sortedListings = listingsToSort.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        sortedListings = listingsToSort.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        sortedListings = listingsToSort.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-      };
+        break;
+      case 'oldest':
+        sortedListings = listingsToSort.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        break;
+      default:
+        // Keep featured listings first by default
+        sortedListings = listingsToSort.sort((a, b) => {
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+    }
 
-      // Filter by amenities
-      if (!checkArrayFilter(filters.amenities, listing.amenities)) {
-        return false;
-      }
+    // Only update if the sort order has actually changed
+    const currentOrder = JSON.stringify(filteredListings.map(l => l.id));
+    const newOrder = JSON.stringify(sortedListings.map(l => l.id));
+    if (currentOrder !== newOrder) {
+      setFilteredListings(sortedListings);
+    }
+  }, [sortBy]);
 
-      // Filter by features
-      if (!checkArrayFilter(filters.features, listing.features)) {
-        return false;
-      }
+  const handleFilterChange = (filters: FilterState) => {
+    if (!Array.isArray(listings)) {
+      console.error('listings is not an array:', listings);
+      return;
+    }
 
-      // Filter by utilities
-      if (!checkArrayFilter(filters.utilities, listing.utilities)) {
-        return false;
-      }
+    let filtered = [...listings];
 
-      return true;
-    });
+    // Apply filters
+    if (filters.priceRange.min > 0) {
+      filtered = filtered.filter(listing => listing.price >= filters.priceRange.min);
+    }
+    if (filters.priceRange.max > 0) {
+      filtered = filtered.filter(listing => listing.price <= filters.priceRange.max);
+    }
+    if (filters.bedrooms) {
+      filtered = filtered.filter(listing => listing.bedrooms >= filters.bedrooms!);
+    }
+    if (filters.bathrooms) {
+      filtered = filtered.filter(listing => listing.bathrooms >= filters.bathrooms!);
+    }
+    if (filters.propertyType) {
+      filtered = filtered.filter(listing => listing.propertyType === filters.propertyType);
+    }
 
-    // Sort filtered listings to keep featured ones first
-    const sortedFiltered = [...filtered].sort((a, b) => {
-      if (a.featured && !b.featured) return -1;
-      if (!a.featured && b.featured) return 1;
-      return 0;
-    });
+    // Update applied filters list
+    const newAppliedFilters: string[] = [];
+    if (filters.priceRange.min > 0) newAppliedFilters.push(`Min $${filters.priceRange.min.toLocaleString()}`);
+    if (filters.priceRange.max > 0) newAppliedFilters.push(`Max $${filters.priceRange.max.toLocaleString()}`);
+    if (filters.bedrooms) newAppliedFilters.push(`${filters.bedrooms}+ beds`);
+    if (filters.bathrooms) newAppliedFilters.push(`${filters.bathrooms}+ baths`);
+    if (filters.propertyType) newAppliedFilters.push(filters.propertyType);
+    filters.amenities.forEach(amenity => newAppliedFilters.push(amenity));
+    filters.features.forEach(feature => newAppliedFilters.push(feature));
+    filters.utilities.forEach(utility => newAppliedFilters.push(utility));
 
+    setAppliedFilters(newAppliedFilters);
+    
+    // Apply current sort to filtered results
+    let sortedFiltered = [...filtered];
+    switch (sortBy) {
+      case 'price-asc':
+        sortedFiltered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        sortedFiltered.sort((a, b) => b.price - a.price);
+        break;
+      case 'newest':
+        sortedFiltered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        break;
+      case 'oldest':
+        sortedFiltered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        break;
+      default:
+        sortedFiltered.sort((a, b) => {
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+    }
+    
     setFilteredListings(sortedFiltered);
   };
 
-  const featuredListings = listings.filter(listing => listing.featured);
+  const removeFilter = (filter: string) => {
+    const newFilters = appliedFilters.filter(f => f !== filter);
+    setAppliedFilters(newFilters);
+    // Re-apply remaining filters
+    // You'll need to implement the logic to reconstruct the filter state
+    // from the remaining filter tags
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Featured Listings Section */}
-      {featuredListings.length > 0 && (
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Listings</h2>
-          <div className="relative">
-            <div
-              id="featured-listings"
-              className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch'
-              }}
-            >
-              {featuredListings.map((listing) => (
-                <div key={listing.id} className="flex-none w-[300px]">
-                  <ListingCard listing={listing} />
-                </div>
-              ))}
-            </div>
-            <div className="absolute top-1/2 -left-4 -translate-y-1/2">
+    <div className="min-h-screen bg-gray-50">
+      <BackgroundPattern />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col space-y-6">
+          {/* Header section */}
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Available Listings</h1>
+            <div className="flex items-center space-x-4">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center space-x-2 border rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
               <Button
                 variant="outline"
-                size="icon"
-                className="rounded-full bg-white shadow-lg"
-                onClick={() => scrollFeatured('left')}
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="md:hidden"
               >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="absolute top-1/2 -right-4 -translate-y-1/2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full bg-white shadow-lg"
-                onClick={() => scrollFeatured('right')}
-              >
-                <ChevronRight className="h-4 w-4" />
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                Filters
               </Button>
             </div>
           </div>
-        </div>
-      )}
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Available Listings</h1>
-      <p className="text-lg text-gray-600 mb-8">Browse through our collection of verified rental properties.</p>
-      
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-1/3 xl:w-1/4">
-          <ListingFilters onFilterChange={handleFilterChange} />
-        </div>
-        
-        <div className="lg:w-3/4">
-          {loading ? (
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="animate-pulse">Loading listings...</div>
-            </div>
-          ) : filteredListings.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No listings match your filters</h3>
-              <p className="text-gray-600">Try adjusting your filter criteria to see more results.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
+          {/* Applied filters */}
+          {appliedFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {appliedFilters.map((filter, index) => (
+                <div
+                  key={index}
+                  className="flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm"
+                >
+                  {filter}
+                  <button
+                    onClick={() => removeFilter(filter)}
+                    className="ml-2 hover:text-primary/70"
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setAppliedFilters([]);
+                  handleFilterChange({
+                    priceRange: { min: 0, max: 0 },
+                    bedrooms: null,
+                    bathrooms: null,
+                    propertyType: null,
+                    amenities: [],
+                    features: [],
+                    utilities: [],
+                    showAdditionalOptions: false,
+                  });
+                }}
+              >
+                Clear all
+              </Button>
             </div>
           )}
+
+          <div className="flex gap-6">
+            {/* Filters sidebar */}
+            <div className={`w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
+              <div className="sticky top-4">
+                <ScrollArea className="h-[calc(100vh-8rem)]">
+                  <ListingFilters onFilterChange={handleFilterChange} />
+                </ScrollArea>
+              </div>
+            </div>
+
+            {/* Listings grid */}
+            <div className="flex-1">
+              {loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <div key={n} className="h-[400px] bg-gray-100 rounded-lg animate-pulse" />
+                  ))}
+                </div>
+              ) : filteredListings.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No listings found matching your criteria.</p>
+                </div>
+              ) : (
+                <div className={
+                  viewMode === 'grid'
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "flex flex-col space-y-6"
+                }>
+                  {filteredListings.map((listing) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={listing}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,153 +1,193 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Users, Home, Flag, TrendingUp } from 'lucide-react';
+  Container,
+  Typography,
+  Box,
+  Tabs,
+  Tab,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
-interface DashboardStats {
-  totalUsers: number;
-  totalListings: number;
-  totalReports: number;
-  activeListings: number;
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
-interface RecentActivity {
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`admin-tabpanel-${index}`}
+      aria-labelledby={`admin-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+interface AdminUser {
   id: string;
-  type: string;
-  description: string;
-  timestamp: string;
+  email: string;
+  role: string;
 }
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalListings: 0,
-    totalReports: 0,
-    activeListings: 0,
-  });
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function AdminPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [tabValue, setTabValue] = useState(0);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
+  // Check if user is authorized
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    if (!session?.user?.email || session.user.email !== 'mikaelr112@gmail.com') {
+      router.push('/');
+    }
+  }, [session, router]);
 
-  const fetchDashboardData = async () => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
+  const handleAddAdmin = async () => {
     try {
-      // Fetch dashboard stats
-      const statsResponse = await fetch('/api/admin/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
-        setStats(statsData);
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: newAdminEmail,
+          role: 'ADMIN',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add admin user');
       }
 
-      // Fetch recent activity
-      const activityResponse = await fetch('/api/admin/activity');
-      if (activityResponse.ok) {
-        const activityData = await activityResponse.json();
-        setRecentActivity(activityData);
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+      setSuccess('Admin user added successfully');
+      setNewAdminEmail('');
+      // Refresh admin users list
+      fetchAdminUsers();
+    } catch (err) {
+      setError('Failed to add admin user');
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  const fetchAdminUsers = async () => {
+    try {
+      const response = await fetch('/api/admin/users');
+      if (!response.ok) throw new Error('Failed to fetch admin users');
+      const data = await response.json();
+      setAdminUsers(data.users);
+    } catch (err) {
+      setError('Failed to fetch admin users');
+    }
+  };
+
+  useEffect(() => {
+    fetchAdminUsers();
+  }, []);
+
+  if (!session?.user?.email || session.user.email !== 'mikaelr112@gmail.com') {
+    return null;
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Overview of your platform's performance and recent activity.
-        </p>
-      </div>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Typography variant="h2" component="h1" gutterBottom>
+        Admin Panel
+      </Typography>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">Registered users</p>
-          </CardContent>
-        </Card>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tab label="Manage Admins" />
+          <Tab label="User Management" />
+          <Tab label="Site Settings" />
+        </Tabs>
+      </Box>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalListings}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.activeListings} active
-            </p>
-          </CardContent>
-        </Card>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reports</CardTitle>
-            <Flag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalReports}</div>
-            <p className="text-xs text-muted-foreground">Pending review</p>
-          </CardContent>
-        </Card>
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Growth</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+12%</div>
-            <p className="text-xs text-muted-foreground">From last month</p>
-          </CardContent>
-        </Card>
-      </div>
+      <TabPanel value={tabValue} index={0}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" gutterBottom>
+            Add New Admin
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              label="Email"
+              value={newAdminEmail}
+              onChange={(e) => setNewAdminEmail(e.target.value)}
+              sx={{ flexGrow: 1 }}
+            />
+            <Button variant="contained" onClick={handleAddAdmin}>
+              Add Admin
+            </Button>
+          </Box>
+        </Box>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentActivity.map((activity) => (
-                <TableRow key={activity.id}>
-                  <TableCell className="font-medium">{activity.type}</TableCell>
-                  <TableCell>{activity.description}</TableCell>
-                  <TableCell>{activity.timestamp}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+        <Typography variant="h6" gutterBottom>
+          Current Admins
+        </Typography>
+        <List>
+          {adminUsers.map((user) => (
+            <ListItem key={user.id}>
+              <ListItemText primary={user.email} secondary={`Role: ${user.role}`} />
+              <ListItemSecondaryAction>
+                <IconButton edge="end" aria-label="edit">
+                  <EditIcon />
+                </IconButton>
+                <IconButton edge="end" aria-label="delete">
+                  <DeleteIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
+        </List>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={1}>
+        <Typography variant="h6">User Management Coming Soon</Typography>
+      </TabPanel>
+
+      <TabPanel value={tabValue} index={2}>
+        <Typography variant="h6">Site Settings Coming Soon</Typography>
+      </TabPanel>
+    </Container>
   );
-} 
+}

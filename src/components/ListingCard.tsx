@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Listing } from '@/types/listing';
 import FavoriteButton from './FavoriteButton';
 import ReportButton from './ReportButton';
+import { Button } from './ui/button';
+import { Eye, MapPin, Bed, Bath, Square, Tag } from 'lucide-react';
+import { useState } from 'react';
 
 interface ListingCardProps {
   listing: Listing;
@@ -12,6 +15,8 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, isFavorited = false }: ListingCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  
   // Default image if none is provided or if the first image is invalid
   const defaultImage = 'https://placehold.co/800x600/e2e8f0/1e293b?text=No+Image+Available';
 
@@ -20,117 +25,111 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
     if (!value) return [];
     if (Array.isArray(value)) return value;
     try {
-      // First try parsing as JSON
       const parsed = JSON.parse(value);
       return Array.isArray(parsed) ? parsed : [parsed];
     } catch {
-      // If JSON parsing fails and it's a string, try comma splitting
       return typeof value === 'string' 
         ? value.split(',').filter(Boolean).map(item => item.trim())
         : [];
     }
   };
 
-  // Parse images, amenities, features, and utilities from strings to arrays
+  // Parse arrays and get first valid image
   const images = parseStringToArray(listing.images);
   const amenities = parseStringToArray(listing.amenities);
   const features = parseStringToArray(listing.features);
   const utilities = parseStringToArray(listing.utilities);
-  
-  // Get the first valid image URL or use default
   const imageUrl = images.length > 0 && images[0] && images[0].startsWith('http') 
     ? images[0] 
     : defaultImage;
 
-  // Get key highlights to show (prioritize certain amenities and features)
-  const getHighlights = () => {
-    const highlights = [];
-    
-    // Check for key amenities
-    if (amenities.includes('Parking')) highlights.push('Parking');
-    if (amenities.includes('Pet-friendly')) highlights.push('Pet-friendly');
-    if (amenities.includes('Gym')) highlights.push('Gym');
-    
-    // Check for key features
-    if (features.includes('In-unit Laundry')) highlights.push('In-unit Laundry');
-    if (features.includes('Furnished')) highlights.push('Furnished');
-    
-    // Check for utilities included
-    if (utilities.length > 0) highlights.push('Utilities Included');
-    
-    // Return up to 3 highlights
-    return highlights.slice(0, 3);
-  };
+  // Format price with commas
+  const formattedPrice = listing.price.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0
+  });
 
   return (
-    <Link href={`/listings/${listing.id}`} className="block">
-      <div className="bg-white rounded-lg overflow-hidden shadow-lg transition hover:shadow-xl">
-        <div className="relative h-48">
-          <Image
-            src={imageUrl}
-            alt={listing.title}
-            fill
-            className="object-cover"
-            onError={() => {
-              const imgElement = document.querySelector(`[alt="${listing.title}"]`) as HTMLImageElement;
-              if (imgElement) {
-                imgElement.src = defaultImage;
-              }
-            }}
+    <div
+      className="group relative bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <Image
+          src={imageUrl}
+          alt={listing.title}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-4 right-4 flex gap-2">
+          <FavoriteButton 
+            listingId={listing.id}
+            isFavorited={isFavorited}
+            className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
           />
-          <div className="absolute top-2 right-2 z-10 flex space-x-2">
-            <ReportButton
-              type="LISTING"
-              targetId={listing.id}
-              className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
-            />
-            <FavoriteButton
-              listingId={listing.id}
-              isFavorited={isFavorited}
-              className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
-            />
-          </div>
-          
-          {listing.featured && (
-            <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 text-xs font-bold rounded-md z-10">
-              Featured
-            </div>
-          )}
+          <ReportButton
+            type="LISTING"
+            targetId={listing.id}
+            className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
+          />
         </div>
-        <div className="p-4">
-          <h3 className="text-xl font-semibold mb-2">{listing.title}</h3>
-          <p className="text-gray-600 mb-2">{listing.location}</p>
-          <div className="flex justify-between items-center">
-            <p className="text-blue-600 font-bold">${listing.price.toLocaleString()}/month</p>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <span>{listing.bedrooms} bed</span>
-              <span>•</span>
-              <span>{listing.bathrooms} bath</span>
-              <span>•</span>
-              <span>{listing.squareFeet?.toLocaleString() || 0} ft²</span>
-            </div>
-          </div>
-          <p className="mt-2 text-gray-600 line-clamp-2">{listing.description}</p>
-          
-          {/* Property Highlights */}
-          {getHighlights().length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {getHighlights().map((highlight, index) => (
-                <span 
-                  key={index}
-                  className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
-                >
-                  {highlight}
-                </span>
-              ))}
-            </div>
-          )}
-          <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
-            <span>{listing.propertyType}</span>
-            <span>{listing.listingType}</span>
-          </div>
+        <div className="absolute bottom-4 left-4 right-4 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+          <Link href={`/listings/${listing.id}`}>
+            <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
+              <Eye className="w-4 h-4 mr-2" />
+              View Details
+            </Button>
+          </Link>
         </div>
       </div>
-    </Link>
+
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-semibold line-clamp-1">{listing.title}</h3>
+          <p className="text-lg font-bold text-primary">{formattedPrice}</p>
+        </div>
+
+        <div className="flex items-center text-gray-600 mb-3">
+          <MapPin className="w-4 h-4 mr-1" />
+          <p className="text-sm line-clamp-1">{listing.location}</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="flex items-center text-gray-600">
+            <Bed className="w-4 h-4 mr-1" />
+            <span className="text-sm">{listing.bedrooms} Bed</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Bath className="w-4 h-4 mr-1" />
+            <span className="text-sm">{listing.bathrooms} Bath</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Square className="w-4 h-4 mr-1" />
+            <span className="text-sm">{listing.squareFeet.toLocaleString()} ft²</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1">
+          {amenities.slice(0, 3).map((amenity, index) => (
+            <span
+              key={index}
+              className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs text-gray-600"
+            >
+              <Tag className="w-3 h-3 mr-1" />
+              {amenity}
+            </span>
+          ))}
+          {amenities.length > 3 && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs text-gray-600">
+              +{amenities.length - 3} more
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -18,28 +18,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { MoreHorizontal, Eye, CheckCircle, XCircle, Archive, Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface Report {
   id: string;
-  type: string;
-  description: string;
-  status: string;
-  createdAt: string;
-  Listing: {
+  listing: {
     id: string;
     title: string;
-    user: {
-      id: string;
-      name: string | null;
-      email: string | null;
-    } | null;
-  } | null;
-  reporter: {
+  };
+  reportedBy: {
     id: string;
-    name: string | null;
-    email: string | null;
-  } | null;
+    name: string;
+    email: string;
+  };
+  listingOwner: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  reason: string;
+  status: string;
+  createdAt: string;
 }
 
 export default function ReportsPage() {
@@ -52,7 +52,7 @@ export default function ReportsPage() {
 
   const fetchReports = async () => {
     try {
-      const response = await fetch('/api/admin/reports');
+      const response = await fetch('/api/reports');
       if (response.ok) {
         const data = await response.json();
         setReports(data);
@@ -69,7 +69,7 @@ export default function ReportsPage() {
 
   const updateReportStatus = async (id: string, status: string) => {
     try {
-      const response = await fetch(`/api/admin/reports/${id}`, {
+      const response = await fetch(`/api/reports/${id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -89,8 +89,62 @@ export default function ReportsPage() {
     }
   };
 
+  const updateListingStatus = async (listingId: string, status: string) => {
+    try {
+      const response = await fetch(`/api/listings/${listingId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (response.ok) {
+        toast.success(`Listing ${status === 'ARCHIVED' ? 'archived' : 'activated'}`);
+      } else {
+        toast.error('Failed to update listing status');
+      }
+    } catch (error) {
+      console.error('Error updating listing status:', error);
+      toast.error('Failed to update listing status');
+    }
+  };
+
+  const deleteListing = async (listingId: string) => {
+    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/listings/${listingId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('Listing deleted successfully');
+        fetchReports();
+      } else {
+        toast.error('Failed to delete listing');
+      }
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      toast.error('Failed to delete listing');
+    }
+  };
+
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <span className="ml-2">Loading reports...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -106,53 +160,39 @@ export default function ReportsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Description</TableHead>
               <TableHead>Listing</TableHead>
+              <TableHead>Reason</TableHead>
+              <TableHead>Reported By</TableHead>
               <TableHead>Listing Owner</TableHead>
-              <TableHead>Reporter</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Reported On</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {reports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
                   No reports found
                 </TableCell>
               </TableRow>
             ) : (
               reports.map((report) => (
                 <TableRow key={report.id}>
-                  <TableCell className="font-medium">{report.type}</TableCell>
-                  <TableCell>{report.description}</TableCell>
                   <TableCell>
-                    {report.Listing ? (
-                      <Link
-                        href={`/listings/${report.Listing.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {report.Listing.title}
-                      </Link>
-                    ) : (
-                      <span className="text-muted-foreground">Deleted listing</span>
-                    )}
+                    <Link
+                      href={`/listings/${report.listing.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {report.listing.title}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{report.reason}</TableCell>
+                  <TableCell>
+                    {report.reportedBy.name || report.reportedBy.email}
                   </TableCell>
                   <TableCell>
-                    {report.Listing?.user ? (
-                      report.Listing.user.name || report.Listing.user.email || 'Unknown'
-                    ) : (
-                      'N/A'
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {report.reporter ? (
-                      report.reporter.name || report.reporter.email || 'Unknown'
-                    ) : (
-                      'Unknown user'
-                    )}
+                    {report.listingOwner.name || report.listingOwner.email}
                   </TableCell>
                   <TableCell>
                     <span
@@ -178,14 +218,28 @@ export default function ReportsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {report.Listing && (
-                          <DropdownMenuItem asChild>
-                            <Link href={`/listings/${report.Listing.id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Listing
-                            </Link>
-                          </DropdownMenuItem>
-                        )}
+                        <DropdownMenuItem asChild>
+                          <Link href={`/listings/${report.listing.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Listing
+                          </Link>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={() => updateListingStatus(report.listing.id, 'ARCHIVED')}
+                        >
+                          <Archive className="mr-2 h-4 w-4" />
+                          Archive Listing
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          onClick={() => deleteListing(report.listing.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Listing
+                        </DropdownMenuItem>
+
                         {report.status !== 'RESOLVED' && (
                           <DropdownMenuItem
                             onClick={() => updateReportStatus(report.id, 'RESOLVED')}
@@ -213,4 +267,4 @@ export default function ReportsPage() {
       </div>
     </div>
   );
-} 
+}

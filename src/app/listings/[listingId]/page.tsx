@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
 import { User } from '@/models/User';
 import mongoose from 'mongoose';

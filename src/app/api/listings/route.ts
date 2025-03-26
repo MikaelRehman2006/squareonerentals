@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
-import { User, IUser } from '@/models/User';
-import { Listing, IListing } from '@/models/Listing';
+import { Listing } from '@/models/Listing';
+import { User } from '@/models/User';
+import { connectDB, disconnectDB } from '@/lib/mongodb';
 import mongoose from 'mongoose';
+
+interface IListingInput {
+  _id?: mongoose.Types.ObjectId;
+  title: string;
+  description: string;
+  price: number;
+  location: string;
+  images: string[];
+  bedrooms: number;
+  bathrooms: number;
+  squareFeet: number;
+  amenities: string[];
+  buildingAmenities: string[];
+  features: string[];
+  utilities: string[];
+  propertyType: string;
+  listingType: string;
+  leaseType: string;
+  availableDate: Date;
+  status: string;
+  featured: boolean;
+  userId: mongoose.Types.ObjectId;
+}
 
 const safeParseJSON = (str: string) => {
   try {
@@ -29,7 +52,19 @@ const validateImageUrls = (urls: string[] = []): string[] => {
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    console.log('GET /api/listings: Starting request');
+    
+    // Connect to MongoDB
+    try {
+      await connectDB();
+      console.log('MongoDB connection successful');
+    } catch (dbError) {
+      console.error('MongoDB connection failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const featured = searchParams.get('featured') === 'true';
@@ -38,8 +73,14 @@ export async function GET(request: NextRequest) {
     const maxPrice = searchParams.get('maxPrice');
     const minBedrooms = searchParams.get('minBedrooms');
     const location = searchParams.get('location');
+    const page = Number(searchParams.get('page')) || 1;
+    const limit = Number(searchParams.get('limit')) || 10;
+    const skip = (page - 1) * limit;
+    
+    console.log('Query parameters:', { featured, propertyType, minPrice, maxPrice, page, limit });
 
-    const query: any = { status: 'ACTIVE' };
+    // Create query object
+    const query: any = { status: 'ACTIVE' }; // Only show active listings by default
 
     if (featured) {
       query.featured = true;
@@ -63,179 +104,277 @@ export async function GET(request: NextRequest) {
       query.location = { $regex: location, $options: 'i' };
     }
 
-    const listings = await Listing.find(query)
-      .populate<{ userId: IUser }>('userId', 'name email image')
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean() as (IListing & { userId: IUser })[];
+    console.log('Final query:', JSON.stringify(query));
 
+    // Fetch listings with error handling
+    let listings;
+    try {
+      listings = await Listing.find(query)
+        .populate('userId', 'name email image')
+        .sort({ featured: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+      
+      console.log(`Found ${listings.length} listings`);
+    } catch (findError) {
+      console.error('Error finding listings:', findError);
+      return NextResponse.json(
+        { error: 'Failed to fetch listings from database' },
+        { status: 500 }
+      );
+    }
+
+    // Format listings for response
     const formattedListings = listings.map(listing => ({
-      id: listing._id.toString(),
+      id: listing._id?.toString(),
       title: listing.title,
       description: listing.description,
       price: listing.price,
       location: listing.location,
-      images: listing.images,
-      amenities: listing.amenities,
-      buildingAmenities: listing.buildingAmenities,
-      features: listing.features,
-      utilities: listing.utilities,
+      images: Array.isArray(listing.images) ? listing.images : [],
+      amenities: Array.isArray(listing.amenities) ? listing.amenities : [],
+      buildingAmenities: Array.isArray(listing.buildingAmenities) ? listing.buildingAmenities : [],
+      features: listing.features || [],
+      utilities: listing.utilities || [],
       bedrooms: listing.bedrooms,
       bathrooms: listing.bathrooms,
-      squareFeet: listing.size,
+      squareFeet: listing.squareFeet,
       propertyType: listing.propertyType,
-      listingType: listing.leaseType,
-      availableFrom: listing.availableDate,
+      listingType: listing.listingType,
+      leaseType: listing.leaseType || 'FIXED',
+      availableDate: listing.availableDate,
       createdAt: listing.createdAt,
       updatedAt: listing.updatedAt,
-      userId: listing.userId._id.toString(),
+      userId: listing.userId?._id?.toString() || '',
       status: listing.status,
-      featured: listing.featured,
-      userName: listing.userId.name || 'Anonymous',
-      userEmail: listing.userId.email || '',
-      userImage: listing.userId.image || '',
+      featured: !!listing.featured,
+      userName: listing.userId?.name || 'Anonymous',
+      userEmail: listing.userId?.email,
+      userImage: listing.userId?.image
     }));
 
-    return NextResponse.json(formattedListings);
+    const total = await Listing.countDocuments(query);
+
+    return NextResponse.json({
+      listings: formattedListings,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit)
+    });
+
   } catch (error) {
     console.error('Error in GET /api/listings:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch listings' },
       { status: 500 }
     );
+  } finally {
+    await disconnectDB();
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
-    
     const session = await getServerSession(authOptions);
-    console.log('Session:', session);
-    
+
     if (!session?.user?.email) {
-      console.error('No session or email found');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const body = await request.json();
-    console.log('Request body:', body);
-
-    // Get or create the user
-    let user = await User.findOne({ email: session.user.email });
-
+    const user = await User.findOne({ email: session.user.email });
     if (!user) {
-      console.log('Creating new user...');
-      try {
-        user = await User.create({
-          email: session.user.email,
-          name: session.user.name || 'Anonymous',
-          image: session.user.image || '',
-          role: 'USER',
-          favorites: [],
-        });
-        console.log('Created user:', user);
-      } catch (error) {
-        console.error('Error creating user:', error);
-        return NextResponse.json(
-          { error: 'Failed to create user' },
-          { status: 500 }
-        );
-      }
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
 
-    // Process arrays before saving
-    const processedImages = validateImageUrls(
-      Array.isArray(body.images) ? body.images : safeParseJSON(body.images)
-    );
-    
-    const processedAmenities = Array.isArray(body.amenities) 
-      ? body.amenities 
-      : safeParseJSON(body.amenities);
-    
-    const processedBuildingAmenities = Array.isArray(body.buildingAmenities) 
-      ? body.buildingAmenities 
-      : safeParseJSON(body.buildingAmenities);
+    const body = await request.json();
 
-    const processedFeatures = Array.isArray(body.features)
-      ? body.features
-      : safeParseJSON(body.features);
+    // Ensure required fields are present
+    if (!body.listingType) {
+      return NextResponse.json(
+        { error: 'listingType is required' },
+        { status: 400 }
+      );
+    }
 
-    const processedUtilities = Array.isArray(body.utilities)
-      ? body.utilities
-      : safeParseJSON(body.utilities);
+    if (!body.leaseType) {
+      return NextResponse.json(
+        { error: 'leaseType is required' },
+        { status: 400 }
+      );
+    }
 
-    const listingData: Omit<IListing, '_id' | 'createdAt' | 'updatedAt'> = {
+    if (!body.squareFeet) {
+      return NextResponse.json(
+        { error: 'Square footage is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.availableDate) {
+      return NextResponse.json(
+        { error: 'Available date is required' },
+        { status: 400 }
+      );
+    }
+
+    // Convert features and utilities to arrays
+    const features = Array.isArray(body.features) ? body.features : [];
+    const utilities = Array.isArray(body.utilities) ? body.utilities : [];
+
+    // Create the listing
+    const data: IListingInput = {
       title: body.title,
       description: body.description,
       price: Number(body.price),
       location: body.location,
-      images: processedImages,
+      images: Array.isArray(body.images) ? validateImageUrls(body.images) : [],
       bedrooms: Number(body.bedrooms),
       bathrooms: Number(body.bathrooms),
-      size: Number(body.squareFeet),
-      amenities: processedAmenities,
-      buildingAmenities: processedBuildingAmenities,
-      features: processedFeatures,
-      utilities: processedUtilities,
-      propertyType: body.propertyType || 'APARTMENT',
-      leaseType: body.listingType || 'LONG_TERM',
-      availableDate: body.availableFrom ? new Date(body.availableFrom) : new Date(),
-      status: 'ACTIVE',
-      featured: Boolean(body.featured),
+      squareFeet: Number(body.squareFeet),
+      amenities: safeParseJSON(body.amenities),
+      buildingAmenities: safeParseJSON(body.buildingAmenities),
+      features,
+      utilities,
+      propertyType: body.propertyType,
+      listingType: body.listingType,
+      leaseType: body.leaseType,
+      availableDate: new Date(body.availableDate),
+      status: body.status,
+      featured: body.featured,
       userId: user._id,
-      favoritedBy: [],
     };
 
-    const listing = await Listing.create(listingData);
-    console.log('Created listing:', listing);
+    const listing = new Listing(data);
 
-    const populatedListing = await Listing.findById(listing._id)
-      .populate<{ userId: IUser }>('userId')
-      .lean() as (IListing & { userId: IUser });
+    await listing.save();
 
-    if (!populatedListing) {
-      throw new Error('Failed to create listing');
-    }
-
-    // Format the response
-    const formattedListing = {
-      id: populatedListing._id.toString(),
-      title: populatedListing.title,
-      description: populatedListing.description,
-      price: populatedListing.price,
-      location: populatedListing.location,
-      images: populatedListing.images,
-      amenities: populatedListing.amenities,
-      buildingAmenities: populatedListing.buildingAmenities,
-      features: populatedListing.features,
-      utilities: populatedListing.utilities,
-      bedrooms: populatedListing.bedrooms,
-      bathrooms: populatedListing.bathrooms,
-      squareFeet: populatedListing.size,
-      propertyType: populatedListing.propertyType,
-      listingType: populatedListing.leaseType,
-      availableFrom: populatedListing.availableDate,
-      createdAt: populatedListing.createdAt,
-      updatedAt: populatedListing.updatedAt,
-      userId: populatedListing.userId._id.toString(),
-      status: populatedListing.status,
-      featured: populatedListing.featured,
-      userName: populatedListing.userId.name || 'Anonymous',
-      userEmail: populatedListing.userId.email || '',
-      userImage: populatedListing.userId.image || '',
-    };
-
-    return NextResponse.json(formattedListing);
-
+    return NextResponse.json({ 
+      message: 'Listing created successfully',
+      id: listing._id?.toString()
+    });
   } catch (error) {
     console.error('Error in POST /api/listings:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create listing' },
       { status: 500 }
     );
+  } finally {
+    await disconnectDB();
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    await connectDB();
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json();
+    const { listingId } = request.params;
+
+    // Ensure required fields are present
+    if (!body.listingType) {
+      return NextResponse.json(
+        { error: 'listingType is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.leaseType) {
+      return NextResponse.json(
+        { error: 'leaseType is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.squareFeet) {
+      return NextResponse.json(
+        { error: 'Square footage is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.availableDate) {
+      return NextResponse.json(
+        { error: 'Available date is required' },
+        { status: 400 }
+      );
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return NextResponse.json(
+        { error: 'Listing not found' },
+        { status: 404 }
+      );
+    }
+
+    if (listing.userId.toString() !== user._id.toString()) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Convert features and utilities to arrays
+    const features = Array.isArray(body.features) ? body.features : [];
+    const utilities = Array.isArray(body.utilities) ? body.utilities : [];
+
+    // Update the listing
+    const data: IListingInput = {
+      title: body.title,
+      description: body.description,
+      price: body.price,
+      location: body.location,
+      images: body.images,
+      bedrooms: body.bedrooms,
+      bathrooms: body.bathrooms,
+      squareFeet: body.squareFeet,
+      amenities: body.amenities,
+      buildingAmenities: body.buildingAmenities,
+      features,
+      utilities,
+      propertyType: body.propertyType,
+      listingType: body.listingType,
+      leaseType: body.leaseType,
+      availableDate: new Date(body.availableDate),
+      status: body.status,
+      featured: body.featured,
+      userId: user._id,
+    };
+
+    await Listing.findByIdAndUpdate(listingId, data);
+
+    return NextResponse.json({ message: 'Listing updated successfully' });
+  } catch (error) {
+    console.error('Error in PATCH /api/listings:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to update listing' },
+      { status: 500 }
+    );
+  } finally {
+    await disconnectDB();
   }
 }

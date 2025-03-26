@@ -52,15 +52,15 @@ export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
-        <p className="text-xl text-gray-600">Have questions or feedback? We'd love to hear from you.</p>
+        <h1 className="text-4xl font-bold mb-4 text-black">Contact Us</h1>
+        <p className="text-xl text-black">Have questions or feedback? We'd love to hear from you.</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-12">
         {/* Contact Information */}
         <div>
           <div className="bg-white p-8 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Get in Touch</h2>
+            <h2 className="text-2xl font-bold mb-6 text-black">Get in Touch</h2>
             
             <div className="space-y-6">
               <div className="flex items-start">
@@ -70,8 +70,8 @@ export default function ContactPage() {
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Email</h3>
-                  <p className="mt-1 text-gray-600">squareone.rental@gmail.com</p>
+                  <h3 className="text-lg font-medium text-black">Email</h3>
+                  <p className="mt-1 text-black">squareone.rental@gmail.com</p>
                 </div>
               </div>
               
@@ -82,7 +82,7 @@ export default function ContactPage() {
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Facebook</h3>
+                  <h3 className="text-lg font-medium text-black">Facebook</h3>
                   <a href="https://www.facebook.com/groups/618941558289151" target="_blank" rel="noopener noreferrer" className="mt-1 text-blue-600 hover:text-blue-800">
                     Join our Facebook Group
                   </a>
@@ -96,7 +96,7 @@ export default function ContactPage() {
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">LinkedIn</h3>
+                  <h3 className="text-lg font-medium text-black">LinkedIn</h3>
                   <a href="https://www.linkedin.com/company/105313383" target="_blank" rel="noopener noreferrer" className="mt-1 text-blue-600 hover:text-blue-800">
                     Follow us on LinkedIn
                   </a>
@@ -106,15 +106,15 @@ export default function ContactPage() {
           </div>
           
           <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Business Hours</h2>
+            <h2 className="text-2xl font-bold mb-6 text-black">Business Hours</h2>
             <ul className="space-y-3">
               <li className="flex justify-between">
-                <span className="text-gray-600">Monday - Friday</span>
-                <span className="font-medium">9:00 AM - 7:00 PM EST</span>
+                <span className="text-black">Monday - Friday</span>
+                <span className="font-medium text-black">9:00 AM - 7:00 PM EST</span>
               </li>
               <li className="flex justify-between">
-                <span className="text-gray-600">Saturday - Sunday</span>
-                <span className="font-medium">9:00 AM - 5:00 PM EST</span>
+                <span className="text-black">Saturday - Sunday</span>
+                <span className="font-medium text-black">9:00 AM - 5:00 PM EST</span>
               </li>
             </ul>
           </div>
@@ -122,7 +122,7 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="bg-white p-8 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h2>
+          <h2 className="text-2xl font-bold mb-6 text-black">Send Us a Message</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="name">Your Name</Label>
@@ -190,30 +190,30 @@ export default function ContactPage() {
 
       {/* FAQ Section */}
       <div className="mt-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <h2 className="text-3xl font-bold mb-8 text-black">Frequently Asked Questions</h2>
         <div className="space-y-6">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">How do I submit a listing?</h3>
-            <p className="mt-2 text-gray-600">
+            <h3 className="text-xl font-semibold text-black">How do I submit a listing?</h3>
+            <p className="mt-2 text-black">
               To submit a listing, create an account and navigate to the "Submit Listing" page. 
               Fill out the form with all your property details and submit for review.
             </p>
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">How long does it take for my listing to be approved?</h3>
-            <p className="mt-2 text-gray-600">
+            <h3 className="text-xl font-semibold text-black">How long does it take for my listing to be approved?</h3>
+            <p className="mt-2 text-black">
               Listings are typically reviewed within 24-48 hours. Once approved, your listing will be visible on our platform.
             </p>
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">Is there a fee to list my property?</h3>
-            <p className="mt-2 text-gray-600">
+            <h3 className="text-xl font-semibold text-black">Is there a fee to list my property?</h3>
+            <p className="mt-2 text-black">
               No, listing your property on Square One Rentals is completely free.
             </p>
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">How do I contact a landlord about a listing?</h3>
-            <p className="mt-2 text-gray-600">
+            <h3 className="text-xl font-semibold text-black">How do I contact a landlord about a listing?</h3>
+            <p className="mt-2 text-black">
               Each listing has a contact form that allows you to send a message directly to the landlord. 
               You must be logged in to use this feature.
             </p>

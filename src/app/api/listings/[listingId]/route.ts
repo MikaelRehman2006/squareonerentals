@@ -1,14 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { User } from '@/models/User';
+import { connectDB, disconnectDB } from '@/lib/mongodb';
 
 type Props = {
   params: { listingId: string };
 };
+
+interface ListingData {
+  _id: mongoose.Types.ObjectId;
+  title: string;
+  description: string;
+  price: number;
+  location: string;
+  images: string[];
+  bedrooms: number;
+  bathrooms: number;
+  squareFeet: number;
+  amenities: string[];
+  buildingAmenities: string[];
+  features: any;
+  utilities: any;
+  propertyType: string;
+  listingType: string;
+  leaseType: string;
+  availableDate: Date;
+  status: string;
+  featured: boolean;
+  userId: any;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Helper function to safely parse JSON or return default
 const safeParseJSON = (str: string | null | undefined, defaultValue: any[] = []): any[] => {
@@ -25,24 +50,10 @@ const safeParseJSON = (str: string | null | undefined, defaultValue: any[] = [])
 };
 
 // Helper function to validate image URLs
-const validateImageUrls = (images: string[]): string[] => {
-  return images.filter((url) => url.startsWith('http'));
-};
-
-// Helper function to get user data safely
-const getUserData = async (userId: mongoose.Types.ObjectId | any) => {
-  if (userId instanceof mongoose.Types.ObjectId) {
-    const user = await User.findById(userId).lean();
-    if (user) {
-      return {
-        id: user._id.toString(),
-        name: user.name || null,
-        email: user.email || null,
-        image: user.image || null,
-      };
-    }
-  }
-  return null;
+const validateImageUrls = (images: string | string[]): string[] => {
+  if (!images) return [];
+  const imageArray = Array.isArray(images) ? images : [images];
+  return imageArray.filter((url) => url.startsWith('http'));
 };
 
 export async function GET(request: NextRequest, { params }: Props) {
@@ -50,7 +61,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -59,7 +70,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     const listing = await Listing.findById(params.listingId)
       .populate('userId')
-      .lean();
+      .lean() as ListingData;
 
     if (!listing) {
       return NextResponse.json(
@@ -69,7 +80,8 @@ export async function GET(request: NextRequest, { params }: Props) {
     }
 
     // Ensure user owns this listing
-    if (listing.userId._id.toString() !== session.user.id) {
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || user._id.toString() !== listing.userId._id.toString()) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -83,14 +95,23 @@ export async function GET(request: NextRequest, { params }: Props) {
       description: listing.description,
       price: listing.price,
       location: listing.location,
-      propertyType: listing.propertyType,
+      images: listing.images,
       bedrooms: listing.bedrooms,
       bathrooms: listing.bathrooms,
+      squareFeet: listing.squareFeet,
       amenities: listing.amenities,
-      images: validateImageUrls(safeParseJSON(listing.images)),
-      userId: await getUserData(listing.userId),
+      buildingAmenities: listing.buildingAmenities,
+      features: listing.features,
+      utilities: listing.utilities,
+      propertyType: listing.propertyType,
+      listingType: listing.listingType,
+      leaseType: listing.leaseType,
+      availableDate: listing.availableDate,
+      status: listing.status,
+      featured: listing.featured,
+      userId: listing.userId._id.toString(),
       createdAt: listing.createdAt,
-      updatedAt: listing.updatedAt,
+      updatedAt: listing.updatedAt
     };
 
     return NextResponse.json(formattedListing);
@@ -100,6 +121,8 @@ export async function GET(request: NextRequest, { params }: Props) {
       { error: error instanceof Error ? error.message : 'Failed to fetch listing' },
       { status: 500 }
     );
+  } finally {
+    await disconnectDB();
   }
 }
 
@@ -108,16 +131,24 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const data = await request.json();
-    const listing = await Listing.findById(params.listingId);
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
 
+    const listingId = params.listingId;
+    const listing = await Listing.findById(listingId);
+    
     if (!listing) {
       return NextResponse.json(
         { error: 'Listing not found' },
@@ -125,32 +156,66 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       );
     }
 
-    // Ensure user owns this listing
-    if (listing.userId.toString() !== session.user.id) {
+    // Check if user owns the listing
+    if (listing.userId.toString() !== user._id.toString()) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    Object.assign(listing, data);
-    await listing.save();
+    const body = await request.json();
 
-    // Format the updated listing
+    // Validate status
+    if (body.status && !['ACTIVE', 'ARCHIVED'].includes(body.status)) {
+      return NextResponse.json(
+        { error: 'Invalid status. Must be either ACTIVE or ARCHIVED' },
+        { status: 400 }
+      );
+    }
+
+    // Update the listing
+    const data = {
+      title: body.title,
+      description: body.description,
+      price: Number(body.price),
+      location: body.location,
+      images: validateImageUrls(body.images),
+      bedrooms: Number(body.bedrooms),
+      bathrooms: Number(body.bathrooms),
+      squareFeet: Number(body.squareFeet),
+      amenities: safeParseJSON(body.amenities),
+      buildingAmenities: safeParseJSON(body.buildingAmenities),
+      features: safeParseJSON(body.features),
+      utilities: safeParseJSON(body.utilities),
+      propertyType: body.propertyType,
+      listingType: body.listingType,
+      leaseType: body.leaseType,
+      availableDate: new Date(body.availableDate),
+      status: body.status.toUpperCase(),
+      featured: body.featured,
+      updatedAt: new Date()
+    };
+
+    const updatedListing = await Listing.findByIdAndUpdate(
+      listingId,
+      data,
+      { new: true, runValidators: true }
+    ).lean() as ListingData;
+
+    if (!updatedListing) {
+      return NextResponse.json(
+        { error: 'Failed to update listing' },
+        { status: 500 }
+      );
+    }
+
+    // Format the response
     const formattedListing = {
-      id: listing._id.toString(),
-      title: listing.title,
-      description: listing.description,
-      price: listing.price,
-      location: listing.location,
-      propertyType: listing.propertyType,
-      bedrooms: listing.bedrooms,
-      bathrooms: listing.bathrooms,
-      amenities: listing.amenities,
-      images: validateImageUrls(safeParseJSON(listing.images)),
-      userId: await getUserData(listing.userId),
-      createdAt: listing.createdAt,
-      updatedAt: listing.updatedAt,
+      id: updatedListing._id.toString(),
+      ...data,
+      userId: user._id.toString(),
+      createdAt: updatedListing.createdAt,
     };
 
     return NextResponse.json(formattedListing);
@@ -160,6 +225,8 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       { error: error instanceof Error ? error.message : 'Failed to update listing' },
       { status: 500 }
     );
+  } finally {
+    await disconnectDB();
   }
 }
 
@@ -168,7 +235,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -185,7 +252,8 @@ export async function DELETE(request: NextRequest, { params }: Props) {
     }
 
     // Ensure user owns this listing
-    if (listing.userId.toString() !== session.user.id) {
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || user._id.toString() !== listing.userId.toString()) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

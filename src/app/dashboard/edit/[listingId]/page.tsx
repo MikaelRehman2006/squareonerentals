@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
 import { User } from '@/models/User';
 import mongoose from 'mongoose';
-import ListingForm from '@/components/listing-form';
+import { ListingForm } from '@/components/listing-form';
 
 export async function generateMetadata({
   params,
@@ -16,6 +16,27 @@ export async function generateMetadata({
     title: 'Edit Listing - Square One Rentals',
     description: 'Edit your rental listing',
   };
+}
+
+// Define interface for form data
+interface ListingFormData {
+  title: string;
+  description: string;
+  price: number;
+  location: string;
+  images: string[];
+  bedrooms: number;
+  bathrooms: number;
+  squareFeet: number;
+  amenities: string[];
+  buildingAmenities: string[];
+  features: string[];
+  utilities: string[];
+  propertyType: string;
+  listingType: string;
+  leaseType: string;
+  availableDate: string;
+  status: string;
 }
 
 export default async function EditListingPage({
@@ -44,19 +65,44 @@ export default async function EditListingPage({
 
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Edit Listing</h1>
+        <h1 className="text-3xl font-bold mb-8 text-black">Edit Listing</h1>
         <ListingForm
-          initialData={listing}
-          onSubmit={async (data) => {
+          initialData={{
+            title: listing.title,
+            description: listing.description,
+            price: listing.price,
+            location: listing.location,
+            images: listing.images || [],
+            bedrooms: listing.bedrooms,
+            bathrooms: listing.bathrooms,
+            squareFeet: listing.squareFeet,
+            amenities: listing.amenities || [],
+            buildingAmenities: listing.buildingAmenities || [],
+            features: listing.features || [],
+            utilities: listing.utilities || [],
+            propertyType: listing.propertyType,
+            listingType: listing.listingType,
+            leaseType: listing.leaseType || 'fixed',
+            availableDate: new Date(listing.availableDate).toISOString().split('T')[0],
+            status: listing.status,
+          }}
+          onSubmit={async (data: ListingFormData) => {
             try {
-              await connectDB();
-              await Listing.findByIdAndUpdate(
-                params.listingId,
-                { $set: data },
-                { new: true }
-              );
-              // Redirect to listings page after successful update
-              window.location.href = '/dashboard/listings';
+              // Send data to API endpoint instead of direct DB update
+              const response = await fetch(`/api/listings/${params.listingId}`, {
+                method: 'PATCH',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+              });
+              
+              if (!response.ok) {
+                throw new Error('Failed to update listing');
+              }
+              
+              // Redirect to dashboard after successful update
+              window.location.href = '/dashboard';
             } catch (error) {
               console.error('Error updating listing:', error);
               alert('Failed to update listing. Please try again.');

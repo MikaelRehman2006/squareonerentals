@@ -3,30 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 17, 24, 39;
+  --foreground-rgb: 0, 0, 0;
   --background-rgb: 249, 250, 251;
 }
 
 body {
   background: rgb(var(--background-rgb));
+  color: rgb(var(--foreground-rgb));
 }
 
 @layer base {
   :root {
     --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 0 0% 0%;
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary-foreground: 0 0% 0%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 222 47% 11%;
+    --muted-foreground: 0 0% 0%;
     --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
@@ -50,11 +51,11 @@ body {
     --muted-foreground: 210 40% 98%;
     --accent: 217 32% 17%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 32% 17%;
     --input: 217 32% 17%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 224 76% 48%;
   }
 }
 
@@ -68,7 +69,7 @@ body {
   
   /* Override for section headers */
   h2, h3, .section-header {
-    @apply text-foreground !important;
+    @apply text-foreground;
   }
 }
 
@@ -85,8 +86,6 @@ input, textarea, select {
   transition: none !important;
   position: relative !important;
   z-index: 2 !important;
-  color: rgb(17, 24, 39) !important;
-  background-color: white !important;
 }
 
 /* Fix checkbox alignment */
@@ -113,12 +112,10 @@ input, textarea, select {
   display: block !important;
   position: relative !important;
   z-index: 2 !important;
-  color: rgb(17, 24, 39) !important;
 }
 
 /* Card and section headers */
 .card-title, .section-title, [class*="CardTitle"], [class*="DialogTitle"] {
-  color: rgb(17, 24, 39) !important;
 }
 
 /* Ensure rendering stability during database operations */
@@ -173,4 +170,27 @@ input, textarea, select {
 /* Ensure rendering stability during database operations */
 *[data-state], *[data-highlighted], *[data-placeholder] {
   transition: none !important;
-} 
+}
+
+/* Remove all color-forcing styles */
+.MuiTypography-root,
+.MuiTypography-h1,
+.MuiTypography-h2,
+.MuiTypography-h3,
+.MuiTypography-h4,
+.MuiTypography-h5,
+.MuiTypography-h6,
+.MuiTypography-subtitle1,
+.MuiTypography-subtitle2,
+.MuiTypography-body1,
+.MuiTypography-body2 {
+}
+
+/* Keep other styles but remove color restrictions */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+[class*="heading"],
+[class*="title"],
+.font-semibold,
+.font-bold {
+}

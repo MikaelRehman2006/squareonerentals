@@ -36,74 +36,91 @@ interface ListingFormProps {
     images: string[];
     bedrooms: number;
     bathrooms: number;
-    size: number;
+    squareFeet: number;
     amenities: string[];
     buildingAmenities: string[];
     features: string[];
     utilities: string[];
     propertyType: string;
+    listingType: string;
     leaseType: string;
     availableDate: string;
     status: string;
+    featured?: boolean;
   };
   onSubmit: (data: any) => void;
+  isSubmitting?: boolean;
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, {
-    message: "Title is required",
-  }),
-  description: z.string().min(1, {
-    message: "Description is required",
-  }),
-  price: z.number().min(0, {
-    message: "Price must be at least 0",
-  }),
-  location: z.string().min(1, {
-    message: "Location is required",
-  }),
-  images: z.array(z.string()).min(1, {
-    message: "At least one image is required",
-  }),
-  bedrooms: z.number().min(0, {
-    message: "Bedrooms must be at least 0",
-  }),
-  bathrooms: z.number().min(0, {
-    message: "Bathrooms must be at least 0",
-  }),
-  size: z.number().min(0, {
-    message: "Size must be at least 0",
-  }),
-  amenities: z.array(z.string()),
-  buildingAmenities: z.array(z.string()),
-  features: z.array(z.string()),
-  utilities: z.array(z.string()),
-  propertyType: z.string().min(1, {
-    message: "Property type is required",
-  }),
-  leaseType: z.string().min(1, {
-    message: "Lease type is required",
-  }),
-  availableDate: z.string().min(1, {
-    message: "Available date is required",
-  }),
-  status: z.string().min(1, {
-    message: "Status is required",
-  }),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  price: z.coerce.number().min(0, "Price must be a positive number"),
+  location: z.string().min(1, "Location is required"),
+  images: z.array(z.string()).default([]),
+  bedrooms: z.coerce.number().min(0, "Bedrooms must be a positive number"),
+  bathrooms: z.coerce.number().min(0, "Bathrooms must be a positive number"),
+  squareFeet: z.coerce.number().min(0, "Square feet must be a positive number"),
+  amenities: z.array(z.string()).default([]),
+  buildingAmenities: z.array(z.string()).default([]),
+  features: z.array(z.string()).default([]),
+  utilities: z.array(z.string()).default([]),
+  propertyType: z.string().min(1, "Property type is required"),
+  listingType: z.string().min(1, "Listing type is required"),
+  leaseType: z.string().min(1, "Lease type is required"),
+  availableDate: z.string().min(1, "Available date is required"),
+  status: z.string().min(1, "Status is required"),
+  featured: z.boolean().default(false),
 });
 
-export function ListingForm({ initialData, onSubmit }: ListingFormProps) {
-  const form = useForm({
+type FormValues = z.infer<typeof formSchema>;
+
+export const ListingForm = ({
+  initialData,
+  onSubmit,
+  isSubmitting = false,
+}: ListingFormProps) => {
+  const [loading, setLoading] = useState(false);
+  const { data: session } = useSession();
+
+  console.log('ListingForm initialized with data:', initialData);
+
+  // Convert initialData to match the form schema if needed
+  const formattedInitialData: FormValues = {
+    ...initialData,
+    features: Array.isArray(initialData.features) ? initialData.features : [],
+    utilities: Array.isArray(initialData.utilities) ? initialData.utilities : [],
+    buildingAmenities: Array.isArray(initialData.buildingAmenities) ? initialData.buildingAmenities : [],
+    amenities: Array.isArray(initialData.amenities) ? initialData.amenities : [],
+    images: Array.isArray(initialData.images) ? initialData.images : [],
+    featured: initialData.featured || false
+  };
+
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: initialData,
+    defaultValues: formattedInitialData,
   });
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: FormValues) => {
     try {
-      onSubmit(data);
+      setLoading(true);
+      console.log('Form submitted with data:', data);
+      if (!session?.user?.email) {
+        throw new Error('Unauthorized');
+      }
+
+      await onSubmit(data);
+      console.log('Form submission successful');
+      toast.success('Listing updated successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error('Failed to submit form');
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Failed to submit form');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -196,10 +213,10 @@ export function ListingForm({ initialData, onSubmit }: ListingFormProps) {
 
         <FormField
           control={form.control}
-          name="size"
+          name="squareFeet"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Size (sq ft)</FormLabel>
+              <FormLabel>Square Footage</FormLabel>
               <FormControl>
                 <Input type="number" {...field} />
               </FormControl>
@@ -234,14 +251,14 @@ export function ListingForm({ initialData, onSubmit }: ListingFormProps) {
 
         <FormField
           control={form.control}
-          name="leaseType"
+          name="listingType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Lease Type</FormLabel>
+              <FormLabel>Listing Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select lease type" />
+                    <SelectValue placeholder="Select listing type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -257,20 +274,21 @@ export function ListingForm({ initialData, onSubmit }: ListingFormProps) {
 
         <FormField
           control={form.control}
-          name="status"
+          name="leaseType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Status</FormLabel>
+              <FormLabel>Lease Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="Select lease type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value="fixed">Fixed Term (6 months/1 year)</SelectItem>
+                  <SelectItem value="month_to_month">Month to Month</SelectItem>
+                  <SelectItem value="short_term">Short Term (less than 6 months)</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -292,8 +310,28 @@ export function ListingForm({ initialData, onSubmit }: ListingFormProps) {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Update Listing
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ACTIVE">Active</SelectItem>
+                  <SelectItem value="ARCHIVED">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button type="submit" className="w-full" disabled={loading || isSubmitting}>
+          Save Changes
         </Button>
       </form>
     </Form>
