@@ -53,7 +53,7 @@ interface AdminUser {
 }
 
 export default function AdminPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [tabValue, setTabValue] = useState(0);
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
@@ -63,10 +63,35 @@ export default function AdminPage() {
 
   // Check if user is authorized
   useEffect(() => {
-    if (!session?.user?.email || session.user.email !== 'mikaelr112@gmail.com') {
+    console.log('Session:', session);
+    console.log('Status:', status);
+    console.log('User email:', session?.user?.email);
+    console.log('User role:', session?.user?.role);
+    
+    if (status === 'loading') return;
+
+    if (!session || !session.user || session.user.role !== 'admin') {
+      console.log('Unauthorized access attempt');
       router.push('/');
+      return;
     }
-  }, [session, router]);
+
+    // Load admin data here
+    fetchAdminData();
+  }, [session, status, router]);
+
+  const fetchAdminData = async () => {
+    try {
+      const response = await fetch('/api/admin/users');
+      if (response.ok) {
+        const data = await response.json();
+        setAdminUsers(data.users);
+      }
+    } catch (error) {
+      console.error('Error fetching admin data:', error);
+      setError('Failed to load admin data');
+    }
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -92,30 +117,11 @@ export default function AdminPage() {
       setSuccess('Admin user added successfully');
       setNewAdminEmail('');
       // Refresh admin users list
-      fetchAdminUsers();
+      fetchAdminData();
     } catch (err) {
       setError('Failed to add admin user');
     }
   };
-
-  const fetchAdminUsers = async () => {
-    try {
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) throw new Error('Failed to fetch admin users');
-      const data = await response.json();
-      setAdminUsers(data.users);
-    } catch (err) {
-      setError('Failed to fetch admin users');
-    }
-  };
-
-  useEffect(() => {
-    fetchAdminUsers();
-  }, []);
-
-  if (!session?.user?.email || session.user.email !== 'mikaelr112@gmail.com') {
-    return null;
-  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>

@@ -17,6 +17,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       role?: string;
+      email: string;
     } & DefaultSession['user'];
   }
 }
@@ -70,6 +71,11 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.email = user.email;
+        // Set admin role for specific email
+        if (user.email === 'mikaelr112@gmail.com') {
+          token.role = 'admin';
+        }
       }
       return token;
     },
@@ -77,6 +83,7 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.email = token.email as string;
       }
       return session;
     },

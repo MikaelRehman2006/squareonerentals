@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -44,7 +45,14 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
-            <Link href="/" className="flex flex-shrink-0 items-center">
+            <Link href="/" className="flex flex-shrink-0 items-center gap-2">
+              <Image
+                src="/images/logo.png"
+                alt="Square One Rentals Logo"
+                width={50}
+                height={50}
+                className="object-contain"
+              />
               <span className="text-xl font-bold text-primary">
                 Square One Rentals
               </span>
