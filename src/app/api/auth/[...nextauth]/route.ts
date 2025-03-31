@@ -35,95 +35,164 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('Invalid credentials');
+          }
+
+          await connectDB();
+          console.log('Attempting to find user with email:', credentials.email);
+
+          const user = await User.findOne({ email: credentials.email });
+          console.log('Found user:', user ? { 
+            id: user._id.toString(),
+            email: user.email,
+            hasPassword: !!user.password,
+            role: user.role
+          } : 'No user found');
+
+          if (!user || !user.password) {
+            console.log('User not found or no password set');
+            throw new Error('Invalid credentials');
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+          console.log('Password validation result:', isPasswordValid);
+
+          if (!isPasswordValid) {
+            console.log('Invalid password');
+            throw new Error('Invalid credentials');
+          }
+
+          console.log('Authentication successful for user:', user.email);
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error('Error in authorize:', error);
+          throw error;
         }
-
-        await connectDB();
-
-        const user = await User.findOne({ email: credentials.email });
-
-        if (!user || !user.password) {
-          throw new Error('Invalid credentials');
-        }
-
-        const isCorrectPassword = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isCorrectPassword) {
-          throw new Error('Invalid credentials');
-        }
-
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role,
-        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user, account }) {
+      console.log('JWT Callback - Input:', { 
+        tokenEmail: token.email,
+        userEmail: user?.email,
+        provider: account?.provider 
+      });
+
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.email = user.email;
-        // Set admin role for specific email
-        if (user.email === 'mikaelr112@gmail.com') {
+        
+        // Set admin role for specific emails
+        if (user.email === 'mikaelr112@gmail.com' || user.email === 'volcanxic@gmail.com') {
           token.role = 'admin';
         }
       }
+
+      console.log('JWT Callback - Output token:', token);
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
+      console.log('Session Callback - Input:', { 
+        sessionEmail: session.user?.email,
+        tokenEmail: token.email,
+        tokenRole: token.role
+      });
+
+      if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.email = token.email as string;
       }
+
+      console.log('Session Callback - Output session:', session);
       return session;
     },
     async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        try {
-          await connectDB();
-          
+      console.log('SignIn Callback - Start:', { 
+        userEmail: user.email,
+        provider: account?.provider 
+      });
+
+      try {
+        await connectDB();
+        
+        if (account?.provider === 'google') {
           // Check if user exists
           const existingUser = await User.findOne({ email: user.email });
+          console.log('Google SignIn - Existing user:', existingUser ? {
+            id: existingUser._id.toString(),
+            email: existingUser.email,
+            role: existingUser.role
+          } : 'No user found');
           
           if (!existingUser) {
-            // Create new user
-            await User.create({
+            // Create new user with admin role for specific emails
+            const newUser = await User.create({
               email: user.email,
               name: user.name,
               image: user.image,
-              role: 'USER',
+              role: user.email === 'mikaelr112@gmail.com' || user.email === 'volcanxic@gmail.com' ? 'admin' : 'user',
               emailVerified: new Date(),
             });
+            
+            console.log('Google SignIn - Created new user:', {
+              id: newUser._id.toString(),
+              email: newUser.email,
+              role: newUser.role
+            });
+            
+            user.role = newUser.role;
+          } else {
+            // Update existing user's role if they're an admin
+            if (user.email === 'mikaelr112@gmail.com' || user.email === 'volcanxic@gmail.com') {
+              await User.findByIdAndUpdate(existingUser._id, { role: 'admin' });
+              user.role = 'admin';
+              console.log('Google SignIn - Updated user to admin role');
+            } else {
+              user.role = existingUser.role;
+            }
           }
-          
-          return true;
-        } catch (error) {
-          console.error('Error in signIn callback:', error);
-          return false;
         }
+        
+        // For credentials provider
+        if (account?.provider === 'credentials') {
+          console.log('Credentials SignIn - Checking user:', user.email);
+          const existingUser = await User.findOne({ email: user.email });
+          
+          if (existingUser) {
+            // Update role for admin emails
+            if (user.email === 'mikaelr112@gmail.com' || user.email === 'volcanxic@gmail.com') {
+              await User.findByIdAndUpdate(existingUser._id, { role: 'admin' });
+              user.role = 'admin';
+              console.log('Credentials SignIn - Updated user to admin role');
+            } else {
+              user.role = existingUser.role;
+            }
+          }
+        }
+
+        console.log('SignIn Callback - Success:', { 
+          userEmail: user.email,
+          userRole: user.role 
+        });
+        return true;
+      } catch (error) {
+        console.error('Error in signIn callback:', error);
+        return false;
       }
-      
-      return true;
-    },
-    async redirect({ url, baseUrl }) {
-      // Fix redirect logic
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`;
-      }
-      if (url.startsWith(baseUrl)) {
-        return url;
-      }
-      return baseUrl;
     },
   },
   pages: {
@@ -132,8 +201,9 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  debug: true,
+  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET,
 };
 
