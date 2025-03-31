@@ -1,173 +1,302 @@
-import Link from 'next/link';
+'use client';
+
 import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { Users, MessageSquare, Eye, TrendingUp } from 'lucide-react';
+
+const features = [
+  {
+    title: 'Local Expertise',
+    description: 'Deep knowledge of Mississauga neighborhoods and market trends.',
+    icon: '🏙️'
+  },
+  {
+    title: 'Verified Listings',
+    description: 'Every property is verified for authenticity and accuracy.',
+    icon: '✓'
+  },
+  {
+    title: 'Smart Platform',
+    description: 'Advanced tools to streamline your rental journey.',
+    icon: '💡'
+  },
+  {
+    title: 'Direct Contact',
+    description: 'Connect directly with property owners and managers.',
+    icon: '📱'
+  }
+];
+
+const testimonials = [
+  {
+    text: "The verification process gave me confidence in my rental choice.",
+    author: "J.P.",
+    role: "Tenant"
+  },
+  {
+    text: "Listing my properties has never been easier.",
+    author: "R.K.",
+    role: "Property Owner"
+  }
+];
+
+const stats = [
+  {
+    number: '20K+',
+    label: 'Posts',
+    subtext: 'in the past year',
+    icon: MessageSquare
+  },
+  {
+    number: '1000s',
+    label: 'Views',
+    subtext: 'per post on average',
+    icon: Eye
+  },
+  {
+    number: '3M+',
+    label: 'Total Views',
+    subtext: 'in one year',
+    icon: TrendingUp
+  },
+  {
+    number: '100K+',
+    label: 'Members',
+    subtext: 'in our community',
+    icon: Users
+  }
+];
 
 export default function AboutPage() {
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">About Square One Rentals</h1>
-        <p className="text-xl text-gray-600">Connecting tenants and landlords in the heart of Mississauga.</p>
-      </div>
-
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative h-[400px] mb-16 rounded-xl overflow-hidden">
+      <section className="relative h-[500px] overflow-hidden">
         <Image
-          src="/images/Mississauga skyline 2.jpg"
+          src="/images/mississauga-skyline.jpg"
           alt="Mississauga Skyline"
           fill
-          className="object-cover"
+          className="object-cover brightness-75"
           priority
         />
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <div className="text-center text-white px-4">
-            <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
-            <p className="text-xl max-w-3xl">
-              To simplify the rental process in Mississauga, making it easy for tenants to find their
-              dream homes and for landlords to connect with quality tenants.
-            </p>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white space-y-6 max-w-4xl px-4">
+            <motion.h1 
+              className="text-5xl md:text-6xl font-bold"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              Transforming Rental Experience
+            </motion.h1>
+            <motion.p 
+              className="text-xl md:text-2xl"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              We help tenants find homes they love and landlords connect with qualified renters in Mississauga.
+            </motion.p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Our Story */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <p className="text-lg text-gray-600 mb-4">
-              Square One Rentals was founded in 2023 with a simple goal: to create a better rental
-              experience for everyone in the Mississauga area, especially around the popular Square One district.
-            </p>
-            <p className="text-lg text-gray-600 mb-4">
-              We recognized that finding a quality rental property or a reliable tenant can be a time-consuming
-              and frustrating process. By leveraging technology and local expertise, we've created a platform
-              that simplifies and streamlines the rental process.
-            </p>
-            <p className="text-lg text-gray-600">
-              Today, we are proud to be Mississauga's premier rental community, connecting hundreds of
-              tenants with landlords each month and helping people find their perfect home.
-            </p>
-          </div>
-          <div className="relative h-80 rounded-xl overflow-hidden">
-            <Image
-              src="/images/Modern Building.jpg"
-              alt="Modern Apartment Building"
-              fill
-              className="object-cover"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Why Choose Us */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Why Choose Square One Rentals</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Local Expertise</h3>
-            <p className="text-gray-600">
-              We focus exclusively on the Mississauga area, giving us deep knowledge of local neighborhoods,
-              market conditions, and rental trends.
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Verified Listings</h3>
-            <p className="text-gray-600">
-              All our listings undergo a verification process to ensure they are accurate,
-              legitimate, and represent properties fairly.
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Direct Communication</h3>
-            <p className="text-gray-600">
-              Our platform allows tenants and landlords to communicate directly,
-              making the rental process more efficient and transparent.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Team Section */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">Our Team</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Team members would go here - showing sample structure */}
-          <div className="text-center">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-              <Image
-                src="https://source.unsplash.com/featured/?person,professional"
-                alt="Team Member"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h3 className="text-xl font-semibold">Jane Doe</h3>
-            <p className="text-gray-600">Founder & CEO</p>
-          </div>
-          <div className="text-center">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-              <Image
-                src="https://source.unsplash.com/featured/?man,professional"
-                alt="Team Member"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h3 className="text-xl font-semibold">John Smith</h3>
-            <p className="text-gray-600">Community Manager</p>
-          </div>
-          <div className="text-center">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto mb-4">
-              <Image
-                src="https://source.unsplash.com/featured/?woman,professional"
-                alt="Team Member"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h3 className="text-xl font-semibold">Sarah Johnson</h3>
-            <p className="text-gray-600">Property Expert</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Call to Action */}
-      <div className="bg-blue-600 text-white rounded-xl p-8 text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-        <p className="text-xl mb-6 max-w-2xl mx-auto">
-          Whether you're looking for your next home or wanting to list your property,
-          Square One Rentals is here to help.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link
-            href="/listings"
-            className="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition"
+      {/* Our Story Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="max-w-3xl mx-auto space-y-8"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
           >
-            Browse Listings
-          </Link>
-          <Link
-            href="/contact"
-            className="bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-3 rounded-lg font-semibold transition"
-          >
-            Contact Us
-          </Link>
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900">Our Story</h2>
+            <div className="prose prose-lg mx-auto text-gray-600 leading-relaxed">
+              <p>
+                Founded in 2023, Square One Rentals emerged from a vision to transform the rental experience in Mississauga. We recognized the challenges faced by both tenants searching for their ideal homes and landlords looking to connect with reliable renters in our vibrant city.
+              </p>
+              <p>
+                What began as a local initiative to simplify property rentals has blossomed into a trusted platform that thousands in our community rely on daily. Our deep understanding of Mississauga's unique rental landscape, combined with our commitment to transparency and efficiency, has made us the go-to destination for rental properties in the region.
+              </p>
+              <p>
+                Today, we're proud to be more than just a rental platform – we're a cornerstone of the Mississauga community, helping create meaningful connections between property owners and future tenants, one successful rental at a time.
+              </p>
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      {/* Growth & Impact Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Growth & Impact</h2>
+            <p className="mt-4 text-xl text-gray-600">Our thriving Facebook community by the numbers</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+              >
+                <div className="flex justify-center mb-4">
+                  <stat.icon className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</h3>
+                <p className="text-lg font-semibold text-gray-700">{stat.label}</p>
+                <p className="text-sm text-gray-500">{stat.subtext}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            className="mt-16 max-w-3xl mx-auto text-center"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <p className="text-lg text-gray-600 mb-6">
+              Join our vibrant Facebook community of over 100,000 members, where we share the latest rental listings, market insights, and neighborhood updates. Our group has become Mississauga's largest and most active rental community, with over 20,000 posts and 3 million views in the past year alone.
+            </p>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="group"
+            >
+              <Link 
+                href="https://www.facebook.com/groups/618941558289151" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                Join Our Facebook Group
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Why Choose Square One Rentals</h2>
+            <p className="mt-4 text-xl text-gray-600">Experience the difference with our feature-rich platform</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                className="group p-8 bg-gray-50 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+              >
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">What People Say</h2>
+            <p className="mt-4 text-xl text-gray-600">Hear from our community members</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.author}
+                className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+              >
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">"{testimonial.text}"</p>
+                <div>
+                  <p className="font-semibold text-gray-900">{testimonial.author}</p>
+                  <p className="text-gray-500">{testimonial.role}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-primary text-white">
+        <motion.div 
+          className="container mx-auto px-4 text-center"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold mb-8">Ready to Get Started?</h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              asChild
+              size="lg"
+              variant="secondary"
+              className="group relative overflow-hidden"
+            >
+              <Link href="/listings" className="flex items-center gap-2">
+                Browse Listings
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="bg-transparent border-white hover:bg-white hover:text-primary transition-colors"
+            >
+              <Link href="/submit">
+                List Your Property
+              </Link>
+            </Button>
+          </div>
+        </motion.div>
+      </section>
     </div>
   );
 }

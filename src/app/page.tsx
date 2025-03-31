@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ListingCard } from '@/components/ListingCard';
 import { Listing } from '@/types/listing';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const [featuredListings, setFeaturedListings] = useState<Listing[]>([]);
@@ -31,124 +32,245 @@ export default function Home() {
   const testimonials = [
     {
       id: 1,
-      text: "Found my dream apartment through Square One Rentals. The process was smooth and efficient!",
+      text: "Found my dream apartment within days of searching. The platform's filtering system made it so easy to find exactly what I was looking for!",
       author: "Lakshveer Chaniana",
-      role: "Tenant"
+      role: "Tenant",
+      image: "/images/testimonials/lakshveer.jpg"
     },
     {
       id: 2,
-      text: "As a landlord, I appreciate how easy it is to list and manage my properties on this platform.",
+      text: "As a property manager, I love how streamlined the listing process is. The verification system gives tenants confidence in our properties.",
       author: "Owais N.",
-      role: "Landlord"
+      role: "Property Manager",
+      image: "/images/testimonials/owais.jpg"
     }
   ];
 
   return (
-    <main className="min-h-screen bg-gray-100">
+    <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[550px] flex items-center justify-center text-white">
+      <section className="relative h-[600px] flex items-center justify-center text-white">
         <div className="absolute inset-0 z-0">
-          <Image src="/images/Skyscraper.jpg" alt="Square One Area" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-black/60" />
+          <Image 
+            src="/images/Skyscraper.jpg" 
+            alt="Square One Area" 
+            fill 
+            className="object-cover brightness-75" 
+            priority 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
         </div>
 
-        <div className="relative z-10 text-center max-w-3xl mx-auto px-6">
-          <h1 className="text-6xl font-extrabold tracking-tight mb-5 text-white">Square One Rentals</h1>
-          <p className="text-lg font-light opacity-90 mb-8">
-            Find your perfect rental in the heart of Mississauga.
+        <motion.div 
+          className="relative z-10 text-center max-w-4xl mx-auto px-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
+            Find Your Perfect Home in Mississauga
+          </h1>
+          <p className="text-xl md:text-2xl font-light mb-10 max-w-3xl mx-auto">
+            Discover premium rentals around Square One. Modern living made simple.
           </p>
-          <div className="flex gap-5 justify-center">
-            <Link href="/listings">
-              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
-                Browse Listings
-              </Button>
-            </Link>
-            <Link href="/submit">
-              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
-                Submit Listing
-              </Button>
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-5 justify-center">
+            <Button
+              asChild
+              size="lg"
+              variant="secondary"
+              className="text-lg px-8 py-6 rounded-xl hover:scale-105 transition-transform"
+            >
+              <Link href="/listings">Browse Listings</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="text-lg px-8 py-6 rounded-xl bg-transparent border-2 border-white text-white hover:bg-white/10 hover:scale-105 transition-all"
+            >
+              <Link href="/submit">List Your Property</Link>
+            </Button>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Featured Listings Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-10 text-center text-black">Featured Listings</h2>
+      <section className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Listings</h2>
+            <p className="mt-4 text-xl text-gray-600">Discover our hand-picked properties</p>
+          </motion.div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <motion.div
+                key={listing.id}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <ListingCard listing={listing} />
+              </motion.div>
             ))}
           </div>
-          <div className="mt-12 text-center">
-            <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
+          
+          <motion.div 
+            className="mt-16 text-center"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="text-lg px-8 hover:scale-105 transition-transform"
+            >
               <Link href="/listings">View All Listings</Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-12 text-black">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {["Search Listings", "Connect with Landlords", "Secure Your Home"].map((step, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg shadow-lg text-center">
-                <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                  {index + 1}
-                </div>
-                <h3 className="text-2xl font-semibold mb-3 text-black">{step}</h3>
-                <p className="text-black">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-              </div>
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">How It Works</h2>
+            <p className="mt-4 text-xl text-gray-600">Three simple steps to your new home</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {[
+              {
+                title: "Search Listings",
+                description: "Use our smart filters to find properties that match your exact needs.",
+                icon: "🔍"
+              },
+              {
+                title: "Connect Directly",
+                description: "Message landlords and schedule viewings through our secure platform.",
+                icon: "💬"
+              },
+              {
+                title: "Move In",
+                description: "Complete the rental process and start your new chapter.",
+                icon: "🏠"
+              }
+            ].map((step, index) => (
+              <motion.div
+                key={index}
+                className="relative p-8 bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+              >
+                <div className="text-4xl mb-4">{step.icon}</div>
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">{step.title}</h3>
+                <p className="text-gray-600">{step.description}</p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center text-black">What Our Users Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="bg-gray-100 p-6 rounded-lg shadow-md">
-                <p className="text-black italic mb-4">&ldquo;{testimonial.text}&rdquo;</p>
-                <p className="font-bold text-black">{testimonial.author}</p>
-                <p className="text-black">{testimonial.role}</p>
-              </div>
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">What Our Users Say</h2>
+            <p className="mt-4 text-xl text-gray-600">Real experiences from our community</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={testimonial.id}
+                className="flex gap-6 p-8 bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.1 }}
+              >
+                <div className="flex-1">
+                  <p className="text-gray-600 text-lg leading-relaxed mb-6">"{testimonial.text}"</p>
+                  <div>
+                    <p className="font-semibold text-gray-900">{testimonial.author}</p>
+                    <p className="text-gray-500">{testimonial.role}</p>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Call to Action Section */}
-      <section
-        className="relative py-24 text-white text-center bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/condos-at-square-one-district-12.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="relative z-10 max-w-3xl mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-bold !text-white mb-6">
+      <section className="relative py-24 text-white">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/condos-at-square-one-district-12.jpg"
+            alt="Square One District"
+            fill
+            className="object-cover brightness-50"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
+        </div>
+        
+        <motion.div 
+          className="relative z-10 container mx-auto px-4 text-center"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Ready to Find Your Perfect Home?
           </h2>
-          <p className="text-lg md:text-xl opacity-100 mb-10 bg-black/10 px-3 py-1 inline-block rounded-md">
+          <p className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
             Join thousands of satisfied tenants who found their dream home in Mississauga.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/listings">
-              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
-                Browse Listings
-              </Button>
-            </Link>
-            <Link href="/submit">
-              <Button className="px-6 py-3 text-lg bg-white text-black hover:bg-gray-200 border border-gray-300 rounded-lg">
-                Submit Listing
-              </Button>
-            </Link>
+            <Button
+              asChild
+              size="lg"
+              variant="secondary"
+              className="text-lg px-8 rounded-xl hover:scale-105 transition-transform"
+            >
+              <Link href="/listings">Browse Listings</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="text-lg px-8 rounded-xl bg-transparent border-2 border-white text-white hover:bg-white/10 hover:scale-105 transition-all"
+            >
+              <Link href="/submit">List Your Property</Link>
+            </Button>
           </div>
-        </div>
+        </motion.div>
       </section>
     </main>
   );

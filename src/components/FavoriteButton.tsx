@@ -18,7 +18,10 @@ const FavoriteButton = ({ listingId, isFavorited = false, className = '' }: Favo
   const [isLoading, setIsLoading] = useState(false);
   const [favorited, setFavorited] = useState(isFavorited);
 
-  const toggleFavorite = async () => {
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent event bubbling
+    e.stopPropagation();
+
     if (!session?.user) {
       router.push('/auth/signin');
       return;
@@ -34,14 +37,17 @@ const FavoriteButton = ({ listingId, isFavorited = false, className = '' }: Favo
       });
 
       if (!response.ok) {
-        throw new Error('Failed to toggle favorite');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to toggle favorite');
       }
 
-      setFavorited(!favorited);
-      toast.success(favorited ? 'Removed from favorites' : 'Added to favorites');
+      const data = await response.json();
+      setFavorited(data.isFavorited);
+      toast.success(data.message);
       router.refresh();
     } catch (error) {
-      toast.error('Something went wrong');
+      console.error('Error toggling favorite:', error);
+      toast.error(error instanceof Error ? error.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -55,15 +61,18 @@ const FavoriteButton = ({ listingId, isFavorited = false, className = '' }: Favo
         ${className}
         p-2 rounded-full 
         hover:opacity-80 
-        transition
-        ${favorited ? 'text-rose-500' : 'text-neutral-500'}
+        transition-all
+        ${favorited ? 'text-rose-500 scale-110' : 'text-neutral-500 scale-100'}
+        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
       <Heart
         className={`
           h-6 
           w-6 
-          ${favorited ? 'fill-rose-500' : 'fill-none'}
+          transition-all
+          ${favorited ? 'fill-rose-500 scale-110' : 'fill-none scale-100'}
+          ${isLoading ? 'animate-pulse' : ''}
         `}
       />
     </button>

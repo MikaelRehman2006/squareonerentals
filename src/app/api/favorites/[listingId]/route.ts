@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
-import { User, IUser } from '@/models/User';
-import { Listing, IListing } from '@/models/Listing';
+import { connectDB } from '@/lib/mongodb';
+import { User } from '@/models/User';
+import { Listing } from '@/models/Listing';
 import mongoose from 'mongoose';
 
 export async function POST(
@@ -21,9 +21,16 @@ export async function POST(
       );
     }
 
-    // Check if listing exists
-    const listing = await Listing.findById(params.listingId).lean() as IListing & { _id: mongoose.Types.ObjectId } | null;
+    // Validate listingId format
+    if (!mongoose.Types.ObjectId.isValid(params.listingId)) {
+      return NextResponse.json(
+        { error: 'Invalid listing ID format' },
+        { status: 400 }
+      );
+    }
 
+    // Check if listing exists
+    const listing = await Listing.findById(params.listingId);
     if (!listing) {
       return NextResponse.json(
         { error: 'Listing not found' },
@@ -31,12 +38,19 @@ export async function POST(
       );
     }
 
-    // Add listing to user's favorites
-    const user = await User.findByIdAndUpdate(
-      session.user.id,
-      { $addToSet: { favorites: params.listingId } },
-      { new: true }
-    ).lean() as IUser & { _id: mongoose.Types.ObjectId } | null;
+    // Add listing to user's favorites and update listing's favoritedBy
+    const [user] = await Promise.all([
+      User.findByIdAndUpdate(
+        session.user.id,
+        { $addToSet: { favorites: params.listingId } },
+        { new: true }
+      ),
+      Listing.findByIdAndUpdate(
+        params.listingId,
+        { $addToSet: { favoritedBy: session.user.id } },
+        { new: true }
+      )
+    ]);
 
     if (!user) {
       return NextResponse.json(
@@ -45,7 +59,10 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({ message: 'Listing added to favorites' });
+    return NextResponse.json({ 
+      message: 'Listing added to favorites',
+      isFavorited: true
+    });
   } catch (error) {
     console.error('Error adding to favorites:', error);
     return NextResponse.json(
@@ -70,12 +87,27 @@ export async function DELETE(
       );
     }
 
-    // Remove listing from user's favorites
-    const user = await User.findByIdAndUpdate(
-      session.user.id,
-      { $pull: { favorites: params.listingId } },
-      { new: true }
-    ).lean() as IUser & { _id: mongoose.Types.ObjectId } | null;
+    // Validate listingId format
+    if (!mongoose.Types.ObjectId.isValid(params.listingId)) {
+      return NextResponse.json(
+        { error: 'Invalid listing ID format' },
+        { status: 400 }
+      );
+    }
+
+    // Remove listing from user's favorites and update listing's favoritedBy
+    const [user] = await Promise.all([
+      User.findByIdAndUpdate(
+        session.user.id,
+        { $pull: { favorites: params.listingId } },
+        { new: true }
+      ),
+      Listing.findByIdAndUpdate(
+        params.listingId,
+        { $pull: { favoritedBy: session.user.id } },
+        { new: true }
+      )
+    ]);
 
     if (!user) {
       return NextResponse.json(
@@ -84,7 +116,10 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ message: 'Listing removed from favorites' });
+    return NextResponse.json({ 
+      message: 'Listing removed from favorites',
+      isFavorited: false
+    });
   } catch (error) {
     console.error('Error removing from favorites:', error);
     return NextResponse.json(
