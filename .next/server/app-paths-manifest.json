@@ -1,5 +1,10 @@
 {
-  "/page": "app/page.js",
-  "/about/page": "app/about/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/submit/page": "app/submit/page.js",
+  "/listings/[listingId]/page": "app/listings/[listingId]/page.js",
+  "/api/listings/[listingId]/route": "app/api/listings/[listingId]/route.js",
+  "/listings/[listingId]/edit/page": "app/listings/[listingId]/edit/page.js",
+  "/listings/page": "app/listings/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }

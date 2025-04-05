@@ -70,7 +70,7 @@ export default function AdminPage() {
     
     if (status === 'loading') return;
 
-    if (!session || !session.user || session.user.role !== 'admin') {
+    if (!session || !session.user || session.user.role !== 'ADMIN') {
       console.log('Unauthorized access attempt');
       router.push('/');
       return;

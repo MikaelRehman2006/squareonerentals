@@ -2,11 +2,20 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import { authOptions } from '@/lib/auth-options';
+import { authOptions } from '@/lib/auth';
 
 // Helper function to check if user is admin
 async function isAdmin(email: string) {
-  return email === 'mikaelr112@gmail.com';
+  if (!email) return false;
+  
+  // Check if user has ADMIN role in database
+  await connectDB();
+  const user = await User.findOne({ email });
+  if (user?.role === 'ADMIN') return true;
+  
+  // Fallback to hardcoded admin emails
+  const adminEmails = ['volcanxic@gmail.com', 'mikaelr112@gmail.com'];
+  return adminEmails.includes(email.toLowerCase());
 }
 
 export async function GET() {
@@ -105,11 +114,12 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Don't allow removing admin role from super admin
-    if (user.email === 'mikaelr112@gmail.com') {
+    // Don't allow removing the last admin
+    const adminCount = await User.countDocuments({ role: 'ADMIN' });
+    if (adminCount <= 1 && user.role === 'ADMIN') {
       return NextResponse.json(
-        { error: 'Cannot remove super admin role' },
-        { status: 403 }
+        { error: 'Cannot remove the last admin user' },
+        { status: 400 }
       );
     }
 
@@ -120,7 +130,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error('Error in DELETE /api/admin/users:', error);
     return NextResponse.json(
-      { error: 'Failed to remove admin role' },
+      { error: 'Failed to update user role' },
       { status: 500 }
     );
   }
