@@ -244,7 +244,7 @@ export default function CareersPage() {
                     <Typography
                       variant="h6"
                       component="h2"
-                      sx={{ fontWeight: 600 }}
+                      sx={{ fontWeight: 500, color: 'black' }}
                     >
                       {job.title}
                     </Typography>
