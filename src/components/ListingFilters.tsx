@@ -127,14 +127,16 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           <label className="block text-sm font-medium text-gray-500 mb-2">Amenities</label>
           <div className="grid grid-cols-1 gap-2">
             {AMENITIES.map(amenity => (
-              <label key={amenity} className="flex items-center hover:bg-gray-50 pl-1 py-1 rounded">
-                <input
-                  type="checkbox"
-                  checked={filters.amenities.includes(amenity)}
-                  onChange={() => handleArrayToggle('amenities', amenity)}
-                  className="rounded text-blue-600 focus:ring-blue-500 mr-2"
-                />
-                <span className="text-sm text-gray-600">{amenity}</span>
+              <label key={amenity} className="flex items-center pl-1 py-1 rounded hover:bg-gray-50">
+                <div className="w-5">
+                  <input
+                    type="checkbox"
+                    checked={filters.amenities.includes(amenity)}
+                    onChange={() => handleArrayToggle('amenities', amenity)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                </div>
+                <span className="text-sm text-gray-600 ml-2">{amenity}</span>
               </label>
             ))}
           </div>
@@ -157,13 +159,15 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
               <div className="grid grid-cols-1 gap-2">
                 {FEATURES.map(feature => (
                   <label key={feature} className="flex items-center hover:bg-gray-50 pl-1 py-1 rounded">
-                    <input
-                      type="checkbox"
-                      checked={filters.features.includes(feature)}
-                      onChange={() => handleArrayToggle('features', feature)}
-                      className="rounded text-blue-600 focus:ring-blue-500 mr-2"
-                    />
-                    <span className="text-sm text-gray-600">{feature}</span>
+                    <div className='w-5'>
+                      <input
+                        type="checkbox"
+                        checked={filters.features.includes(feature)}
+                        onChange={() => handleArrayToggle('features', feature)}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                    </div>  
+                    <span className="text-sm text-gray-600 ml-2">{feature}</span>
                   </label>
                 ))}
               </div>
@@ -175,13 +179,15 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
               <div className="grid grid-cols-1 gap-2">
                 {UTILITIES.map(utility => (
                   <label key={utility} className="flex items-center hover:bg-gray-50 pl-1 py-1 rounded">
-                    <input
-                      type="checkbox"
-                      checked={filters.utilities.includes(utility)}
-                      onChange={() => handleArrayToggle('utilities', utility)}
-                      className="rounded text-blue-600 focus:ring-blue-500 mr-2"
-                    />
-                    <span className="text-sm text-gray-600">{utility}</span>
+                     <div className='w-5'> 
+                      <input
+                        type="checkbox"
+                        checked={filters.utilities.includes(utility)}
+                        onChange={() => handleArrayToggle('utilities', utility)}
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                    </div>    
+                    <span className="text-sm text-gray-600 ml-2">{utility}</span>
                   </label>
                 ))}
               </div>
