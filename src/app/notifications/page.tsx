@@ -1,17 +1,17 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import connectToDatabase from '@/lib/mongodb';
-import { Collection } from 'mongodb';
+import { connectDB } from '@/lib/mongodb';
+import mongoose, { Document } from 'mongoose';
 
-interface Notification {
-  _id: string;
+interface INotification {
+  _id: mongoose.Types.ObjectId;
   userId: string;
   title: string;
   message: string;
@@ -22,6 +22,22 @@ interface Notification {
   link?: string;
 }
 
+// Define Notification Schema
+const notificationSchema = new mongoose.Schema<INotification>({
+  userId: { type: String, required: true },
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  senderName: String,
+  senderAvatar: String,
+  link: String,
+});
+
+// Get or create model
+const Notification = mongoose.models.Notification as mongoose.Model<INotification> || 
+  mongoose.model<INotification>('Notification', notificationSchema);
+
 export default async function NotificationsPage() {
   const session = await getServerSession(authOptions);
 
@@ -29,19 +45,17 @@ export default async function NotificationsPage() {
     redirect('/auth/signin');
   }
 
-  const { db } = await connectToDatabase();
-  const notificationsCollection: Collection<Notification> = db.collection('notifications');
+  await connectDB();
   
-  const notifications = await notificationsCollection
+  const notifications: INotification[] = await Notification
     .find({ userId: session.user.id })
     .sort({ createdAt: -1 })
-    .toArray();
+    .lean();
 
   const markAllAsRead = async () => {
     'use server';
-    const { db } = await connectToDatabase();
-    const notificationsCollection: Collection<Notification> = db.collection('notifications');
-    await notificationsCollection.updateMany(
+    await connectDB();
+    await Notification.updateMany(
       {
         userId: session.user.id,
         read: false,
@@ -53,57 +67,61 @@ export default async function NotificationsPage() {
   };
 
   return (
-    <main className="container max-w-4xl py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Notifications</h1>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Notifications</h1>
         <form action={markAllAsRead}>
-          <Button variant="outline">Mark all as read</Button>
+          <Button variant="outline" size="sm">
+            Mark all as read
+          </Button>
         </form>
       </div>
 
       <div className="space-y-4">
-        {notifications.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No notifications yet
-            </CardContent>
-          </Card>
-        ) : (
-          notifications.map((notification: Notification) => (
-            <Card key={notification._id.toString()} className={notification.read ? 'bg-muted' : ''}>
-              <CardContent className="flex items-start gap-4 py-4">
-                {notification.senderAvatar && (
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={notification.senderAvatar} alt={notification.senderName || ''} />
-                    <AvatarFallback>{notification.senderName?.charAt(0) || '?'}</AvatarFallback>
-                  </Avatar>
-                )}
+        {notifications.map((notification: INotification) => (
+          <Card key={notification._id.toString()} className={notification.read ? 'bg-gray-50' : 'bg-white border-blue-200'}>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-4">
+                <Avatar>
+                  <AvatarImage src={notification.senderAvatar} />
+                  <AvatarFallback>
+                    {notification.senderName?.[0] || 'N'}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="flex-1">
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between">
                     <div>
                       <p className="font-medium">{notification.title}</p>
-                      <p className="text-sm text-muted-foreground">{notification.message}</p>
+                      <p className="text-sm text-gray-600">{notification.message}</p>
                     </div>
                     {!notification.read && (
-                      <Badge variant="default" className="mt-0.5">New</Badge>
+                      <Badge variant="secondary" className="ml-2">New</Badge>
                     )}
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                  <div className="mt-2 flex items-center gap-4">
+                    <p className="text-sm text-gray-500">
+                      {format(new Date(notification.createdAt), 'PPp')}
                     </p>
                     {notification.link && (
-                      <Link href={notification.link} className="text-xs text-primary hover:underline">
+                      <Link href={notification.link} className="text-sm text-blue-600 hover:underline">
                         View details
                       </Link>
                     )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {notifications.length === 0 && (
+          <Card>
+            <CardContent className="p-6 text-center text-gray-500">
+              No notifications yet
+            </CardContent>
+          </Card>
         )}
       </div>
-    </main>
+    </div>
   );
 }

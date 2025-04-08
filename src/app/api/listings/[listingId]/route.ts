@@ -61,10 +61,11 @@ export async function GET(request: NextRequest, { params }: Props) {
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    // Validate listingId
+    if (!mongoose.Types.ObjectId.isValid(params.listingId)) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Invalid listing ID' },
+        { status: 400 }
       );
     }
 
@@ -79,13 +80,22 @@ export async function GET(request: NextRequest, { params }: Props) {
       );
     }
 
-    // Ensure user owns this listing
-    const user = await User.findOne({ email: session.user.email });
-    if (!user || user._id.toString() !== listing.userId._id.toString()) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // If listing is not active, only allow access to the owner
+    if (listing.status !== 'ACTIVE') {
+      if (!session?.user?.email) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+
+      const user = await User.findOne({ email: session.user.email });
+      if (!user || user._id.toString() !== listing.userId._id.toString()) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
 
     // Format the listing data

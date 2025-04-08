@@ -5,6 +5,13 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FavoriteButtonProps {
   listingId: string;
@@ -54,28 +61,40 @@ const FavoriteButton = ({ listingId, isFavorited = false, className = '' }: Favo
   };
 
   return (
-    <button
-      onClick={toggleFavorite}
-      disabled={isLoading}
-      className={`
-        ${className}
-        p-2 rounded-full 
-        hover:opacity-80 
-        transition-all
-        ${favorited ? 'text-rose-500 scale-110' : 'text-neutral-500 scale-100'}
-        ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-      `}
-    >
-      <Heart
-        className={`
-          h-6 
-          w-6 
-          transition-all
-          ${favorited ? 'fill-rose-500 scale-110' : 'fill-none scale-100'}
-          ${isLoading ? 'animate-pulse' : ''}
-        `}
-      />
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={toggleFavorite}
+            disabled={isLoading}
+            variant="ghost"
+            size="icon"
+            className={`
+              ${className}
+              rounded-full
+              hover:bg-gray-100
+              transition-all
+              ${favorited ? 'text-rose-500' : 'text-gray-500'}
+              ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
+          >
+            <Heart
+              className={`
+                h-5
+                w-5
+                transition-all
+                ${favorited ? 'fill-rose-500' : 'fill-none'}
+                ${isLoading ? 'animate-pulse' : ''}
+              `}
+            />
+            <span className="sr-only">{favorited ? 'Remove from favorites' : 'Add to favorites'}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{favorited ? 'Remove from favorites' : 'Add to favorites'}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

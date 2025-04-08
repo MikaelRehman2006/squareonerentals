@@ -14,10 +14,19 @@ export async function POST(
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Get user by email
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
       );
     }
 
@@ -39,23 +48,23 @@ export async function POST(
     }
 
     // Add listing to user's favorites and update listing's favoritedBy
-    const [user] = await Promise.all([
+    const [updatedUser] = await Promise.all([
       User.findByIdAndUpdate(
-        session.user.id,
+        user._id,
         { $addToSet: { favorites: params.listingId } },
         { new: true }
       ),
       Listing.findByIdAndUpdate(
         params.listingId,
-        { $addToSet: { favoritedBy: session.user.id } },
+        { $addToSet: { favoritedBy: user._id } },
         { new: true }
       )
     ]);
 
-    if (!user) {
+    if (!updatedUser) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'Failed to update user favorites' },
+        { status: 500 }
       );
     }
 
@@ -80,10 +89,19 @@ export async function DELETE(
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Get user by email
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
       );
     }
 
@@ -96,23 +114,23 @@ export async function DELETE(
     }
 
     // Remove listing from user's favorites and update listing's favoritedBy
-    const [user] = await Promise.all([
+    const [updatedUser] = await Promise.all([
       User.findByIdAndUpdate(
-        session.user.id,
+        user._id,
         { $pull: { favorites: params.listingId } },
         { new: true }
       ),
       Listing.findByIdAndUpdate(
         params.listingId,
-        { $pull: { favoritedBy: session.user.id } },
+        { $pull: { favoritedBy: user._id } },
         { new: true }
       )
     ]);
 
-    if (!user) {
+    if (!updatedUser) {
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'Failed to update user favorites' },
+        { status: 500 }
       );
     }
 

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -17,108 +16,100 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Trash2, Star, StarOff } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
+import { MoreHorizontal, Search, Filter } from 'lucide-react';
+import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface Listing {
   id: string;
   title: string;
   price: number;
-  location: string;
-  status: string;
-  featured: boolean;
+  status: 'ACTIVE' | 'ARCHIVED' | 'FLAGGED';
   createdAt: string;
   user: {
-    name: string | null;
-    email: string | null;
+    id: string;
+    name: string;
+    email: string;
   };
 }
 
 export default function ListingsPage() {
+  const searchParams = useSearchParams();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [dateFilter, setDateFilter] = useState('all');
+  const [userFilter, setUserFilter] = useState(searchParams.get('userId') || '');
 
   useEffect(() => {
     fetchListings();
-  }, []);
+  }, [statusFilter, dateFilter, userFilter]);
 
   const fetchListings = async () => {
     try {
-      const response = await fetch('/api/admin/listings');
+      const queryParams = new URLSearchParams({
+        status: statusFilter,
+        dateRange: dateFilter,
+        userId: userFilter,
+        search: searchQuery,
+        minPrice: priceRange[0].toString(),
+        maxPrice: priceRange[1].toString(),
+      });
+
+      const response = await fetch(`/api/admin/listings?${queryParams}`);
       if (response.ok) {
         const data = await response.json();
-        setListings(data);
-      } else {
-        // If we get unauthorized error
-        const errorData = await response.json();
-        toast.error(errorData.error || 'Failed to load listings');
+        setListings(data.listings);
       }
     } catch (error) {
       console.error('Error fetching listings:', error);
+      toast.error('Failed to fetch listings');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateListingStatus = async (listingId: string, status: string) => {
+  const handleStatusChange = async (listingId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
         fetchListings();
-        toast.success(`Listing ${status === 'ACTIVE' ? 'activated' : 'deactivated'} successfully`);
-      } else {
-        toast.error('Failed to update listing status');
+        toast.success(`Listing ${newStatus.toLowerCase()} successfully`);
       }
     } catch (error) {
-      console.error('Error updating listing status:', error);
-      toast.error('Failed to update listing status');
+      console.error('Error updating listing:', error);
+      toast.error('Failed to update listing');
     }
   };
 
-  const toggleFeatured = async (listingId: string, currentFeatured: boolean) => {
-    try {
-      const response = await fetch(`/api/admin/listings/${listingId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ featured: !currentFeatured }),
-      });
-
-      if (response.ok) {
-        fetchListings();
-        toast.success(currentFeatured ? 'Listing removed from featured' : 'Listing marked as featured');
-      } else {
-        toast.error('Failed to update featured status');
-      }
-    } catch (error) {
-      console.error('Error updating featured status:', error);
-      toast.error('Failed to update featured status');
-    }
-  };
-
-  const deleteListing = async (listingId: string) => {
+  const handleDeleteListing = async (listingId: string) => {
     if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
       return;
     }
-    
+
     try {
       const response = await fetch(`/api/admin/listings/${listingId}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        fetchListings();
+        setListings(listings.filter(listing => listing.id !== listingId));
         toast.success('Listing deleted successfully');
-      } else {
-        toast.error('Failed to delete listing');
       }
     } catch (error) {
       console.error('Error deleting listing:', error);
@@ -126,17 +117,86 @@ export default function ListingsPage() {
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchListings();
+  };
+
+  const handlePriceRangeChange = (value: number[]) => {
+    setPriceRange([value[0], value[1]]);
+  };
+
   if (loading) {
-    return <div>Loading listings...</div>;
+    return <div className="p-8">Loading...</div>;
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Listings</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Listings</h2>
         <p className="text-muted-foreground">
-          Manage and moderate property listings.
+          Manage property listings across the platform.
         </p>
+      </div>
+
+      {/* Filters */}
+      <div className="grid gap-4">
+        <div className="flex items-center gap-4">
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search listings..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+          </form>
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Listings</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="flagged">Flagged</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by date" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="month">This Month</SelectItem>
+              <SelectItem value="year">This Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Card className="p-4">
+          <Label>Price Range</Label>
+          <div className="pt-2">
+            <Slider
+              min={0}
+              max={10000}
+              step={100}
+              value={[priceRange[0], priceRange[1]]}
+              onValueChange={handlePriceRangeChange}
+              className="my-4"
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>${priceRange[0]}</span>
+              <span>${priceRange[1]}</span>
+            </div>
+          </div>
+        </Card>
       </div>
 
       <div className="rounded-md border">
@@ -144,92 +204,84 @@ export default function ListingsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Price</TableHead>
+              <TableHead>User</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Featured</TableHead>
-              <TableHead>Owner</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead>Posted</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {listings.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
-                  No listings found
-                </TableCell>
-              </TableRow>
-            ) : (
+            {listings && listings.length > 0 ? (
               listings.map((listing) => (
                 <TableRow key={listing.id}>
-                  <TableCell className="font-medium">{listing.title}</TableCell>
-                  <TableCell>{listing.location}</TableCell>
-                  <TableCell>${listing.price}/month</TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      listing.status === 'ACTIVE'
-                        ? 'bg-green-100 text-green-800'
-                        : listing.status === 'INACTIVE'
-                        ? 'bg-gray-100 text-gray-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <Link
+                      href={`/listings/${listing.id}`}
+                      className="text-primary hover:underline"
+                    >
+                      {listing.title}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/admin/users?search=${listing.user.email}`}
+                      className="text-foreground hover:underline"
+                    >
+                      {listing.user.name || listing.user.email}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        listing.status === 'ACTIVE'
+                          ? 'outline'
+                          : listing.status === 'FLAGGED'
+                          ? 'destructive'
+                          : 'secondary'
+                      }
+                    >
                       {listing.status}
-                    </span>
+                    </Badge>
                   </TableCell>
+                  <TableCell>${listing.price}</TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      listing.featured
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-500'
-                    }`}>
-                      {listing.featured ? 'Featured' : 'Regular'}
-                    </span>
+                    {new Date(listing.createdAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>{listing.user?.name || listing.user?.email || 'Unknown'}</TableCell>
-                  <TableCell>{new Date(listing.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/listings/${listing.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Listing
-                          </Link>
-                        </DropdownMenuItem>
+                        {listing.status !== 'ACTIVE' && (
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(listing.id, 'ACTIVE')}
+                          >
+                            Activate
+                          </DropdownMenuItem>
+                        )}
+                        {listing.status !== 'ARCHIVED' && (
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(listing.id, 'ARCHIVED')}
+                          >
+                            Archive
+                          </DropdownMenuItem>
+                        )}
+                        {listing.status !== 'FLAGGED' && (
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(listing.id, 'FLAGGED')}
+                          >
+                            Flag as Suspicious
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => toggleFeatured(listing.id, listing.featured)}
+                          onClick={() => handleDeleteListing(listing.id)}
+                          className="text-red-600"
                         >
-                          {listing.featured ? (
-                            <>
-                              <StarOff className="mr-2 h-4 w-4" />
-                              Remove Featured
-                            </>
-                          ) : (
-                            <>
-                              <Star className="mr-2 h-4 w-4" />
-                              Mark as Featured
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            updateListingStatus(
-                              listing.id,
-                              listing.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-                            )
-                          }
-                        >
-                          {listing.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => deleteListing(listing.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -237,10 +289,16 @@ export default function ListingsPage() {
                   </TableCell>
                 </TableRow>
               ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-4 text-foreground">
+                  No listings found
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
     </div>
   );
-} 
+}

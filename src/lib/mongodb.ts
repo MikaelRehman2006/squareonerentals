@@ -13,9 +13,7 @@ if (!process.env.MONGODB_URI) {
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-const options = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+const options: mongoose.ConnectOptions = {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
@@ -23,7 +21,7 @@ const options = {
 };
 
 // Create the default connection
-export const connectDB = async () => {
+export const connectDB = async (): Promise<typeof mongoose> => {
   try {
     if (mongoose.connection.readyState >= 1) {
       console.log('Using existing MongoDB connection');
@@ -51,18 +49,25 @@ export const connectDB = async () => {
     });
 
     return conn;
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw new Error('Failed to connect to MongoDB. Please check your connection string and make sure your IP is whitelisted.');
+  } catch (error: any) {
+    console.error('MongoDB connection error:', {
+      message: error.message,
+      code: error.code,
+      name: error.name,
+      stack: error.stack
+    });
+    throw error;
   }
 };
 
+// Disconnect from MongoDB
 export const disconnectDB = async () => {
   try {
     if (mongoose.connection.readyState === 0) {
       console.log('MongoDB already disconnected');
       return;
     }
+    
     await mongoose.disconnect();
     console.log('MongoDB disconnected successfully');
   } catch (error) {

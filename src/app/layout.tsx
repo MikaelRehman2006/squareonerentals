@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 import AuthProvider from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { ChatWidget } from '@/components/ChatWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <MuiThemeProvider>
             <AuthProvider>
               <div className="flex flex-col min-h-screen">
@@ -33,6 +34,7 @@ export default function RootLayout({
                 </main>
                 <Footer />
               </div>
+              <ChatWidget />
               <Toaster />
             </AuthProvider>
           </MuiThemeProvider>

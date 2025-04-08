@@ -78,47 +78,38 @@ export default function ListingsPage() {
   }, []);
 
   // Apply sorting
-  useEffect(() => {
-    if (!Array.isArray(filteredListings)) {
-      return;
-    }
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+    let sortedListings = [...filteredListings];
 
-    const listingsToSort = [...filteredListings];
-    let sortedListings = listingsToSort;
-
-    switch (sortBy) {
+    switch (value) {
       case 'price-asc':
-        sortedListings = listingsToSort.sort((a, b) => a.price - b.price);
+        sortedListings.sort((a, b) => a.price - b.price);
         break;
       case 'price-desc':
-        sortedListings = listingsToSort.sort((a, b) => b.price - a.price);
+        sortedListings.sort((a, b) => b.price - a.price);
         break;
       case 'newest':
-        sortedListings = listingsToSort.sort((a, b) => 
+        sortedListings.sort((a, b) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         break;
       case 'oldest':
-        sortedListings = listingsToSort.sort((a, b) => 
+        sortedListings.sort((a, b) => 
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
         break;
       default:
         // Keep featured listings first by default
-        sortedListings = listingsToSort.sort((a, b) => {
+        sortedListings.sort((a, b) => {
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
     }
 
-    // Only update if the sort order has actually changed
-    const currentOrder = JSON.stringify(filteredListings.map(l => l.id));
-    const newOrder = JSON.stringify(sortedListings.map(l => l.id));
-    if (currentOrder !== newOrder) {
-      setFilteredListings(sortedListings);
-    }
-  }, [sortBy]);
+    setFilteredListings(sortedListings);
+  };
 
   const handleFilterChange = (filters: FilterState) => {
     if (!Array.isArray(listings)) {
@@ -202,17 +193,22 @@ export default function ListingsPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Available Listings</h1>
             <div className="flex items-center space-x-4">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="oldest">Oldest First</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-4 mb-6">
+                <Select
+                  value={sortBy}
+                  onValueChange={handleSortChange}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                    <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                    <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-center space-x-2 border rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -310,7 +306,7 @@ export default function ListingsPage() {
                 }>
                   {filteredListings.map((listing) => (
                     <ListingCard
-                      key={listing.id}
+                      key={listing._id}
                       listing={listing}
                     />
                   ))}

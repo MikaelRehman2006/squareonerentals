@@ -1,103 +1,104 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
-  Container,
-  Typography,
-  Box,
-  Tabs,
-  Tab,
-  TextField,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowUpRight, ArrowDownRight, Users, Home, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
+import Link from 'next/link';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
+interface DashboardStats {
+  currentStats: {
+    totalUsers: number;
+    totalListings: number;
+    activeListings: number;
+    totalReports: number;
+    averagePrice: string;
+    userGrowth: number;
+    listingGrowth: number;
+    userGrowthPercent: string;
+    listingGrowthPercent: string;
+  };
+  recentActivity: {
+    users: Array<{
+      id: string;
+      name: string;
+      email: string;
+      createdAt: string;
+    }>;
+    listings: Array<{
+      id: string;
+      title: string;
+      price: number;
+      status: string;
+      createdAt: string;
+      userId: {
+        name: string;
+        email: string;
+      };
+    }>;
+    reports: Array<{
+      id: string;
+      listingId: {
+        id: string;
+        title: string;
+      };
+      reportedBy: {
+        name: string;
+        email: string;
+      };
+      reason: string;
+      createdAt: string;
+    }>;
+  };
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`admin-tabpanel-${index}`}
-      aria-labelledby={`admin-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
-interface AdminUser {
-  id: string;
-  email: string;
-  role: string;
-}
-
-export default function AdminPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [tabValue, setTabValue] = useState(0);
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+export default function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [addingAdmin, setAddingAdmin] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
-  // Check if user is authorized
   useEffect(() => {
-    console.log('Session:', session);
-    console.log('Status:', status);
-    console.log('User email:', session?.user?.email);
-    console.log('User role:', session?.user?.role);
-    
-    if (status === 'loading') return;
+    fetchStats();
+  }, []);
 
-    if (!session || !session.user || session.user.role !== 'ADMIN') {
-      console.log('Unauthorized access attempt');
-      router.push('/');
-      return;
-    }
-
-    // Load admin data here
-    fetchAdminData();
-  }, [session, status, router]);
-
-  const fetchAdminData = async () => {
+  const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/users');
+      const response = await fetch('/api/admin/stats');
       if (response.ok) {
         const data = await response.json();
-        setAdminUsers(data.users);
+        setStats(data);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch stats');
       }
     } catch (error) {
-      console.error('Error fetching admin data:', error);
-      setError('Failed to load admin data');
+      console.error('Error fetching stats:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to fetch stats');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
   };
 
   const handleAddAdmin = async () => {
+    if (!newAdminEmail) {
+      toast.error('Please enter an email address');
+      return;
+    }
+
     try {
       const response = await fetch('/api/admin/users', {
         method: 'POST',
@@ -111,89 +112,208 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to add admin user');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add admin');
       }
 
-      setSuccess('Admin user added successfully');
+      toast.success('Admin added successfully');
+      setAddingAdmin(false);
       setNewAdminEmail('');
-      // Refresh admin users list
-      fetchAdminData();
-    } catch (err) {
-      setError('Failed to add admin user');
+    } catch (error) {
+      console.error('Error adding admin:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to add admin');
     }
   };
 
+  if (loading) {
+    return <div className="p-8">Loading...</div>;
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Typography variant="h2" component="h1" gutterBottom>
-        Admin Panel
-      </Typography>
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h2>
+          <p className="text-muted-foreground">
+            Overview of your rental platform.
+          </p>
+        </div>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label="Manage Admins" />
-          <Tab label="User Management" />
-          <Tab label="Site Settings" />
-        </Tabs>
-      </Box>
+        <Dialog open={addingAdmin} onOpenChange={setAddingAdmin}>
+          <DialogTrigger asChild>
+            <Button>Add New Admin</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Admin</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  value={newAdminEmail}
+                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                />
+              </div>
+              <Button onClick={handleAddAdmin} className="w-full">
+                Add Admin
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.currentStats.totalUsers}</div>
+            <div className="flex items-center pt-1 text-xs text-muted-foreground">
+              {Number(stats?.currentStats.userGrowthPercent) > 0 ? (
+                <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
+              ) : (
+                <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
+              )}
+              <span className={Number(stats?.currentStats.userGrowthPercent) > 0 ? 'text-green-500' : 'text-red-500'}>
+                {stats?.currentStats.userGrowthPercent}%
+              </span>
+              <span className="ml-1">from last month</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {success}
-        </Alert>
-      )}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
+            <Home className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.currentStats.totalListings}</div>
+            <div className="flex items-center pt-1 text-xs text-muted-foreground">
+              {Number(stats?.currentStats.listingGrowthPercent) > 0 ? (
+                <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
+              ) : (
+                <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
+              )}
+              <span className={Number(stats?.currentStats.listingGrowthPercent) > 0 ? 'text-green-500' : 'text-red-500'}>
+                {stats?.currentStats.listingGrowthPercent}%
+              </span>
+              <span className="ml-1">from last month</span>
+            </div>
+          </CardContent>
+        </Card>
 
-      <TabPanel value={tabValue} index={0}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Add New Admin
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField
-              label="Email"
-              value={newAdminEmail}
-              onChange={(e) => setNewAdminEmail(e.target.value)}
-              sx={{ flexGrow: 1 }}
-            />
-            <Button variant="contained" onClick={handleAddAdmin}>
-              Add Admin
-            </Button>
-          </Box>
-        </Box>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Listings</CardTitle>
+            <Home className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.currentStats.activeListings}</div>
+            <p className="pt-1 text-xs text-muted-foreground">
+              {((stats?.currentStats.activeListings || 0) / (stats?.currentStats.totalListings || 1) * 100).toFixed(1)}% of total
+            </p>
+          </CardContent>
+        </Card>
 
-        <Typography variant="h6" gutterBottom>
-          Current Admins
-        </Typography>
-        <List>
-          {adminUsers.map((user) => (
-            <ListItem key={user.id}>
-              <ListItemText primary={user.email} secondary={`Role: ${user.role}`} />
-              <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="edit">
-                  <EditIcon />
-                </IconButton>
-                <IconButton edge="end" aria-label="delete">
-                  <DeleteIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
-      </TabPanel>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Price</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${stats?.currentStats.averagePrice}</div>
+            <p className="pt-1 text-xs text-muted-foreground">
+              Per active listing
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-      <TabPanel value={tabValue} index={1}>
-        <Typography variant="h6">User Management Coming Soon</Typography>
-      </TabPanel>
+      {/* Recent Activity */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* Recent Users */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              {stats?.recentActivity.users.map((user) => (
+                <div key={user.id} className="flex items-center">
+                  <div className="ml-4 space-y-1">
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      {user.name || user.email}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-      <TabPanel value={tabValue} index={2}>
-        <Typography variant="h6">Site Settings Coming Soon</Typography>
-      </TabPanel>
-    </Container>
+        {/* Recent Listings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Listings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              {stats?.recentActivity.listings.map((listing) => (
+                <div key={listing.id} className="flex items-center">
+                  <div className="ml-4 space-y-1">
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      {listing.title}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      ${listing.price} - {listing.userId.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(listing.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Reports */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Flagged Reports</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              {stats?.recentActivity.reports.map((report) => (
+                <div key={report.id} className="flex items-center">
+                  <div className="ml-4 space-y-1">
+                    <p className="text-sm font-medium leading-none text-foreground">
+                      {report.listingId.title}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Reported by: {report.reportedBy.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(report.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

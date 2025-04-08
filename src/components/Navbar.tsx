@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, User, X, Heart, Bell, Settings, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { Menu, User, X, Heart, Bell, Settings, MessageSquare, LayoutDashboard, ShieldCheck } from 'lucide-react';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -24,11 +24,6 @@ const navigation = [
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
 ];
-
-const isAdmin = (email: string | null | undefined) => {
-  const adminEmails = ['volcanxic@gmail.com', 'mikaelr112@gmail.com'];
-  return email ? adminEmails.includes(email.toLowerCase()) : false;
-};
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -135,12 +130,13 @@ export default function Navbar() {
                       Settings
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center">
+                      <ShieldCheck className="w-4 h-4 mr-2" />
+                      Admin
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  {isAdmin(session?.user?.email) && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin">Admin Panel</Link>
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuItem onClick={handleSignOut}>
                     Sign Out
                   </DropdownMenuItem>
@@ -209,67 +205,6 @@ export default function Navbar() {
                   className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
                 >
                   Sign Up
-                </button>
-              </>
-            )}
-            {session?.user && (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/profile"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/favorites"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Favorites
-                </Link>
-                <Link
-                  href="/notifications"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Notifications
-                </Link>
-                <Link
-                  href="/messages"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Messages
-                </Link>
-                <Link
-                  href="/settings"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Settings
-                </Link>
-                {isAdmin(session?.user?.email) && (
-                  <Link
-                    href="/admin"
-                    className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Admin Panel
-                  </Link>
-                )}
-                <button
-                  onClick={handleSignOut}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                >
-                  Sign Out
                 </button>
               </>
             )}

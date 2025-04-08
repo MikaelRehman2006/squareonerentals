@@ -67,18 +67,18 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="absolute top-4 right-4 flex gap-2">
           <FavoriteButton 
-            listingId={listing.id}
+            listingId={listing._id}
             isFavorited={isFavorited}
             className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
           />
           <ReportButton
             type="LISTING"
-            targetId={listing.id}
+            targetId={listing._id}
             className="bg-white/80 backdrop-blur-sm hover:bg-white/90"
           />
         </div>
         <div className="absolute bottom-4 left-4 right-4 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-          <Link href={`/listings/${listing.id}`}>
+          <Link href={`/listings/${listing._id}`}>
             <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
               <Eye className="w-4 h-4 mr-2" />
               View Details

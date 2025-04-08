@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { toast } from 'sonner';
 import {
   Table,
   TableBody,
@@ -17,47 +15,107 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, CheckCircle, XCircle, Archive, Trash2 } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { MoreHorizontal, Eye, Search } from 'lucide-react';
+import { toast } from 'sonner';
+import Link from 'next/link';
 
 interface Report {
   id: string;
   listing: {
     id: string;
     title: string;
+    status: string;
   };
   reportedBy: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
   };
   listingOwner: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
   };
   reason: string;
   status: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+interface WarnUserDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: (message: string) => void;
+}
+
+function WarnUserDialog({ open, onClose, onConfirm }: WarnUserDialogProps) {
+  const [message, setMessage] = useState('');
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Send Warning</DialogTitle>
+          <DialogDescription>
+            Send a warning message to the user about their listing.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Warning Message</Label>
+            <Textarea
+              placeholder="Enter your warning message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+          <Button onClick={() => onConfirm(message)} className="w-full">
+            Send Warning
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [showWarnDialog, setShowWarnDialog] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [statusFilter]);
 
   const fetchReports = async () => {
     try {
-      const response = await fetch('/api/reports');
+      const queryParams = new URLSearchParams({
+        status: statusFilter,
+        search: searchQuery,
+      });
+
+      const response = await fetch(`/api/reports?${queryParams}`);
       if (response.ok) {
         const data = await response.json();
-        setReports(data);
-      } else {
-        toast.error('Failed to fetch reports');
+        setReports(data.reports || []);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -67,93 +125,128 @@ export default function ReportsPage() {
     }
   };
 
-  const updateReportStatus = async (id: string, status: string) => {
+  const updateReportStatus = async (reportId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/reports/${id}/status`, {
+      const response = await fetch(`/api/reports/${reportId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (response.ok) {
         fetchReports();
-        toast.success(`Report marked as ${status.toLowerCase()}`);
-      } else {
-        toast.error('Failed to update report status');
+        toast.success('Report status updated successfully');
       }
     } catch (error) {
-      console.error('Error updating report status:', error);
-      toast.error('Failed to update report status');
+      console.error('Error updating report:', error);
+      toast.error('Failed to update report');
     }
   };
 
-  const updateListingStatus = async (listingId: string, status: string) => {
+  const handleWarnUser = async (message: string) => {
+    if (!selectedReport) return;
+
     try {
-      const response = await fetch(`/api/listings/${listingId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
+      const response = await fetch(`/api/admin/users/${selectedReport.listingOwner.id}/warn`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          reportId: selectedReport.id,
+          listingId: selectedReport.listing.id,
+        }),
       });
 
       if (response.ok) {
-        toast.success(`Listing ${status === 'ARCHIVED' ? 'archived' : 'activated'}`);
-      } else {
-        toast.error('Failed to update listing status');
+        toast.success('Warning sent successfully');
+        updateReportStatus(selectedReport.id, 'WARNED');
       }
     } catch (error) {
-      console.error('Error updating listing status:', error);
-      toast.error('Failed to update listing status');
+      console.error('Error sending warning:', error);
+      toast.error('Failed to send warning');
+    } finally {
+      setShowWarnDialog(false);
+      setSelectedReport(null);
     }
   };
 
-  const deleteListing = async (listingId: string) => {
-    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
-      return;
-    }
+  const handleTakeAction = async (reportId: string, action: 'ban' | 'remove') => {
+    const report = reports.find(r => r.id === reportId);
+    if (!report) return;
 
     try {
-      const response = await fetch(`/api/listings/${listingId}`, {
-        method: 'DELETE',
-      });
+      if (action === 'ban') {
+        const response = await fetch(`/api/admin/users/${report.listingOwner.id}/ban`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration: '7d', reason: report.reason }),
+        });
 
-      if (response.ok) {
-        toast.success('Listing deleted successfully');
-        fetchReports();
-      } else {
-        toast.error('Failed to delete listing');
+        if (response.ok) {
+          toast.success('User banned successfully');
+          updateReportStatus(reportId, 'ACTIONED');
+        }
+      } else if (action === 'remove') {
+        const response = await fetch(`/api/admin/listings/${report.listing.id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          toast.success('Listing removed successfully');
+          updateReportStatus(reportId, 'ACTIONED');
+        }
       }
     } catch (error) {
-      console.error('Error deleting listing:', error);
-      toast.error('Failed to delete listing');
+      console.error('Error taking action:', error);
+      toast.error(`Failed to ${action === 'ban' ? 'ban user' : 'remove listing'}`);
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchReports();
   };
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-8">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              <span className="ml-2">Loading reports...</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <div className="p-8">Loading...</div>;
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Reports</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Reports</h2>
         <p className="text-muted-foreground">
-          Review and manage reported listings.
+          Review and manage reported listings and users.
         </p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-4">
+        <form onSubmit={handleSearch} className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search reports..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </form>
+
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Reports</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="resolved">Resolved</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="warned">Warned</SelectItem>
+            <SelectItem value="actioned">Actioned</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-md border">
@@ -161,22 +254,16 @@ export default function ReportsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Listing</TableHead>
-              <TableHead>Reason</TableHead>
               <TableHead>Reported By</TableHead>
-              <TableHead>Listing Owner</TableHead>
+              <TableHead>Owner</TableHead>
+              <TableHead>Reason</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Reported On</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {reports.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                  No reports found
-                </TableCell>
-              </TableRow>
-            ) : (
+            {reports && reports.length > 0 ? (
               reports.map((report) => (
                 <TableRow key={report.id}>
                   <TableCell>
@@ -186,26 +273,45 @@ export default function ReportsPage() {
                     >
                       {report.listing.title}
                     </Link>
-                  </TableCell>
-                  <TableCell>{report.reason}</TableCell>
-                  <TableCell>
-                    {report.reportedBy.name || report.reportedBy.email}
-                  </TableCell>
-                  <TableCell>
-                    {report.listingOwner.name || report.listingOwner.email}
+                    {report.listing.status === 'FLAGGED' && (
+                      <Badge variant="destructive" className="ml-2">
+                        Flagged
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        report.status === 'PENDING'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : report.status === 'RESOLVED'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
+                    <Link
+                      href={`/admin/users?search=${report.reportedBy.email}`}
+                      className="text-foreground hover:underline"
                     >
-                      {report.status.toLowerCase()}
-                    </span>
+                      {report.reportedBy.name || report.reportedBy.email}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/admin/users?search=${report.listingOwner.email}`}
+                      className="text-foreground hover:underline"
+                    >
+                      {report.listingOwner.name || report.listingOwner.email}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate">
+                    {report.reason}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        report.status === 'RESOLVED'
+                          ? 'outline'
+                          : report.status === 'REJECTED'
+                          ? 'secondary'
+                          : report.status === 'WARNED' || report.status === 'ACTIONED'
+                          ? 'destructive'
+                          : 'default'
+                      }
+                    >
+                      {report.status}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {new Date(report.createdAt).toLocaleDateString()}
@@ -219,40 +325,48 @@ export default function ReportsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/listings/${report.listing.id}`}>
+                          <Link href={`/listings/${report.listing.id}`} className="flex items-center">
                             <Eye className="mr-2 h-4 w-4" />
                             View Listing
                           </Link>
                         </DropdownMenuItem>
-                        
-                        <DropdownMenuItem
-                          onClick={() => updateListingStatus(report.listing.id, 'ARCHIVED')}
-                        >
-                          <Archive className="mr-2 h-4 w-4" />
-                          Archive Listing
-                        </DropdownMenuItem>
-
-                        <DropdownMenuItem
-                          onClick={() => deleteListing(report.listing.id)}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Listing
-                        </DropdownMenuItem>
-
-                        {report.status !== 'RESOLVED' && (
+                        <DropdownMenuSeparator />
+                        {report.status === 'PENDING' && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedReport(report);
+                                setShowWarnDialog(true);
+                              }}
+                            >
+                              Send Warning
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleTakeAction(report.id, 'ban')}
+                              className="text-red-600"
+                            >
+                              Ban User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleTakeAction(report.id, 'remove')}
+                              className="text-red-600"
+                            >
+                              Remove Listing
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        {report.status !== 'RESOLVED' && report.status !== 'ACTIONED' && (
                           <DropdownMenuItem
                             onClick={() => updateReportStatus(report.id, 'RESOLVED')}
                           >
-                            <CheckCircle className="mr-2 h-4 w-4" />
                             Mark as Resolved
                           </DropdownMenuItem>
                         )}
-                        {report.status !== 'REJECTED' && (
+                        {report.status !== 'REJECTED' && report.status !== 'ACTIONED' && (
                           <DropdownMenuItem
                             onClick={() => updateReportStatus(report.id, 'REJECTED')}
                           >
-                            <XCircle className="mr-2 h-4 w-4" />
                             Reject Report
                           </DropdownMenuItem>
                         )}
@@ -261,10 +375,25 @@ export default function ReportsPage() {
                   </TableCell>
                 </TableRow>
               ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-4 text-foreground">
+                  No reports found
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
+      <WarnUserDialog
+        open={showWarnDialog}
+        onClose={() => {
+          setShowWarnDialog(false);
+          setSelectedReport(null);
+        }}
+        onConfirm={handleWarnUser}
+      />
     </div>
   );
 }

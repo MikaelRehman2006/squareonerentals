@@ -35,8 +35,8 @@ export default function AdminLayout({
     return <div>Loading...</div>;
   }
 
-  if (!session || session.user.role !== 'ADMIN') {
-    redirect('/');
+  if (!session) {
+    redirect('/auth/signin');
   }
 
   return (
@@ -81,4 +81,4 @@ export default function AdminLayout({
       </div>
     </div>
   );
-} 
+}

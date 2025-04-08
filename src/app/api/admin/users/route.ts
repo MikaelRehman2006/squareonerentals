@@ -3,33 +3,29 @@ import { getServerSession } from 'next-auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { authOptions } from '@/lib/auth';
+import { isOwner, getAdminRole } from '@/lib/admin';
 
-// Helper function to check if user is admin
-async function isAdmin(email: string) {
+// Helper function to check if user can manage admins
+async function canManageAdmins(email: string) {
   if (!email) return false;
-  
-  // Check if user has ADMIN role in database
-  await connectDB();
-  const user = await User.findOne({ email });
-  if (user?.role === 'ADMIN') return true;
-  
-  // Fallback to hardcoded admin emails
-  const adminEmails = ['volcanxic@gmail.com', 'mikaelr112@gmail.com'];
-  return adminEmails.includes(email.toLowerCase());
+  if (isOwner(email)) return true;
+  return false;
 }
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+    if (!session?.user?.email || !getAdminRole(session.user.email)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
     
-    // Get all users with admin role
-    const adminUsers = await User.find({ role: 'ADMIN' }).select('email role');
+    // Get all users with admin roles
+    const adminUsers = await User.find({ 
+      role: { $in: ['ADMIN', 'OWNER'] }
+    }).select('email role createdAt');
     
     return NextResponse.json({ users: adminUsers });
   } catch (error) {
@@ -45,16 +41,24 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+    if (!session?.user?.email || !(await canManageAdmins(session.user.email))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { email, role } = await request.json();
+    const { email } = await request.json();
 
-    if (!email || role !== 'ADMIN') {
+    if (!email) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
+        { error: 'Email is required' },
         { status: 400 }
+      );
+    }
+
+    // Don't allow modifying the owner's role
+    if (isOwner(email)) {
+      return NextResponse.json(
+        { error: 'Cannot modify owner role' },
+        { status: 403 }
       );
     }
 
@@ -64,14 +68,17 @@ export async function POST(request: Request) {
     let user = await User.findOne({ email });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      // Create new user if they don't exist
+      user = new User({
+        email,
+        role: 'ADMIN',
+        createdAt: new Date(),
+      });
+    } else {
+      // Update existing user's role
+      user.role = 'ADMIN';
     }
 
-    // Update user role to admin
-    user.role = 'ADMIN';
     await user.save();
 
     return NextResponse.json({ success: true, user });
@@ -88,7 +95,7 @@ export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+    if (!session?.user?.email || !(await canManageAdmins(session.user.email))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -104,7 +111,6 @@ export async function DELETE(request: Request) {
 
     await connectDB();
 
-    // Find user and remove admin role
     const user = await User.findById(userId);
 
     if (!user) {
@@ -114,15 +120,15 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Don't allow removing the last admin
-    const adminCount = await User.countDocuments({ role: 'ADMIN' });
-    if (adminCount <= 1 && user.role === 'ADMIN') {
+    // Don't allow removing the owner
+    if (isOwner(user.email)) {
       return NextResponse.json(
-        { error: 'Cannot remove the last admin user' },
-        { status: 400 }
+        { error: 'Cannot remove owner' },
+        { status: 403 }
       );
     }
 
+    // Remove admin role
     user.role = 'USER';
     await user.save();
 
@@ -130,7 +136,7 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error('Error in DELETE /api/admin/users:', error);
     return NextResponse.json(
-      { error: 'Failed to update user role' },
+      { error: 'Failed to remove admin role' },
       { status: 500 }
     );
   }

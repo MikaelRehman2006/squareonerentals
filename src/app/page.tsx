@@ -6,7 +6,28 @@ import Link from 'next/link';
 import { ListingCard } from '@/components/ListingCard';
 import { Listing } from '@/types/listing';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const STEPS = [
+  {
+    id: 'search',
+    title: "Search Listings",
+    description: "Use our smart filters to find properties that match your exact needs.",
+    icon: "🔍"
+  },
+  {
+    id: 'connect',
+    title: "Connect Directly",
+    description: "Message landlords and schedule viewings through our secure platform.",
+    icon: "💬"
+  },
+  {
+    id: 'move',
+    title: "Move In",
+    description: "Complete the rental process and start your new chapter.",
+    icon: "🏠"
+  }
+] as const;
 
 export default function Home() {
   const [featuredListings, setFeaturedListings] = useState<Listing[]>([]);
@@ -156,30 +177,14 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              {
-                title: "Search Listings",
-                description: "Use our smart filters to find properties that match your exact needs.",
-                icon: "🔍"
-              },
-              {
-                title: "Connect Directly",
-                description: "Message landlords and schedule viewings through our secure platform.",
-                icon: "💬"
-              },
-              {
-                title: "Move In",
-                description: "Complete the rental process and start your new chapter.",
-                icon: "🏠"
-              }
-            ].map((step, index) => (
+            {STEPS.map((step) => (
               <motion.div
-                key={index}
+                key={step.id}
                 className="relative p-8 bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
+                transition={{ duration: 0.8 }}
               >
                 <div className="text-4xl mb-4">{step.icon}</div>
                 <h3 className="text-xl font-semibold mb-3 text-gray-900">{step.title}</h3>
@@ -205,14 +210,14 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {testimonials.map((testimonial, index) => (
+            {testimonials.map((testimonial) => (
               <motion.div
                 key={testimonial.id}
                 className="flex gap-6 p-8 bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
+                transition={{ duration: 0.8 }}
               >
                 <div className="flex-1">
                   <p className="text-gray-600 text-lg leading-relaxed mb-6">"{testimonial.text}"</p>

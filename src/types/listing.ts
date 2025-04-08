@@ -6,6 +6,7 @@ export interface User {
 }
 
 export interface Listing {
+  _id: string;
   id: string;
   title: string;
   description: string;

@@ -1,33 +1,35 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { User, IUser } from '@/models/User';
 import { Listing, IListing } from '@/models/Listing';
 import mongoose from 'mongoose';
+
+interface FavoriteResponse {
+  id: string;
+  title: string;
+  price: number;
+  image: string;
+  location: string;
+}
 
 export async function GET() {
   try {
     await connectDB();
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Get user with favorites
-    const user = await User.findById(session.user.id)
-      .populate<{ favorites: Array<IListing & { _id: mongoose.Types.ObjectId }> }>({
-        path: 'favorites',
-        select: 'title price images location _id'
-      })
-      .lean() as IUser & { 
-        _id: mongoose.Types.ObjectId;
-        favorites: Array<IListing & { _id: mongoose.Types.ObjectId }>;
-      };
+    // Get user by email with populated favorites
+    const user = await User.findOne({ email: session.user.email })
+      .populate<{ favorites: IListing[] }>('favorites')
+      .lean() as (IUser & { favorites: IListing[] }) | null;
 
     if (!user) {
       return NextResponse.json(
@@ -36,12 +38,13 @@ export async function GET() {
       );
     }
 
-    const favorites = user.favorites.map(listing => ({
+    // Make sure favorites exists and is an array
+    const favorites: FavoriteResponse[] = (user.favorites || []).map((listing: IListing) => ({
       id: listing._id.toString(),
-      title: listing.title,
-      price: listing.price,
-      image: listing.images[0],
-      location: listing.location,
+      title: listing.title || '',
+      price: listing.price || 0,
+      image: Array.isArray(listing.images) ? listing.images[0] || '' : '',
+      location: listing.location || '',
     }));
 
     return NextResponse.json(favorites);

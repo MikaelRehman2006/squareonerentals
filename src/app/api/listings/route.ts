@@ -54,14 +54,28 @@ export async function GET(request: NextRequest) {
   try {
     console.log('GET /api/listings: Starting request');
     
+    if (!process.env.MONGODB_URI) {
+      console.error('MONGODB_URI is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Database configuration is missing' },
+        { status: 500 }
+      );
+    }
+    
     // Connect to MongoDB
     try {
+      console.log('Attempting MongoDB connection...');
       await connectDB();
       console.log('MongoDB connection successful');
-    } catch (dbError) {
-      console.error('MongoDB connection failed:', dbError);
+    } catch (dbError: any) {
+      console.error('MongoDB connection failed:', {
+        message: dbError.message,
+        code: dbError.code,
+        name: dbError.name,
+        stack: dbError.stack
+      });
       return NextResponse.json(
-        { error: 'Database connection failed' },
+        { error: `Database connection failed: ${dbError.message}` },
         { status: 500 }
       );
     }
@@ -76,8 +90,6 @@ export async function GET(request: NextRequest) {
     const page = Number(searchParams.get('page')) || 1;
     const limit = Number(searchParams.get('limit')) || 10;
     const skip = (page - 1) * limit;
-    
-    console.log('Query parameters:', { featured, propertyType, minPrice, maxPrice, page, limit });
 
     // Create query object
     const query: any = { status: 'ACTIVE' }; // Only show active listings by default
@@ -104,79 +116,63 @@ export async function GET(request: NextRequest) {
       query.location = { $regex: location, $options: 'i' };
     }
 
-    console.log('Final query:', JSON.stringify(query));
+    console.log('Executing MongoDB query:', JSON.stringify(query));
 
-    // Fetch listings with error handling
-    let listings;
-    try {
-      listings = await Listing.find(query)
-        .populate('userId', 'name email image')
-        .sort({ featured: -1, createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean();
-      
-      console.log(`Found ${listings.length} listings`);
-    } catch (findError) {
-      console.error('Error finding listings:', findError);
-      return NextResponse.json(
-        { error: 'Failed to fetch listings from database' },
-        { status: 500 }
-      );
-    }
-
-    // Format listings for response
-    const formattedListings = listings.map(listing => ({
-      id: listing._id?.toString(),
-      title: listing.title,
-      description: listing.description,
-      price: listing.price,
-      location: listing.location,
-      images: Array.isArray(listing.images) ? listing.images : [],
-      amenities: Array.isArray(listing.amenities) ? listing.amenities : [],
-      buildingAmenities: Array.isArray(listing.buildingAmenities) ? listing.buildingAmenities : [],
-      features: listing.features || [],
-      utilities: listing.utilities || [],
-      bedrooms: listing.bedrooms,
-      bathrooms: listing.bathrooms,
-      squareFeet: listing.squareFeet,
-      propertyType: listing.propertyType,
-      listingType: listing.listingType,
-      leaseType: listing.leaseType || 'FIXED',
-      availableDate: listing.availableDate,
-      createdAt: listing.createdAt,
-      updatedAt: listing.updatedAt,
-      userId: listing.userId?._id?.toString() || '',
-      status: listing.status,
-      featured: !!listing.featured,
-      userName: listing.userId?.name || 'Anonymous',
-      userEmail: listing.userId?.email,
-      userImage: listing.userId?.image
-    }));
-
+    // Get total count for pagination
     const total = await Listing.countDocuments(query);
 
-    return NextResponse.json({
-      listings: formattedListings,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit)
-    });
+    // Execute query with pagination
+    const listings = await Listing.find(query)
+      .sort({ featured: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('userId', 'name email')
+      .lean();
 
-  } catch (error) {
-    console.error('Error in GET /api/listings:', error);
+    console.log(`Found ${listings.length} listings`);
+
+    return NextResponse.json({
+      listings,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error: any) {
+    console.error('Error in GET /api/listings:', {
+      message: error.message,
+      code: error.code,
+      name: error.name,
+      stack: error.stack
+    });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch listings' },
+      { error: `Failed to fetch listings: ${error.message}` },
       { status: 500 }
     );
   } finally {
-    await disconnectDB();
+    // Don't disconnect as it might affect other requests
+    // await disconnectDB();
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    console.log('POST /api/listings: Starting request');
+    
+    // Connect to MongoDB
+    try {
+      await connectDB();
+      console.log('MongoDB connection successful');
+    } catch (dbError) {
+      console.error('MongoDB connection failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -267,62 +263,54 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await disconnectDB();
+    // Don't disconnect as it might affect other requests
+    // await disconnectDB();
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    await connectDB();
-    const session = await getServerSession(authOptions);
+    if (!process.env.MONGODB_URI) {
+      console.error('MONGODB_URI is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Database configuration is missing' },
+        { status: 500 }
+      );
+    }
 
-    if (!session?.user?.email) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
+    await connectDB();
 
-    const body = await request.json();
-    const { listingId } = request.params;
+    // Extract listingId from URL
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const listingId = pathParts[pathParts.length - 1];
 
-    // Ensure required fields are present
-    if (!body.listingType) {
+    if (!listingId || !mongoose.Types.ObjectId.isValid(listingId)) {
       return NextResponse.json(
-        { error: 'listingType is required' },
+        { error: 'Invalid listing ID' },
         { status: 400 }
       );
     }
 
-    if (!body.leaseType) {
+    const data = await request.json();
+
+    // Validate input
+    if (!data) {
       return NextResponse.json(
-        { error: 'leaseType is required' },
+        { error: 'No data provided' },
         { status: 400 }
       );
     }
 
-    if (!body.squareFeet) {
-      return NextResponse.json(
-        { error: 'Square footage is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!body.availableDate) {
-      return NextResponse.json(
-        { error: 'Available date is required' },
-        { status: 400 }
-      );
-    }
-
+    // Find the listing
     const listing = await Listing.findById(listingId);
     if (!listing) {
       return NextResponse.json(
@@ -331,50 +319,40 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    if (listing.userId.toString() !== user._id.toString()) {
+    // Check ownership
+    if (listing.userId.toString() !== session.user.id) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Unauthorized - You can only update your own listings' },
+        { status: 403 }
       );
     }
 
-    // Convert features and utilities to arrays
-    const features = Array.isArray(body.features) ? body.features : [];
-    const utilities = Array.isArray(body.utilities) ? body.utilities : [];
+    // Process image URLs
+    if (data.images) {
+      data.images = validateImageUrls(data.images);
+    }
 
     // Update the listing
-    const data: IListingInput = {
-      title: body.title,
-      description: body.description,
-      price: body.price,
-      location: body.location,
-      images: body.images,
-      bedrooms: body.bedrooms,
-      bathrooms: body.bathrooms,
-      squareFeet: body.squareFeet,
-      amenities: body.amenities,
-      buildingAmenities: body.buildingAmenities,
-      features,
-      utilities,
-      propertyType: body.propertyType,
-      listingType: body.listingType,
-      leaseType: body.leaseType,
-      availableDate: new Date(body.availableDate),
-      status: body.status,
-      featured: body.featured,
-      userId: user._id,
-    };
+    const updatedListing = await Listing.findByIdAndUpdate(
+      listingId,
+      { $set: data },
+      { new: true, runValidators: true }
+    ).populate('userId', 'name email');
 
-    await Listing.findByIdAndUpdate(listingId, data);
-
-    return NextResponse.json({ message: 'Listing updated successfully' });
-  } catch (error) {
-    console.error('Error in PATCH /api/listings:', error);
+    return NextResponse.json(updatedListing);
+  } catch (error: any) {
+    console.error('Error in PATCH /api/listings:', {
+      message: error.message,
+      code: error.code,
+      name: error.name,
+      stack: error.stack
+    });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update listing' },
+      { error: `Failed to update listing: ${error.message}` },
       { status: 500 }
     );
   } finally {
-    await disconnectDB();
+    // Don't disconnect as it might affect other requests
+    // await disconnectDB();
   }
 }
