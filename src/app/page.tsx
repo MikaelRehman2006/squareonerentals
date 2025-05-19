@@ -153,8 +153,8 @@ export default function Home() {
             <Button
               asChild
               size="lg"
-              variant="outline"
-              className="text-lg px-8 hover:scale-105 transition-transform"
+              variant="secondary"
+              className="text-lg px-8 py-6 rounded-xl hover:scale-105 transition-transform"
             >
               <Link href="/listings">View All Listings</Link>
             </Button>

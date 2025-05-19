@@ -75,7 +75,7 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="relative h-[500px] overflow-hidden">
         <Image
-          src="/images/mississauga-skyline.jpg"
+          src="/images/MississaugaSkyline.jpg"
           alt="Mississauga Skyline"
           fill
           className="object-cover brightness-75"

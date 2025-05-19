@@ -11,7 +11,45 @@ import { MessageCircle } from 'lucide-react';
 import { ListingImageCarousel } from '@/components/ListingImageCarousel';
 import { ListingInfoCard } from '@/components/ListingInfoCard';
 import { AmenitiesSection } from '@/components/AmenitiesSection';
-import { ContactLandlordCard } from '@/components/ContactLandlordCard';
+import { ListingContactCard } from '@/components/ListingContactCard';
+
+// Helper function to convert features object to array
+function convertFeaturesToArray(features: any): string[] {
+  if (!features) return [];
+  if (Array.isArray(features)) return features;
+  
+  // If features is an object with boolean values, extract keys where value is true
+  if (typeof features === 'object') {
+    return Object.entries(features)
+      .filter(([_, value]) => value === true)
+      .map(([key, _]) => {
+        // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
+        return key.replace(/([A-Z])/g, ' $1')
+          .replace(/^./, str => str.toUpperCase());
+      });
+  }
+  
+  return [];
+}
+
+// Helper function to convert utilities object to array
+function convertUtilitiesToArray(utilities: any): string[] {
+  if (!utilities) return [];
+  if (Array.isArray(utilities)) return utilities;
+  
+  // If utilities is an object with boolean values, extract keys where value is true
+  if (typeof utilities === 'object') {
+    return Object.entries(utilities)
+      .filter(([_, value]) => value === true)
+      .map(([key, _]) => {
+        // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
+        return key.replace(/([A-Z])/g, ' $1')
+          .replace(/^./, str => str.toUpperCase());
+      });
+  }
+  
+  return [];
+}
 
 type Props = {
   params: { listingId: string };
@@ -108,12 +146,16 @@ export default async function ListingDetailsPage({
               <ListingInfoCard
                 propertyType={listing.propertyType}
                 location={listing.location}
+                address={listing.address}
                 bedrooms={listing.bedrooms}
                 bathrooms={listing.bathrooms}
                 squareFeet={listing.squareFeet}
                 price={listing.price}
                 leaseType={listing.leaseType}
                 availableDate={listing.availableDate}
+                parking={listing.parking}
+                listingType={listing.listingType}
+                featured={listing.featured}
               />
 
               {/* Description */}
@@ -129,22 +171,20 @@ export default async function ListingDetailsPage({
               {/* Amenities, Features, & Utilities */}
               <AmenitiesSection
                 buildingAmenities={listing.buildingAmenities}
-                features={listing.features}
-                utilities={listing.utilities}
+                features={convertFeaturesToArray(listing.features)}
+                utilities={convertUtilitiesToArray(listing.utilities)}
               />
             </div>
 
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <ContactLandlordCard
+              <ListingContactCard
                 landlord={{
-                  _id: listing.userId._id.toString(),
                   name: listing.userId.name,
                   email: listing.userId.email,
-                  image: listing.userId.image || undefined
                 }}
-                listingId={listing._id.toString()}
-                isOwner={isOwner}
+                phoneNumber={listing.phoneNumber}
+                facebookUrl={listing.facebookUrl}
               />
             </div>
           </div>

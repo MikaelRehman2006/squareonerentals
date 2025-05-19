@@ -25,10 +25,18 @@ export async function POST(request: Request) {
 
     const emailTemplate = createContactFormEmail(name, email, subject, message);
     
-    await sendEmail(
+    const emailSent = await sendEmail(
       process.env.CONTACT_EMAIL || 'squareone.rental@gmail.com',
-      emailTemplate
+      emailTemplate,
+      email
     );
+
+    if (!emailSent) {
+      return NextResponse.json(
+        { error: 'Failed to send email' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

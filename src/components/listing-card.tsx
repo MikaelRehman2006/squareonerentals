@@ -22,7 +22,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         />
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+        <h3 className="text-lg font-semibold text-black mb-2 group-hover:text-blue-600 transition-colors duration-200">
           {listing.title}
         </h3>
         <p className="text-gray-600 mb-2">${listing.price.toLocaleString()}/month</p>

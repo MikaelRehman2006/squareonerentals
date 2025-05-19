@@ -47,6 +47,8 @@ interface ListingFormProps {
     availableDate: string;
     status: string;
     featured?: boolean;
+    phoneNumber?: string;
+    facebookUrl?: string;
   };
   onSubmit: (data: any) => void;
   isSubmitting?: boolean;
@@ -71,6 +73,8 @@ const formSchema = z.object({
   availableDate: z.string().min(1, "Available date is required"),
   status: z.string().min(1, "Status is required"),
   featured: z.boolean().default(false),
+  phoneNumber: z.string().optional(),
+  facebookUrl: z.string().url("Please enter a valid Facebook URL").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -271,6 +275,91 @@ export const ListingForm = ({
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="phoneNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number (Optional)</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="e.g., (123) 456-7890" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="facebookUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Facebook Profile URL (Optional)</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="e.g., https://facebook.com/username" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Contact Information */}
+        <div className="bg-[#1F1F1F] border border-[#333333] rounded-xl shadow-md p-6 space-y-4 hover:shadow-lg transition-shadow">
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-[#E0E0E0] uppercase">Contact Information</h3>
+            <p className="text-[#A0A0A0] text-sm">
+              Add your contact details below (optional). This information will be displayed on your listing 
+              so potential renters can reach out to you directly about the property.
+            </p>
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[#CCCCCC] flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3B82F6]"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                  Phone Number (Optional)
+                </FormLabel>
+                <FormControl>
+                  <Input 
+                    type="tel" 
+                    placeholder="e.g., (123) 456-7890" 
+                    {...field} 
+                    className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                  />
+                </FormControl>
+                <p className="text-sm text-[#A0A0A0]">Add your phone number if you'd like potential renters to call or text you.</p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="facebookUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[#CCCCCC] flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3B82F6]"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                  Facebook Profile URL (Optional)
+                </FormLabel>
+                <FormControl>
+                  <Input 
+                    type="url" 
+                    placeholder="e.g., https://facebook.com/username" 
+                    {...field} 
+                    className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                  />
+                </FormControl>
+                <p className="text-sm text-[#A0A0A0]">Link to your Facebook profile or a relevant Facebook group.</p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

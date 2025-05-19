@@ -1,11 +1,11 @@
 'use client';
 
-import { Building, Check } from 'lucide-react';
+import { Building, Check, Home, Zap } from 'lucide-react';
 
 interface AmenitiesSectionProps {
-  buildingAmenities: string[];
-  features: string[];
-  utilities: string[];
+  buildingAmenities: string[] | null | undefined;
+  features: string[] | null | undefined;
+  utilities: string[] | null | undefined;
 }
 
 export function AmenitiesSection({
@@ -13,18 +13,23 @@ export function AmenitiesSection({
   features,
   utilities
 }: AmenitiesSectionProps) {
+  // Safely handle arrays that might be null/undefined or non-arrays
+  const safeAmenities = Array.isArray(buildingAmenities) ? buildingAmenities : [];
+  const safeFeatures = Array.isArray(features) ? features : [];
+  const safeUtilities = Array.isArray(utilities) ? utilities : [];
+  
   return (
     <div className="space-y-8">
-      {buildingAmenities?.length > 0 && (
+      {safeAmenities.length > 0 && (
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
           <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Building className="h-5 w-5 text-blue-500" />
+            <Building className="h-5 w-5 text-green-600" />
             Building Amenities
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {buildingAmenities.map((amenity) => (
+            {safeAmenities.map((amenity, index) => (
               <div
-                key={amenity}
+                key={`${amenity}-${index}`}
                 className="flex items-center gap-2 text-gray-700"
               >
                 <Check className="h-4 w-4 text-green-500" />
@@ -35,15 +40,16 @@ export function AmenitiesSection({
         </div>
       )}
 
-      {features?.length > 0 && (
+      {safeFeatures.length > 0 && (
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Home className="h-5 w-5 text-blue-600" />
             Unit Features
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {features.map((feature) => (
+            {safeFeatures.map((feature, index) => (
               <div
-                key={feature}
+                key={`${feature}-${index}`}
                 className="flex items-center gap-2 text-gray-700"
               >
                 <Check className="h-4 w-4 text-blue-500" />
@@ -54,15 +60,16 @@ export function AmenitiesSection({
         </div>
       )}
 
-      {utilities?.length > 0 && (
+      {safeUtilities.length > 0 && (
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Zap className="h-5 w-5 text-purple-600" />
             Included Utilities
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {utilities.map((utility) => (
+            {safeUtilities.map((utility, index) => (
               <div
-                key={utility}
+                key={`${utility}-${index}`}
                 className="flex items-center gap-2 text-gray-700"
               >
                 <Check className="h-4 w-4 text-purple-500" />
@@ -70,6 +77,12 @@ export function AmenitiesSection({
               </div>
             ))}
           </div>
+        </div>
+      )}
+      
+      {safeAmenities.length === 0 && safeFeatures.length === 0 && safeUtilities.length === 0 && (
+        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+          <p className="text-gray-500 text-center py-4">No amenities or features specified for this listing.</p>
         </div>
       )}
     </div>

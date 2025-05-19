@@ -2,14 +2,61 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
+import { existsSync } from 'fs';
 
 // 5MB in bytes
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-// Configure Cloudinary - it will automatically use CLOUDINARY_URL from env
-cloudinary.config({
-  secure: true
-});
+// Check if Cloudinary is properly configured
+const isCloudinaryConfigured = () => {
+  return Boolean(
+    process.env.CLOUDINARY_URL || 
+    (process.env.CLOUDINARY_CLOUD_NAME && 
+     process.env.CLOUDINARY_API_KEY && 
+     process.env.CLOUDINARY_API_SECRET)
+  );
+};
+
+// Configure Cloudinary if credentials are available
+if (isCloudinaryConfigured()) {
+  cloudinary.config({
+    secure: true,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
+
+// Helper function to save file locally
+async function saveFileLocally(file: File): Promise<string> {
+  try {
+    // Create a unique filename
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 8);
+    const fileExtension = file.name.split('.').pop();
+    const filename = `image-${timestamp}-${randomString}.${fileExtension}`;
+    
+    // Ensure the upload directory exists
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+    
+    // Save the file
+    const filePath = path.join(uploadDir, filename);
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    await writeFile(filePath, buffer as Buffer);
+    
+    // Return the public URL
+    return `/uploads/${filename}`;
+  } catch (error) {
+    console.error('Error saving file locally:', error);
+    throw new Error('Failed to save file locally');
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -57,42 +104,55 @@ export async function POST(request: Request) {
 
     console.log('File validation passed, preparing for upload');
 
-    // Log cloudinary configuration for debugging
-    console.log('Cloudinary config:', { 
-      cloud_name: cloudinary.config().cloud_name,
-      api_key: cloudinary.config().api_key?.substring(0, 5) + '...' // just show first few chars for security
-    });
+    // Try to use Cloudinary if configured, otherwise fall back to local storage
+    if (isCloudinaryConfigured()) {
+      try {
+        console.log('Using Cloudinary for image upload');
+        
+        // Convert file to buffer
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        // Convert buffer to base64 string for Cloudinary upload
+        const base64 = buffer.toString('base64');
+        const fileStr = `data:${file.type};base64,${base64}`;
+        
+        // Upload to Cloudinary using the SDK
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload(fileStr, {
+            folder: 'listings',
+            resource_type: 'image',
+          }, (error: any, result: any) => {
+            if (error) {
+              console.error('Cloudinary upload error:', error);
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          });
+        });
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    
-    // Convert buffer to base64 string for Cloudinary upload
-    const base64 = buffer.toString('base64');
-    const fileStr = `data:${file.type};base64,${base64}`;
-    
-    console.log('Uploading to Cloudinary...');
-    
-    // Upload to Cloudinary using the SDK
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(fileStr, {
-        folder: 'listings',
-        resource_type: 'image',
-      }, (error, result) => {
-        if (error) {
-          console.error('Cloudinary upload error:', error);
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      });
-    });
+        console.log('Cloudinary upload successful');
 
-    console.log('Cloudinary upload successful:', uploadResult);
-
+        return NextResponse.json({
+          secure_url: (uploadResult as any).secure_url,
+          public_id: (uploadResult as any).public_id
+        });
+      } catch (cloudinaryError) {
+        console.error('Cloudinary upload failed, falling back to local storage:', cloudinaryError);
+        // Fall back to local storage if Cloudinary fails
+      }
+    } else {
+      console.log('Cloudinary not configured, using local storage');
+    }
+    
+    // Local storage fallback
+    const fileUrl = await saveFileLocally(file);
+    console.log('Local file upload successful:', fileUrl);
+    
     return NextResponse.json({
-      secure_url: (uploadResult as any).secure_url,
-      public_id: (uploadResult as any).public_id
+      secure_url: fileUrl,
+      public_id: fileUrl
     });
 
   } catch (error) {

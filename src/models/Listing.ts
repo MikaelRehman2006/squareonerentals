@@ -7,6 +7,7 @@ export interface IListing extends Document {
   description: string;
   price: number;
   location: string;
+  address: string;
   images: string[];
   bedrooms: number;
   bathrooms: number;
@@ -19,10 +20,13 @@ export interface IListing extends Document {
   listingType: string;
   leaseType: string;
   availableDate: Date;
+  parking?: string;
   status: string;
   featured: boolean;
   userId: mongoose.Types.ObjectId | IUser;
   favoritedBy: mongoose.Types.ObjectId[];
+  phoneNumber?: string;
+  facebookUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,6 +36,7 @@ const listingSchema = new Schema<IListing>({
   description: { type: String, required: true },
   price: { type: Number, required: true },
   location: { type: String, required: true },
+  address: { type: String, required: false },
   images: { type: [String], default: [] },
   bedrooms: { type: Number, required: true },
   bathrooms: { type: Number, required: true },
@@ -44,10 +49,13 @@ const listingSchema = new Schema<IListing>({
   listingType: { type: String, required: true },
   leaseType: { type: String, required: true, default: 'FIXED' },
   availableDate: { type: Date, required: true },
+  parking: { type: String, required: false },
   status: { type: String, required: true, default: 'ACTIVE' },
   featured: { type: Boolean, default: false },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   favoritedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  phoneNumber: { type: String },
+  facebookUrl: { type: String },
 }, {
   timestamps: true, // This adds createdAt and updatedAt fields
   toJSON: {

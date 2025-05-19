@@ -1,17 +1,23 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || 'squareone.rental@gmail.com',
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
 interface EmailTemplate {
   subject: string;
   body: string;
 }
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    type: 'OAuth2',
+    user: process.env.EMAIL_USER,
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    refreshToken: process.env.EMAIL_REFRESH_TOKEN,
+    accessToken: process.env.EMAIL_ACCESS_TOKEN
+  }
+});
 
 export const createNewMessageEmail = (
   landlordName: string,
@@ -55,27 +61,51 @@ export const createContactFormEmail = (
   subject: string,
   message: string
 ): EmailTemplate => ({
-  subject: `New Contact Form Submission: ${subject}`,
+  subject: `Contact Form: ${subject}`,
   body: `
+New contact form submission:
+
 Name: ${name}
 Email: ${email}
 Subject: ${subject}
-Message: ${message}
 
-— Sent from Square One Rentals`,
+Message:
+${message}
+
+— Square One Rentals Contact Form`,
 });
 
-export const sendEmail = async (to: string, template: EmailTemplate) => {
+export const sendEmail = async (to: string, template: EmailTemplate, replyTo?: string) => {
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER || 'squareone.rental@gmail.com',
+    const result = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
       to,
       subject: template.subject,
       text: template.body,
+      replyTo
     });
+
+    console.log('Email sent successfully:', result.messageId);
     return true;
   } catch (error) {
     console.error('Error sending email:', error);
     return false;
+  }
+};
+
+export const sendTestEmail = async () => {
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,
+      subject: 'Test Email from Square One Rentals',
+      text: 'If you receive this email, the SMTP configuration is working correctly.'
+    });
+
+    console.log('Test email sent successfully:', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('Error sending test email:', error);
+    throw error;
   }
 };

@@ -57,7 +57,7 @@ export default function NotificationDropdown() {
   const getNotificationLink = (notification: Notification) => {
     switch (notification.type) {
       case 'MESSAGE':
-        return `/messages?listingId=${notification.listingId?._id}&otherUserId=${notification.relatedUserId?._id}`;
+        return `/listings/${notification.listingId?._id}`;
       case 'LISTING_UPDATE':
         return `/listings/${notification.listingId?._id}`;
       case 'FAVORITE':

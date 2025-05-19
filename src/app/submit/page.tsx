@@ -43,7 +43,7 @@ const listingSchema = z.object({
   availableDate: z.string().min(1, 'Available date is required'),
   parking: z.string().default('None'),
   featured: z.boolean().default(false),
-  status: z.string().default('AVAILABLE'),
+  status: z.string().default('ACTIVE'),
   features: z.object({
     wifi: z.boolean().default(false),
     airConditioning: z.boolean().default(false),
@@ -74,6 +74,8 @@ const listingSchema = z.object({
     internet: false,
     trashCollection: false,
   }),
+  phoneNumber: z.string().optional(),
+  facebookUrl: z.string().url("Please enter a valid Facebook URL").optional(),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
@@ -147,7 +149,7 @@ export default function SubmitListingPage() {
       availableDate: '',
       parking: 'None',
       featured: false,
-      status: 'AVAILABLE',
+      status: 'ACTIVE',
       features: {
         wifi: false,
         airConditioning: false,
@@ -381,8 +383,8 @@ export default function SubmitListingPage() {
 
   if (session === null) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">Loading...</div>
+      <div className="min-h-screen bg-[#121212] flex items-center justify-center">
+        <div className="text-center text-[#E0E0E0]">Loading...</div>
       </div>
     );
   }
@@ -392,17 +394,17 @@ export default function SubmitListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen bg-[#121212] py-8">
       <div className="container max-w-4xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Submit Your Listing</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Fill in the details below to list your property.</p>
+            <h1 className="text-3xl font-bold text-[#E0E0E0] uppercase">Submit Your Listing</h1>
+            <p className="mt-2 text-[#A0A0A0]">Fill in the details below to list your property.</p>
           </div>
           <Button
             variant="outline"
             onClick={() => router.back()}
-            className="shadow-sm"
+            className="bg-[#333333] text-white hover:bg-[#444444] border-[#444444]"
           >
             Back
           </Button>
@@ -410,9 +412,9 @@ export default function SubmitListingPage() {
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card className="shadow-md">
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Basic Information</CardTitle>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Basic Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -421,9 +423,9 @@ export default function SubmitListingPage() {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-black">Title</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Title</FormLabel>
                         <FormControl>
-                          <Input {...field} className="shadow-sm" />
+                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -435,14 +437,14 @@ export default function SubmitListingPage() {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-black">Price (per month)</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Price (per month)</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="shadow-sm" 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>
                         <FormMessage />
@@ -456,9 +458,9 @@ export default function SubmitListingPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-black dark:text-white">Description</FormLabel>
+                      <FormLabel className="text-[#CCCCCC]">Description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} rows={4} className="shadow-sm resize-none" />
+                        <Textarea {...field} rows={4} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm resize-none" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -471,9 +473,9 @@ export default function SubmitListingPage() {
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Location</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Location</FormLabel>
                         <FormControl>
-                          <Input {...field} className="shadow-sm" />
+                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -485,9 +487,9 @@ export default function SubmitListingPage() {
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Address</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Address</FormLabel>
                         <FormControl>
-                          <Input {...field} className="shadow-sm" />
+                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -501,14 +503,14 @@ export default function SubmitListingPage() {
                     name="squareFeet"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Square Feet</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Square Feet</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="shadow-sm" 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>
                         <FormMessage />
@@ -518,7 +520,7 @@ export default function SubmitListingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <FormLabel className="text-black dark:text-white">Upload Images (optional)</FormLabel>
+                  <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
                   <div className="flex flex-col gap-4">
                     <Input
                       ref={fileInputRef}
@@ -526,9 +528,9 @@ export default function SubmitListingPage() {
                       accept="image/*"
                       multiple
                       onChange={handleImageUpload}
-                      className="shadow-sm"
+                      className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
                     />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-[#A0A0A0]">
                       You can select multiple images. Supported formats: JPG, PNG, WebP.
                     </p>
                   </div>
@@ -559,9 +561,9 @@ export default function SubmitListingPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-md">
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Property Details</CardTitle>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Property Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -570,14 +572,14 @@ export default function SubmitListingPage() {
                     name="bedrooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Bedrooms</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Bedrooms</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="shadow-sm" 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>
                         <FormMessage />
@@ -590,14 +592,14 @@ export default function SubmitListingPage() {
                     name="bathrooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Bathrooms</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Bathrooms</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="shadow-sm" 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>
                         <FormMessage />
@@ -612,19 +614,19 @@ export default function SubmitListingPage() {
                     name="propertyType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Property Type</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Property Type</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="shadow-sm">
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
                                 <SelectValue placeholder="Select property type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="APARTMENT">Apartment</SelectItem>
-                              <SelectItem value="CONDO">Condo</SelectItem>
-                              <SelectItem value="HOUSE">House</SelectItem>
-                              <SelectItem value="TOWNHOUSE">Townhouse</SelectItem>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="APARTMENT">Apartment</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="CONDO">Condo</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="HOUSE">House</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="TOWNHOUSE">Townhouse</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -638,17 +640,17 @@ export default function SubmitListingPage() {
                     name="listingType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Listing Type</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Listing Type</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="shadow-sm">
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
                                 <SelectValue placeholder="Select listing type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="LONG_TERM">Long Term</SelectItem>
-                              <SelectItem value="SHORT_TERM">Short Term</SelectItem>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="LONG_TERM">Long Term</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="SHORT_TERM">Short Term</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -664,19 +666,19 @@ export default function SubmitListingPage() {
                     name="leaseType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Lease Type</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Lease Type</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="shadow-sm">
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
                                 <SelectValue placeholder="Select lease type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
-                              <SelectItem value="MONTH_TO_MONTH">Month to Month</SelectItem>
-                              <SelectItem value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
-                              <SelectItem value="OTHER">Other</SelectItem>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="MONTH_TO_MONTH">Month to Month</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="OTHER">Other</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -690,12 +692,12 @@ export default function SubmitListingPage() {
                     name="availableDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Available Date</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Available Date</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
                             {...field} 
-                            className="shadow-sm" 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>
                         <FormMessage />
@@ -710,18 +712,18 @@ export default function SubmitListingPage() {
                     name="parking"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black dark:text-white">Parking</FormLabel>
+                        <FormLabel className="text-[#CCCCCC]">Parking</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="shadow-sm">
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
                                 <SelectValue placeholder="Select parking" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="None">None</SelectItem>
-                              <SelectItem value="Street Parking">Street Parking</SelectItem>
-                              <SelectItem value="Private Parking">Private Parking</SelectItem>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="None">None</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Street Parking">Street Parking</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Private Parking">Private Parking</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -739,10 +741,10 @@ export default function SubmitListingPage() {
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
-                            className="shadow-sm"
+                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                           />
                         </FormControl>
-                        <FormLabel className="font-normal text-gray-700 dark:text-gray-300">Featured Listing</FormLabel>
+                        <FormLabel className="font-normal text-[#CCCCCC]">Featured Listing</FormLabel>
                       </FormItem>
                     )}
                   />
@@ -750,10 +752,64 @@ export default function SubmitListingPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-md">
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Building Amenities</CardTitle>
-                <CardDescription className="text-gray-600">What the property/building offers</CardDescription>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Contact Information</CardTitle>
+                <CardDescription className="text-[#A0A0A0]">Optional ways for interested renters to contact you</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Phone Number (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            placeholder="e.g. (123) 456-7890"
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormDescription className="text-[#A0A0A0]">
+                          Your phone number will be displayed on your listing if provided
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="facebookUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Facebook Profile (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            placeholder="https://facebook.com/yourusername"
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormDescription className="text-[#A0A0A0]">
+                          Enter your Facebook profile URL for interested renters to contact you
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Building Amenities</CardTitle>
+                <CardDescription className="text-[#A0A0A0]">What the property/building offers</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -762,49 +818,49 @@ export default function SubmitListingPage() {
                       <Checkbox
                         checked={selectedAmenities.includes(amenity)}
                         onCheckedChange={() => handleAmenityToggle(amenity)}
-                        className="shadow-sm"
+                        className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                       />
-                      <label className="text-sm font-normal text-black dark:text-black">{amenity}</label>
+                      <label className="text-sm font-normal text-[#CCCCCC]">{amenity}</label>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-md">
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Unit Features & Utilities</CardTitle>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Unit Features & Utilities</CardTitle>
               </CardHeader>
               <CardContent className="space-y-8">
                 <div>
-                  <h3 className="text-lg font-medium text-black mb-2">Features</h3>
-                  <CardDescription className="text-gray-600 mb-4">What's inside the unit</CardDescription>
+                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Features</h3>
+                  <CardDescription className="text-[#A0A0A0] mb-4">What's inside the unit</CardDescription>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {FEATURES.map((feature) => (
                       <div key={feature} className="flex items-center space-x-2">
                         <Checkbox
                           checked={selectedFeatures.includes(feature)}
                           onCheckedChange={() => handleFeatureToggle(feature)}
-                          className="shadow-sm"
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                         />
-                        <label className="text-sm font-normal text-black dark:text-black">{feature}</label>
+                        <label className="text-sm font-normal text-[#CCCCCC]">{feature}</label>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-black mb-2">Utilities Included</h3>
-                  <CardDescription className="text-gray-600 mb-4">What's covered in the rent</CardDescription>
+                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Utilities Included</h3>
+                  <CardDescription className="text-[#A0A0A0] mb-4">What's covered in the rent</CardDescription>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {UTILITIES.map((utility) => (
                       <div key={utility} className="flex items-center space-x-2">
                         <Checkbox
                           checked={selectedUtilities.includes(utility)}
                           onCheckedChange={() => handleUtilityToggle(utility)}
-                          className="shadow-sm"
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                         />
-                        <label className="text-sm font-normal text-black dark:text-black">{utility}</label>
+                        <label className="text-sm font-normal text-[#CCCCCC]">{utility}</label>
                       </div>
                     ))}
                   </div>
@@ -817,14 +873,14 @@ export default function SubmitListingPage() {
                 type="button"
                 variant="outline"
                 onClick={() => router.push('/')}
-                className="flex-1 shadow-sm"
+                className="flex-1 bg-[#444444] text-white hover:bg-[#555555] border-[#333333]"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                className="flex-1 bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-md transition-all duration-200 hover:shadow-lg"
               >
                 {submitting ? 'Submitting...' : 'Submit Listing'}
               </Button>

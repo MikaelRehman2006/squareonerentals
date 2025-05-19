@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from './ui/button';
-import { MessageCircle, User, Mail } from 'lucide-react';
+import { User, Mail } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -73,15 +73,12 @@ export function ContactLandlordCard({
           <p className="text-gray-500">Property Owner</p>
         </div>
       </div>
-      <Link
-        href={`/messages?listingId=${listingId}&otherUserId=${landlord._id}`}
-        className="w-full"
-      >
+      <a href={`mailto:${landlord.email}?subject=Inquiry about your listing on Square One Rentals`} className="w-full">
         <Button className="w-full gap-2">
-          <MessageCircle className="h-5 w-5" />
-          Send Message
+          <Mail className="h-5 w-5" />
+          Contact via Email
         </Button>
-      </Link>
+      </a>
     </div>
   );
 }

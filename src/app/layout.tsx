@@ -7,7 +7,6 @@ import { Toaster } from 'sonner';
 import AuthProvider from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { ChatWidget } from '@/components/ChatWidget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -34,7 +33,6 @@ export default function RootLayout({
                 </main>
                 <Footer />
               </div>
-              <ChatWidget />
               <Toaster />
             </AuthProvider>
           </MuiThemeProvider>

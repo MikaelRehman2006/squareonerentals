@@ -15,8 +15,11 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 const options: mongoose.ConnectOptions = {
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  serverSelectionTimeoutMS: 30000, // Increased from 5000 to 30000
+  socketTimeoutMS: 75000, // Increased from 45000 to 75000
+  family: 4, // Use IPv4, skip trying IPv6
+  keepAlive: true,
+  keepAliveInitialDelay: 300000, // 5 minutes
   retryWrites: true,
 };
 

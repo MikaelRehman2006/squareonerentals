@@ -321,17 +321,18 @@ export default function CareersPage() {
 
                   <Button
                     variant="contained"
-                    color="primary"
+                    color={job.isOpen ? "primary" : "error"}
                     fullWidth={isMobile}
+                    disabled={!job.isOpen}
                     sx={{
                       mt: 'auto',
                       transition: 'all 0.2s ease-in-out',
                       '&:hover': {
-                        transform: 'scale(1.02)',
+                        transform: job.isOpen ? 'scale(1.02)' : 'none',
                       },
                     }}
                   >
-                    Apply Now
+                    {job.isOpen ? 'Apply Now' : 'Position Filled'}
                   </Button>
                 </CardContent>
               </MotionCard>

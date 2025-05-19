@@ -118,12 +118,7 @@ export default function Navbar() {
                       Notifications
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/messages" className="flex items-center">
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Messages
-                    </Link>
-                  </DropdownMenuItem>
+
                   <DropdownMenuItem asChild>
                     <Link href="/settings" className="flex items-center">
                       <Settings className="w-4 h-4 mr-2" />

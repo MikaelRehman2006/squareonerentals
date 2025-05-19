@@ -31,6 +31,8 @@ interface ListingData {
   status: string;
   featured: boolean;
   userId: any;
+  phoneNumber?: string;
+  facebookUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,7 +55,10 @@ const safeParseJSON = (str: string | null | undefined, defaultValue: any[] = [])
 const validateImageUrls = (images: string | string[]): string[] => {
   if (!images) return [];
   const imageArray = Array.isArray(images) ? images : [images];
-  return imageArray.filter((url) => url.startsWith('http'));
+  return imageArray.filter((url) => {
+    // Accept both remote URLs (http/https) and local paths (/uploads/)
+    return url && (url.startsWith('http') || url.startsWith('/uploads/'));
+  });
 };
 
 export async function GET(request: NextRequest, { params }: Props) {
@@ -120,6 +125,8 @@ export async function GET(request: NextRequest, { params }: Props) {
       status: listing.status,
       featured: listing.featured,
       userId: listing.userId._id.toString(),
+      phoneNumber: listing.phoneNumber || '',
+      facebookUrl: listing.facebookUrl || '',
       createdAt: listing.createdAt,
       updatedAt: listing.updatedAt
     };
@@ -204,6 +211,8 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       availableDate: new Date(body.availableDate),
       status: body.status.toUpperCase(),
       featured: body.featured,
+      phoneNumber: body.phoneNumber || '',
+      facebookUrl: body.facebookUrl || '',
       updatedAt: new Date()
     };
 

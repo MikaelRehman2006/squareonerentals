@@ -231,20 +231,20 @@ export async function POST(request: NextRequest) {
       description: body.description,
       price: Number(body.price),
       location: body.location,
-      images: Array.isArray(body.images) ? validateImageUrls(body.images) : [],
+      images: validateImageUrls(body.images),
       bedrooms: Number(body.bedrooms),
       bathrooms: Number(body.bathrooms),
       squareFeet: Number(body.squareFeet),
       amenities: safeParseJSON(body.amenities),
       buildingAmenities: safeParseJSON(body.buildingAmenities),
-      features,
-      utilities,
+      features: safeParseJSON(body.features),
+      utilities: safeParseJSON(body.utilities),
       propertyType: body.propertyType,
       listingType: body.listingType,
       leaseType: body.leaseType,
       availableDate: new Date(body.availableDate),
-      status: body.status,
-      featured: body.featured,
+      status: body.status || 'ACTIVE', // Set default status to ACTIVE if not provided
+      featured: body.featured || false, // Set default featured to false if not provided
       userId: user._id,
     };
 

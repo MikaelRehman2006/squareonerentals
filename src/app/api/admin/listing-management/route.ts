@@ -5,10 +5,8 @@ import { connectDB } from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
 import { getAdminRole } from '@/lib/admin';
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// GET all listings (admin access)
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -25,8 +23,62 @@ export async function PATCH(
       );
     }
 
-    const { id } = params;
-    const { status } = await request.json();
+    // Parse query parameters
+    const url = new URL(request.url);
+    const listingId = url.searchParams.get('id');
+
+    await connectDB();
+
+    // If listingId is provided, return a specific listing
+    if (listingId) {
+      const listing = await Listing.findById(listingId).populate('userId', 'name email');
+      
+      if (!listing) {
+        return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+      }
+      
+      return NextResponse.json(listing);
+    }
+
+    // Otherwise, return all listings
+    const listings = await Listing.find({}).populate('userId', 'name email').sort({ createdAt: -1 });
+    
+    return NextResponse.json(listings);
+  } catch (error) {
+    console.error('Error in GET /api/admin/listing-management:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch listings' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH to update a listing (admin access)
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has admin role
+    const adminRole = getAdminRole(session.user.email);
+    if (!adminRole) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const { id, status } = await request.json();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Missing listing ID' },
+        { status: 400 }
+      );
+    }
 
     await connectDB();
 
@@ -46,7 +98,7 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error('Error in PATCH /api/admin/listings/[id]:', error);
+    console.error('Error in PATCH /api/admin/listing-management:', error);
     return NextResponse.json(
       { error: 'Failed to update listing' },
       { status: 500 }
@@ -54,10 +106,8 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// DELETE a listing (admin access)
+export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -74,7 +124,14 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await request.json();
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Missing listing ID' },
+        { status: 400 }
+      );
+    }
 
     await connectDB();
 
@@ -89,7 +146,7 @@ export async function DELETE(
       message: 'Listing deleted successfully',
     });
   } catch (error) {
-    console.error('Error in DELETE /api/admin/listings/[id]:', error);
+    console.error('Error in DELETE /api/admin/listing-management:', error);
     return NextResponse.json(
       { error: 'Failed to delete listing' },
       { status: 500 }
