@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowUpRight, ArrowDownRight, Users, Home, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { AdvancedAnalytics } from '@/components/AdvancedAnalytics';
 
 interface DashboardStats {
   currentStats: {
@@ -61,6 +62,32 @@ interface DashboardStats {
       };
       reason: string;
       createdAt: string;
+    }>;
+  };
+  // Added for advanced analytics
+  listings?: Array<{
+    id: string;
+    title: string;
+    price: number;
+    location: string;
+    status: string;
+    createdAt: string;
+  }>;
+  monthlyStats?: {
+    users: Array<{
+      _id: {
+        year: number;
+        month: number;
+      };
+      count: number;
+    }>;
+    listings: Array<{
+      _id: {
+        year: number;
+        month: number;
+        status?: string;
+      };
+      count: number;
     }>;
   };
 }
@@ -237,28 +264,36 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Advanced Analytics Section */}
+      <div className="mb-8">
+        {stats && <AdvancedAnalytics stats={stats} />}
+      </div>
+
       {/* Recent Activity */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Recent Users */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Recent Users</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-8">
-              {stats?.recentActivity.users.map((user) => (
-                <div key={user.id} className="flex items-center">
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      {user.name || user.email}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats?.recentActivity.users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.name || 'Anonymous'}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 

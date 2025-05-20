@@ -12,6 +12,7 @@ interface IListingInput {
   description: string;
   price: number;
   location: string;
+  address: string; // Added address field
   images: string[];
   bedrooms: number;
   bathrooms: number;
@@ -27,6 +28,8 @@ interface IListingInput {
   status: string;
   featured: boolean;
   userId: mongoose.Types.ObjectId;
+  phoneNumber?: string;
+  facebookUrl?: string;
 }
 
 const safeParseJSON = (str: string) => {
@@ -221,32 +224,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert features and utilities to arrays
-    const features = Array.isArray(body.features) ? body.features : [];
-    const utilities = Array.isArray(body.utilities) ? body.utilities : [];
+    // Log what we're receiving from the client
+    console.log('Received request body for new listing:', {
+      address: body.address,
+      images: Array.isArray(body.images) ? `${body.images.length} images` : typeof body.images,
+      amenities: body.amenities,
+      buildingAmenities: body.buildingAmenities,
+      features: body.features,
+      utilities: body.utilities
+    });
+    
+    // Better handling for images - ensure we have an array
+    const images = validateImageUrls(body.images || []);
+    console.log('Processed images:', images.length, 'valid images');
+    
+    // Better processing for features and utilities
+    const features = typeof body.features === 'string' ? safeParseJSON(body.features) : 
+                     Array.isArray(body.features) ? body.features : [];
+    
+    const utilities = typeof body.utilities === 'string' ? safeParseJSON(body.utilities) : 
+                     Array.isArray(body.utilities) ? body.utilities : [];
+    
+    // Ensure the address is captured
+    const address = body.address || '';
+    console.log('Address being saved:', address);
 
-    // Create the listing
+    // Create the listing with improved error handling
     const data: IListingInput = {
       title: body.title,
       description: body.description,
-      price: Number(body.price),
+      price: Number(body.price) || 0,
       location: body.location,
-      images: validateImageUrls(body.images),
-      bedrooms: Number(body.bedrooms),
-      bathrooms: Number(body.bathrooms),
-      squareFeet: Number(body.squareFeet),
-      amenities: safeParseJSON(body.amenities),
-      buildingAmenities: safeParseJSON(body.buildingAmenities),
-      features: safeParseJSON(body.features),
-      utilities: safeParseJSON(body.utilities),
+      address: address, // Use our processed address value
+      images: images, // Use our processed images array
+      bedrooms: Number(body.bedrooms) || 0,
+      bathrooms: Number(body.bathrooms) || 0,
+      squareFeet: Number(body.squareFeet) || 0,
+      amenities: typeof body.amenities === 'string' ? safeParseJSON(body.amenities) : (body.amenities || []),
+      buildingAmenities: typeof body.buildingAmenities === 'string' ? safeParseJSON(body.buildingAmenities) : (body.buildingAmenities || []),
+      features: features,
+      utilities: utilities,
       propertyType: body.propertyType,
       listingType: body.listingType,
       leaseType: body.leaseType,
       availableDate: new Date(body.availableDate),
-      status: body.status || 'ACTIVE', // Set default status to ACTIVE if not provided
-      featured: body.featured || false, // Set default featured to false if not provided
+      status: body.status || 'ACTIVE',
+      featured: body.featured || false,
       userId: user._id,
+      phoneNumber: body.phoneNumber || '',
+      facebookUrl: body.facebookUrl || '',
     };
+    
+    console.log('Final listing data being saved:', {
+      address: data.address,
+      images: data.images.length,
+      features: data.features,
+      utilities: data.utilities
+    });
 
     const listing = new Listing(data);
 

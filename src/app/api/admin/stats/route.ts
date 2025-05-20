@@ -41,7 +41,8 @@ export async function GET() {
       recentUsers,
       recentListings,
       flaggedReports,
-      prices
+      prices,
+      allListings // Added all listings for the advanced analytics
     ] = await Promise.all([
       User.countDocuments(),
       Listing.countDocuments(),
@@ -65,6 +66,9 @@ export async function GET() {
         .lean(),
       Listing.find({ status: 'ACTIVE' })
         .select('price')
+        .lean(),
+      Listing.find()
+        .select('title price location status createdAt')
         .lean()
     ]);
 
@@ -148,7 +152,9 @@ export async function GET() {
       monthlyStats: {
         users: monthlyStats[0],
         listings: monthlyStats[1]
-      }
+      },
+      // Add all listings data for advanced analytics
+      listings: allListings
     });
   } catch (error) {
     console.error('Error in admin stats API:', error);

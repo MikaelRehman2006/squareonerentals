@@ -13,10 +13,60 @@ import { ListingInfoCard } from '@/components/ListingInfoCard';
 import { AmenitiesSection } from '@/components/AmenitiesSection';
 import { ListingContactCard } from '@/components/ListingContactCard';
 
+// Helper function to convert building amenities to array
+function convertBuildingAmenitiesToArray(amenities: any): string[] {
+  if (!amenities) return [];
+  
+  // If already an array, format each item properly
+  if (Array.isArray(amenities)) {
+    return amenities.map(amenity => {
+      if (typeof amenity === 'string') {
+        // If it's already a string, ensure proper formatting
+        return amenity.charAt(0).toUpperCase() + amenity.slice(1);
+      }
+      return String(amenity);
+    });
+  }
+  
+  // If amenities is an object with boolean values, extract keys where value is true
+  if (typeof amenities === 'object') {
+    return Object.entries(amenities)
+      .filter(([_, value]) => value === true)
+      .map(([key, _]) => {
+        // Convert camelCase to readable format (e.g., 'swimmingPool' to 'Swimming Pool')
+        return key.replace(/([A-Z])/g, ' $1')
+          .replace(/^./, str => str.toUpperCase());
+      });
+  }
+  
+  // If it's a string, try to parse it as JSON
+  if (typeof amenities === 'string') {
+    try {
+      const parsed = JSON.parse(amenities);
+      return convertBuildingAmenitiesToArray(parsed); // Recursively process the parsed result
+    } catch (e) {
+      // If parsing fails, it might be a comma-separated string
+      return amenities.split(',').map(item => item.trim());
+    }
+  }
+  
+  return [];
+}
+
 // Helper function to convert features object to array
 function convertFeaturesToArray(features: any): string[] {
   if (!features) return [];
-  if (Array.isArray(features)) return features;
+  
+  // If already an array, format each item properly
+  if (Array.isArray(features)) {
+    return features.map(feature => {
+      if (typeof feature === 'string') {
+        // If it's already a string, ensure proper formatting
+        return feature.charAt(0).toUpperCase() + feature.slice(1);
+      }
+      return String(feature);
+    });
+  }
   
   // If features is an object with boolean values, extract keys where value is true
   if (typeof features === 'object') {
@@ -29,13 +79,34 @@ function convertFeaturesToArray(features: any): string[] {
       });
   }
   
+  // If it's a string, try to parse it as JSON
+  if (typeof features === 'string') {
+    try {
+      const parsed = JSON.parse(features);
+      return convertFeaturesToArray(parsed); // Recursively process the parsed result
+    } catch (e) {
+      // If parsing fails, it might be a comma-separated string
+      return features.split(',').map(item => item.trim());
+    }
+  }
+  
   return [];
 }
 
 // Helper function to convert utilities object to array
 function convertUtilitiesToArray(utilities: any): string[] {
   if (!utilities) return [];
-  if (Array.isArray(utilities)) return utilities;
+  
+  // If already an array, format each item properly
+  if (Array.isArray(utilities)) {
+    return utilities.map(utility => {
+      if (typeof utility === 'string') {
+        // If it's already a string, ensure proper formatting
+        return utility.charAt(0).toUpperCase() + utility.slice(1);
+      }
+      return String(utility);
+    });
+  }
   
   // If utilities is an object with boolean values, extract keys where value is true
   if (typeof utilities === 'object') {
@@ -46,6 +117,17 @@ function convertUtilitiesToArray(utilities: any): string[] {
         return key.replace(/([A-Z])/g, ' $1')
           .replace(/^./, str => str.toUpperCase());
       });
+  }
+  
+  // If it's a string, try to parse it as JSON
+  if (typeof utilities === 'string') {
+    try {
+      const parsed = JSON.parse(utilities);
+      return convertUtilitiesToArray(parsed); // Recursively process the parsed result
+    } catch (e) {
+      // If parsing fails, it might be a comma-separated string
+      return utilities.split(',').map(item => item.trim());
+    }
   }
   
   return [];
@@ -170,7 +252,7 @@ export default async function ListingDetailsPage({
 
               {/* Amenities, Features, & Utilities */}
               <AmenitiesSection
-                buildingAmenities={listing.buildingAmenities}
+                buildingAmenities={convertBuildingAmenitiesToArray(listing.buildingAmenities)}
                 features={convertFeaturesToArray(listing.features)}
                 utilities={convertUtilitiesToArray(listing.utilities)}
               />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
@@ -229,11 +229,41 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         
         console.log('Loaded listing data:', data);
         
+        // Log the address we received from the API for debugging
+        console.log('Address from API:', data.address);
+        
         // Force update fields that might not be properly loaded
         setTimeout(() => {
-          if (data.address) form.setValue('address', data.address);
-          if (data.phoneNumber) form.setValue('phoneNumber', data.phoneNumber);
-          if (data.facebookUrl) form.setValue('facebookUrl', data.facebookUrl);
+          // Use a stronger approach for address - log what we're trying to set
+          if (data.address) {
+            console.log('Setting address to:', data.address);
+            form.setValue('address', data.address, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+            
+            // Force update the address field (needed for some form libraries)
+            const addressField = document.querySelector('[name=address]') as HTMLInputElement;
+            if (addressField) {
+              addressField.value = data.address;
+              console.log('Manually updated address input element');
+            }
+          }
+          
+          if (data.phoneNumber) form.setValue('phoneNumber', data.phoneNumber, { shouldValidate: true });
+          if (data.facebookUrl) form.setValue('facebookUrl', data.facebookUrl, { shouldValidate: true });
+          
+          // Force update features and utilities if needed
+          if (data.features) {
+            console.log('Forcing features update');
+            form.trigger('features');
+          }
+          if (data.utilities) {
+            console.log('Forcing utilities update');
+            form.trigger('utilities');
+          }
+          
+          // Trigger description update too for consistency
+          if (data.description) {
+            form.trigger('description');
+          }
         }, 300);
         
         // Set uploaded images
@@ -245,7 +275,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           form.setValue('images', data.images);
         }
         
-        // Set amenities
+        // Set amenities and building amenities with better parsing
         if (data.amenities) {
           try {
             const parsedAmenities = typeof data.amenities === 'string' 
@@ -257,28 +287,188 @@ export default function EditListingPage({ params }: { params: { listingId: strin
             setSelectedAmenities([]);
           }
         }
+
+        // Parse building amenities carefully
+        if (data.buildingAmenities) {
+          try {
+            let parsedBuildingAmenities;
+            if (typeof data.buildingAmenities === 'string') {
+              parsedBuildingAmenities = JSON.parse(data.buildingAmenities);
+              console.log('Parsed building amenities from string:', parsedBuildingAmenities);
+            } else if (Array.isArray(data.buildingAmenities)) {
+              parsedBuildingAmenities = data.buildingAmenities;
+              console.log('Building amenities already array:', parsedBuildingAmenities);
+            } else {
+              // If it's another format, convert to empty array
+              parsedBuildingAmenities = [];
+              console.log('Building amenities unknown format, using empty array');
+            }
+            
+            // Make sure it's definitely an array
+            const amenitiesArray = Array.isArray(parsedBuildingAmenities) ? parsedBuildingAmenities : [];
+            form.setValue('buildingAmenities', amenitiesArray);
+            console.log('Final building amenities set to:', amenitiesArray);
+          } catch (e) {
+            console.error('Error parsing building amenities:', e);
+            form.setValue('buildingAmenities', []);
+          }
+        }
         
-        // Set features
+        // Set features - handle both array and object formats
         const featuresList = [];
+        let featuresObj = {
+          wifi: false,
+          airConditioning: false,
+          laundry: false,
+          heating: false,
+          furnished: false,
+          smartHomeFeatures: false,
+          walkInCloset: false,
+        };
+
         if (data.features) {
-          if (data.features.wifi) featuresList.push('WiFi Included');
-          if (data.features.airConditioning) featuresList.push('Air Conditioning');
-          if (data.features.laundry) featuresList.push('In-unit Laundry');
-          if (data.features.heating) featuresList.push('Heating');
-          if (data.features.furnished) featuresList.push('Furnished');
-          if (data.features.smartHomeFeatures) featuresList.push('Smart Home Features');
-          if (data.features.walkInCloset) featuresList.push('Walk-in Closet');
+          try {
+            console.log('Loading features:', data.features, typeof data.features);
+            // If features is a string (JSON), parse it
+            if (typeof data.features === 'string') {
+              const parsedFeatures = JSON.parse(data.features);
+              console.log('Parsed features from string:', parsedFeatures);
+              
+              // If it's an array (old format)
+              if (Array.isArray(parsedFeatures)) {
+                // Map feature names to object properties
+                parsedFeatures.forEach(feature => {
+                  const featureName = String(feature).toLowerCase().replace(/\s+/g, '');
+                  if (featureName === 'wifiincluded') featuresObj.wifi = true;
+                  if (featureName === 'airconditioning') featuresObj.airConditioning = true;
+                  if (featureName === 'in-unitlaundry' || featureName === 'inunitlaundry') featuresObj.laundry = true;
+                  if (featureName === 'heating') featuresObj.heating = true;
+                  if (featureName === 'furnished') featuresObj.furnished = true;
+                  if (featureName === 'smarthomefeatures') featuresObj.smartHomeFeatures = true;
+                  if (featureName === 'walk-incloset' || featureName === 'walkincloset') featuresObj.walkInCloset = true;
+                });
+              } 
+              // If it's an object
+              else if (typeof parsedFeatures === 'object') {
+                featuresObj = { ...featuresObj, ...parsedFeatures };
+              }
+            } 
+            // If features is already an object
+            else if (typeof data.features === 'object') {
+              if (Array.isArray(data.features)) {
+                // Map feature names to object properties
+                data.features.forEach((feature: any) => {
+                  const featureName = String(feature).toLowerCase().replace(/\s+/g, '');
+                  if (featureName === 'wifiincluded') featuresObj.wifi = true;
+                  if (featureName === 'airconditioning') featuresObj.airConditioning = true;
+                  if (featureName === 'in-unitlaundry' || featureName === 'inunitlaundry') featuresObj.laundry = true;
+                  if (featureName === 'heating') featuresObj.heating = true;
+                  if (featureName === 'furnished') featuresObj.furnished = true;
+                  if (featureName === 'smarthomefeatures') featuresObj.smartHomeFeatures = true;
+                  if (featureName === 'walk-incloset' || featureName === 'walkincloset') featuresObj.walkInCloset = true;
+                });
+              } else {
+                featuresObj = { ...featuresObj, ...data.features };
+              }
+            }
+            
+            // Update form with the features object
+            form.setValue('features', featuresObj);
+            console.log('Set features form value to:', featuresObj);
+            
+            // Create list of feature names for the checkboxes
+            if (featuresObj.wifi) featuresList.push('WiFi Included');
+            if (featuresObj.airConditioning) featuresList.push('Air Conditioning');
+            if (featuresObj.laundry) featuresList.push('In-unit Laundry');
+            if (featuresObj.heating) featuresList.push('Heating');
+            if (featuresObj.furnished) featuresList.push('Furnished');
+            if (featuresObj.smartHomeFeatures) featuresList.push('Smart Home Features');
+            if (featuresObj.walkInCloset) featuresList.push('Walk-in Closet');
+          } catch (e) {
+            console.error('Error parsing features:', e, data.features);
+            // Default fallback
+            if (data.features.wifi) featuresList.push('WiFi Included');
+            if (data.features.airConditioning) featuresList.push('Air Conditioning');
+            if (data.features.laundry) featuresList.push('In-unit Laundry');
+            if (data.features.heating) featuresList.push('Heating');
+            if (data.features.furnished) featuresList.push('Furnished');
+            if (data.features.smartHomeFeatures) featuresList.push('Smart Home Features');
+            if (data.features.walkInCloset) featuresList.push('Walk-in Closet');
+          }
         }
         setSelectedFeatures(featuresList);
         
-        // Set utilities
+        // Set utilities - handle both array and object formats
         const utilitiesList = [];
+        let utilitiesObj = {
+          electricity: false,
+          gas: false,
+          water: false,
+          internet: false,
+          trashCollection: false,
+        };
+
         if (data.utilities) {
-          if (data.utilities.electricity) utilitiesList.push('Electricity');
-          if (data.utilities.gas) utilitiesList.push('Gas');
-          if (data.utilities.water) utilitiesList.push('Water');
-          if (data.utilities.internet) utilitiesList.push('Internet');
-          if (data.utilities.trashCollection) utilitiesList.push('Trash Collection');
+          try {
+            console.log('Loading utilities:', data.utilities, typeof data.utilities);
+            // If utilities is a string (JSON), parse it
+            if (typeof data.utilities === 'string') {
+              const parsedUtilities = JSON.parse(data.utilities);
+              console.log('Parsed utilities from string:', parsedUtilities);
+              
+              // If it's an array (old format)
+              if (Array.isArray(parsedUtilities)) {
+                // Map utility names to object properties
+                parsedUtilities.forEach((utility: string) => {
+                  const utilityName = String(utility).toLowerCase().replace(/\s+/g, '');
+                  if (utilityName === 'electricity') utilitiesObj.electricity = true;
+                  if (utilityName === 'gas') utilitiesObj.gas = true;
+                  if (utilityName === 'water') utilitiesObj.water = true;
+                  if (utilityName === 'internet') utilitiesObj.internet = true;
+                  if (utilityName === 'trashcollection') utilitiesObj.trashCollection = true;
+                });
+              } 
+              // If it's an object
+              else if (typeof parsedUtilities === 'object') {
+                utilitiesObj = { ...utilitiesObj, ...parsedUtilities };
+              }
+            } 
+            // If utilities is already an object
+            else if (typeof data.utilities === 'object') {
+              if (Array.isArray(data.utilities)) {
+                // Map utility names to object properties
+                data.utilities.forEach((utility: string) => {
+                  const utilityName = String(utility).toLowerCase().replace(/\s+/g, '');
+                  if (utilityName === 'electricity') utilitiesObj.electricity = true;
+                  if (utilityName === 'gas') utilitiesObj.gas = true;
+                  if (utilityName === 'water') utilitiesObj.water = true;
+                  if (utilityName === 'internet') utilitiesObj.internet = true;
+                  if (utilityName === 'trashcollection') utilitiesObj.trashCollection = true;
+                });
+              } else {
+                utilitiesObj = { ...utilitiesObj, ...data.utilities };
+              }
+            }
+            
+            // Update form with the utilities object
+            form.setValue('utilities', utilitiesObj);
+            console.log('Set utilities form value to:', utilitiesObj);
+            
+            // Create list of utility names for the checkboxes
+            if (utilitiesObj.electricity) utilitiesList.push('Electricity');
+            if (utilitiesObj.gas) utilitiesList.push('Gas');
+            if (utilitiesObj.water) utilitiesList.push('Water');
+            if (utilitiesObj.internet) utilitiesList.push('Internet');
+            if (utilitiesObj.trashCollection) utilitiesList.push('Trash Collection');
+          } catch (e) {
+            console.error('Error parsing utilities:', e, data.utilities);
+            // Default fallback
+            if (data.utilities.electricity) utilitiesList.push('Electricity');
+            if (data.utilities.gas) utilitiesList.push('Gas');
+            if (data.utilities.water) utilitiesList.push('Water');
+            if (data.utilities.internet) utilitiesList.push('Internet');
+            if (data.utilities.trashCollection) utilitiesList.push('Trash Collection');
+          }
         }
         setSelectedUtilities(utilitiesList);
         
@@ -434,10 +624,9 @@ export default function EditListingPage({ params }: { params: { listingId: strin
 
   const onSubmit = async (data: z.infer<typeof listingSchema>) => {
     try {
-      console.log('Starting form submission...');
-      console.log('Form data before submission:', data);
-      console.log('Uploaded images before submission:', uploadedImages);
-
+      console.log('Form data:', data);
+      console.log('Images:', uploadedImages);
+      
       // Validate required fields
       if (!data.title || !data.description || !data.location) {
         console.error('Missing required fields');
@@ -448,15 +637,51 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       setIsSubmitting(true);
       const loadingToast = toast.loading('Updating your listing...');
 
+      // Convert features object to array
+      const featureArray = Object.entries(data.features || {})
+        .filter(([_, value]) => value === true)
+        .map(([key, _]) => {
+          // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
+          return key.replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase());
+        });
+
+      // Convert utilities object to array
+      const utilitiesArray = Object.entries(data.utilities || {})
+        .filter(([_, value]) => value === true)
+        .map(([key, _]) => {
+          // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
+          return key.replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase());
+        });
+      
+      // Make sure building amenities is properly formatted as an array
+      let buildingAmenitiesArray = selectedAmenities;
+      if (!Array.isArray(buildingAmenitiesArray)) {
+        buildingAmenitiesArray = [];
+      }
+      console.log('Building amenities being saved:', buildingAmenitiesArray);
+
+      // Get the current address value directly from the form field
+      const addressInputValue = document.querySelector('[name=address]') ? 
+                             (document.querySelector('[name=address]') as HTMLInputElement).value : 
+                             data.address;
+      
+      console.log('Address from form element:', addressInputValue);
+      console.log('Address from form state:', data.address);
+      
       // Format the data
       const formattedData = {
         ...data,
         images: uploadedImages,
-        address: data.address || '',
+        // Use both sources for address, prioritizing the input element value
+        address: addressInputValue || data.address || '',
         phoneNumber: data.phoneNumber || '',
         facebookUrl: data.facebookUrl || '',
         amenities: JSON.stringify(selectedAmenities),
-        buildingAmenities: JSON.stringify(data.buildingAmenities),
+        buildingAmenities: JSON.stringify(buildingAmenitiesArray),
+        features: JSON.stringify(featureArray),
+        utilities: JSON.stringify(utilitiesArray),
         squareFeet: Number(data.squareFeet),
         price: Number(data.price),
         bedrooms: Number(data.bedrooms),
@@ -659,15 +884,30 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                   <FormField
                     control={form.control}
                     name="address"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Address</FormLabel>
-                        <FormControl>
-                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      // Force set the address value from the listing data
+                      // This ensures the field shows the correct value on load
+                      React.useEffect(() => {
+                        if (listing?.address) {
+                          field.onChange(listing.address);
+                          console.log('Setting address in useEffect:', listing.address);
+                        }
+                      }, [listing, field]);
+                      
+                      return (
+                        <FormItem>
+                          <FormLabel className="text-[#CCCCCC]">Address</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              value={field.value || listing?.address || ''}
+                              className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
 
@@ -906,22 +1146,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="featured"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal text-[#CCCCCC]">Featured Listing</FormLabel>
-                      </FormItem>
-                    )}
-                  />
+                  {/* Featured option removed - admin only feature */}
                 </div>
               </CardContent>
             </Card>

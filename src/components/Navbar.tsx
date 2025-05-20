@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Menu, User, X, Heart, Bell, Settings, MessageSquare, LayoutDashboard, ShieldCheck } from 'lucide-react';
+import { NotificationsDropdown } from './NotificationsDropdown';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -79,7 +80,10 @@ export default function Navbar() {
           {/* Auth Buttons */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
             {session?.user ? (
-              <DropdownMenu>
+              <>
+                {/* Notifications Dropdown */}
+                <NotificationsDropdown />
+                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative">
                     <User className="h-5 w-5" />
@@ -137,6 +141,7 @@ export default function Navbar() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              </>
             ) : (
               <div className="flex items-center space-x-4">
                 <Button variant="ghost" onClick={() => handleAuth('signin')}>

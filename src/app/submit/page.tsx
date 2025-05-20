@@ -244,27 +244,30 @@ export default function SubmitListingPage() {
     if (!files || files.length === 0) return;
 
     try {
-      toast.loading('Uploading images...');
+      const loadingToast = toast.loading('Uploading images...');
       
       // Check file size before upload (5MB limit)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       for (let i = 0; i < files.length; i++) {
         if (files[i].size > MAX_FILE_SIZE) {
-          toast.dismiss();
+          toast.dismiss(loadingToast);
           toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
           return;
         }
         
         if (!files[i].type.startsWith('image/')) {
-          toast.dismiss();
+          toast.dismiss(loadingToast);
           toast.error(`File ${files[i].name} is not an image`);
           return;
         }
       }
 
+      console.log('Starting image upload for', files.length, 'files');
+      
       const uploadPromises = Array.from(files).map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
+        console.log('Uploading file:', file.name);
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -273,27 +276,33 @@ export default function SubmitListingPage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('Upload error:', errorData);
-          throw new Error(errorData.error || 'Upload failed');
+          console.error('Upload error for file', file.name, ':', errorData);
+          throw new Error(errorData.error || `Upload failed for ${file.name}`);
         }
 
         const data = await response.json();
-        console.log('Upload success:', data);
+        console.log('Upload success for file', file.name, ':', data);
         return data.secure_url;
       });
 
       const newImageUrls = await Promise.all(uploadPromises);
+      console.log('All uploads complete, new image URLs:', newImageUrls);
       
+      // This is the critical part - make sure we properly update state AND form value
       setUploadedImages(prev => {
         const updatedImages = [...prev, ...newImageUrls];
-        form.setValue('images', updatedImages, { shouldValidate: true });
+        console.log('Updated image array:', updatedImages);
+        
+        // Explicitly set form value with the updated images
+        form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
+        
         return updatedImages;
       });
 
-      toast.dismiss();
-      toast.success('Images uploaded successfully!');
+      toast.dismiss(loadingToast);
+      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
       
-      // Reset file input
+      // Reset file input but keep the images in state
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -322,6 +331,9 @@ export default function SubmitListingPage() {
     try {
       console.log('Starting form submission...');
       console.log('Form data before submission:', data);
+      console.log('Selected amenities:', selectedAmenities);
+      console.log('Selected features:', selectedFeatures);
+      console.log('Selected utilities:', selectedUtilities);
       console.log('Uploaded images before submission:', uploadedImages);
 
       // Validate required fields
@@ -334,19 +346,87 @@ export default function SubmitListingPage() {
       setSubmitting(true);
       const loadingToast = toast.loading('Submitting your listing...');
 
-      // Format the data
+      // Debug any potential issues
+      console.log('Data object keys:', Object.keys(data));
+      console.log('Features data type:', typeof data.features);
+      console.log('Features value:', data.features);
+      
+      // Convert features object to array - more robust handling
+      let featureArray = [];
+      if (data.features && typeof data.features === 'object') {
+        featureArray = Object.entries(data.features)
+          .filter(([_, value]) => value === true)
+          .map(([key, _]) => {
+            // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
+            return key.replace(/([A-Z])/g, ' $1')
+              .replace(/^./, str => str.toUpperCase());
+          });
+      } else if (selectedFeatures.length > 0) {
+        // Fallback to selectedFeatures if form data doesn't have features
+        featureArray = selectedFeatures;
+      }
+      console.log('Final feature array:', featureArray);
+
+      // Convert utilities object to array - more robust handling
+      let utilitiesArray = [];
+      if (data.utilities && typeof data.utilities === 'object') {
+        utilitiesArray = Object.entries(data.utilities)
+          .filter(([_, value]) => value === true)
+          .map(([key, _]) => {
+            // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
+            return key.replace(/([A-Z])/g, ' $1')
+              .replace(/^./, str => str.toUpperCase());
+          });
+      } else if (selectedUtilities.length > 0) {
+        // Fallback to selectedUtilities if form data doesn't have utilities
+        utilitiesArray = selectedUtilities;
+      }
+      console.log('Final utilities array:', utilitiesArray);
+      
+      // Log what we're submitting
+      console.log('Selected amenities before submission:', selectedAmenities);
+      console.log('Selected features before submission:', selectedFeatures);
+      console.log('Selected utilities before submission:', selectedUtilities);
+      console.log('Uploaded images before submission:', uploadedImages);
+      
+      // Get the current address value from both sources
+      const addressInputValue = document.querySelector('[name=address]') ? 
+                             (document.querySelector('[name=address]') as HTMLInputElement).value : 
+                             data.address || '';
+      
+      console.log('Address being submitted:', addressInputValue);
+      
+      // Format the data with proper handling of arrays
       const formattedData = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        price: Number(data.price) || 0,
+        location: data.location,
+        address: addressInputValue,
+        phoneNumber: data.phoneNumber || '',
+        facebookUrl: data.facebookUrl || '',
+        // Important: Use the directly selected items for submission
         images: uploadedImages,
         amenities: JSON.stringify(selectedAmenities),
-        buildingAmenities: JSON.stringify(data.buildingAmenities),
-        squareFeet: Number(data.squareFeet),
-        price: Number(data.price),
-        bedrooms: Number(data.bedrooms),
-        bathrooms: Number(data.bathrooms),
+        buildingAmenities: JSON.stringify(selectedAmenities),
+        features: JSON.stringify(selectedFeatures),
+        utilities: JSON.stringify(selectedUtilities),
+        squareFeet: Number(data.squareFeet) || 0,
+        bedrooms: Number(data.bedrooms) || 0,
+        bathrooms: Number(data.bathrooms) || 0,
+        propertyType: data.propertyType,
+        listingType: data.listingType,
+        leaseType: data.leaseType,
+        availableDate: data.availableDate,
+        parking: data.parking,
       };
-
-      console.log('Final submit data:', formattedData);
+      
+      console.log('Final data for submission:', {
+        images: uploadedImages?.length || 0,
+        amenities: selectedAmenities?.length || 0,
+        features: selectedFeatures?.length || 0,
+        utilities: selectedUtilities?.length || 0,
+      });
 
       const response = await fetch('/api/listings', {
         method: 'POST',
@@ -489,8 +569,20 @@ export default function SubmitListingPage() {
                       <FormItem>
                         <FormLabel className="text-[#CCCCCC]">Address</FormLabel>
                         <FormControl>
-                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              console.log('Address changed to:', e.target.value);
+                            }}
+                            placeholder="Enter the property address"
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
                         </FormControl>
+                        <FormDescription className="text-[#A0A0A0]">
+                          The full address of the property being listed
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -732,22 +824,7 @@ export default function SubmitListingPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="featured"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal text-[#CCCCCC]">Featured Listing</FormLabel>
-                      </FormItem>
-                    )}
-                  />
+                  {/* Featured option removed - admin only feature */}
                 </div>
               </CardContent>
             </Card>

@@ -51,6 +51,7 @@ interface Report {
     email: string | null;
   };
   reason: string;
+  description?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -112,7 +113,7 @@ export default function ReportsPage() {
         search: searchQuery,
       });
 
-      const response = await fetch(`/api/reports?${queryParams}`);
+      const response = await fetch(`/api/admin/reports?${queryParams}`);
       if (response.ok) {
         const data = await response.json();
         setReports(data.reports || []);
@@ -127,7 +128,7 @@ export default function ReportsPage() {
 
   const updateReportStatus = async (reportId: string, newStatus: string) => {
     try {
-      const response = await fetch(`/api/reports/${reportId}`, {
+      const response = await fetch(`/api/admin/reports/${reportId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -257,6 +258,7 @@ export default function ReportsPage() {
               <TableHead>Reported By</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Reason</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
               <TableHead className="w-[100px]"></TableHead>
@@ -295,8 +297,11 @@ export default function ReportsPage() {
                       {report.listingOwner.name || report.listingOwner.email}
                     </Link>
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
+                  <TableCell className="max-w-[150px] truncate">
                     {report.reason}
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate">
+                    {report.description || 'No description provided'}
                   </TableCell>
                   <TableCell>
                     <Badge

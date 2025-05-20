@@ -27,24 +27,44 @@ export default function ReportListingModal({ isOpen, onClose, listingId }: Repor
 
     try {
       setIsSubmitting(true);
+      // Debug logging to catch the issue
+      console.log('Submitting report with data:', {
+        listingId,
+        reason,
+        description,
+        typeOfListingId: typeof listingId
+      });
+      
+      // Make sure listingId is not undefined or null
+      if (!listingId) {
+        toast.error('Missing listing ID');
+        throw new Error('Listing ID is missing');
+      }
+      
+      const payload = {
+        listingId: listingId,
+        reason,
+        description,
+      };
+      
+      console.log('Request payload:', payload);
       
       const response = await fetch('/api/reports', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          type: 'LISTING',
-          targetId: listingId,
-          reason,
-          description,
-        }),
+        body: JSON.stringify(payload),
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to submit report');
+        console.error('Report submission error:', data);
+        throw new Error(data.error || 'Failed to submit report');
       }
 
+      console.log('Report submitted successfully:', data);
       toast.success('Report submitted successfully');
       setReason('');
       setDescription('');

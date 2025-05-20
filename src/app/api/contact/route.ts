@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
-import { sendEmail, createContactFormEmail } from '@/utils/email';
+import { sendContactEmail } from '@/utils/sendgrid';
 
 export async function POST(request: Request) {
   try {
+    // Log that we received a contact form request
+    console.log('Contact form submission received');
+    
+    // Parse the request body
     const body = await request.json();
-    const { name, email, subject, message } = body;
+    console.log('Request body received:', JSON.stringify(body));
+    
+    const { name, email, phone, subject, message } = body;
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -23,26 +29,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const emailTemplate = createContactFormEmail(name, email, subject, message);
-    
-    const emailSent = await sendEmail(
-      process.env.CONTACT_EMAIL || 'squareone.rental@gmail.com',
-      emailTemplate,
-      email
-    );
+    // Use SendGrid for reliable email delivery
+    const result = await sendContactEmail({
+      name,
+      email,
+      phone,
+      subject,
+      message
+    });
 
-    if (!emailSent) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Failed to send email' },
+        { error: result.error || 'Failed to send email' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error sending contact form:', error);
+    console.error('Error sending contact form:');
+    console.error(error);
+    
+    // Get detailed error information
+    let errorMessage = 'Failed to send contact form';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      console.error('Error stack:', error.stack);
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to send contact form' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -67,7 +67,7 @@ export function ListingInfoCard({
             <MapPin className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-500">Address</p>
-              <p className="font-semibold text-gray-900">{address}</p>
+              <p className="font-semibold text-gray-900">{address || 'No address provided'}</p>
             </div>
           </div>
         </div>

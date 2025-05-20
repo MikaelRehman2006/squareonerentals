@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { connectDB } from '@/lib/mongodb';
 
@@ -22,6 +23,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Users,
+  Home,
+  Flag,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  ArrowUpRight,
+} from 'lucide-react';
+import { GrowthChart } from '@/components/GrowthChart';
 
 interface Listing {
   id: string;
@@ -30,6 +41,38 @@ interface Listing {
   location: string;
   createdAt: string;
   status: string;
+}
+
+interface MonthlyStatsItem {
+  _id: {
+    year: number;
+    month: number;
+    status?: string;
+  };
+  count: number;
+}
+
+interface Analytics {
+  currentStats: {
+    totalUsers: number;
+    totalListings: number;
+    activeListings: number;
+    totalReports: number;
+    averagePrice: number;
+    userGrowth: number;
+    listingGrowth: number;
+    userGrowthPercent: string;
+    listingGrowthPercent: string;
+  },
+  recentActivity?: {
+    users: any[];
+    listings: any[];
+    reports: any[];
+  },
+  monthlyStats?: {
+    users: MonthlyStatsItem[];
+    listings: MonthlyStatsItem[];
+  }
 }
 
 interface Error {
@@ -42,6 +85,8 @@ export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -80,7 +125,25 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchAnalytics = async () => {
+      try {
+        const response = await fetch('/api/admin/stats');
+        if (response.ok) {
+          const data = await response.json();
+          setAnalytics(data);
+        } else {
+          // Silently fail for non-admin users
+          console.log('Analytics data unavailable - requires admin access');
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
     fetchListings();
+    fetchAnalytics();
   }, [router, status]);
 
   const handleEditListing = (id: string) => {
@@ -163,6 +226,160 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Analytics Section - Only shown if user has admin access */}
+      {analytics && session?.user?.role === 'admin' && (
+        <div className="mb-10">
+          <div className="mb-4">
+            <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
+            <p className="text-muted-foreground">
+              Platform performance and growth metrics.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{analytics.currentStats.totalUsers}</div>
+                <p className="text-xs text-muted-foreground">
+                  +{analytics.currentStats.userGrowthPercent}% from last month
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
+                <Home className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{analytics.currentStats.totalListings}</div>
+                <p className="text-xs text-muted-foreground">
+                  {analytics.currentStats.activeListings} active
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average Price</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  ${Number(analytics.currentStats.averagePrice).toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">Per month</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Monthly Growth</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  +{analytics.currentStats.listingGrowthPercent}%
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  New listings this month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Growth Chart */}
+          {analytics.monthlyStats && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-medium">Growth Trends</CardTitle>
+                <CardDescription>User and listing growth over the past 6 months</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <GrowthChart 
+                  usersData={analytics.monthlyStats.users} 
+                  listingsData={analytics.monthlyStats.listings} 
+                />
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Recent Activity Section */}
+          {analytics.recentActivity && (
+            <div className="grid gap-6 md:grid-cols-2 mt-6">
+              {/* Recent Listings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-medium">Recent Listings</CardTitle>
+                  <CardDescription>Latest properties added to the platform</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analytics.recentActivity.listings.length > 0 ? (
+                      analytics.recentActivity.listings.map((listing: any) => (
+                        <div key={listing.id} className="flex items-center justify-between border-b pb-2">
+                          <div>
+                            <div className="font-medium truncate max-w-[200px]">{listing.title}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(listing.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="font-medium">${listing.price}</span>
+                            <Link 
+                              href={`/listings/${listing.id}`}
+                              className="ml-2 p-2 text-blue-600 hover:text-blue-800"
+                            >
+                              <ArrowUpRight className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-muted-foreground">No recent listings</div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Recent Users */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg font-medium">New Users</CardTitle>
+                  <CardDescription>Recently joined members</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analytics.recentActivity.users.length > 0 ? (
+                      analytics.recentActivity.users.map((user: any) => (
+                        <div key={user.id} className="flex items-center justify-between border-b pb-2">
+                          <div>
+                            <div className="font-medium">{user.name || 'Anonymous User'}</div>
+                            <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                              {user.email}
+                            </div>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-4 text-muted-foreground">No recent users</div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* My Listings Section */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">My Listings</h1>

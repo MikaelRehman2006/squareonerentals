@@ -119,7 +119,7 @@ export default function ReportButton({ type, targetId, className = '' }: ReportB
         <ReportListingModal 
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)}
-          targetId={targetId}
+          listingId={targetId}
         />
       </>
     );

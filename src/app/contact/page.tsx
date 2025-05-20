@@ -31,15 +31,23 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/contact', {
+      // Create a FormData object from the form data
+      const formDataObj = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataObj.append(key, value);
+      });
+      
+      // Add a honeypot field to prevent spam
+      formDataObj.append('_honeypot', '');
+
+      // Send the form data to FormSubmit.co
+      const response = await fetch('https://formsubmit.co/squareone.rental@gmail.com', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: formDataObj,
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to send message');
+        throw new Error('Failed to send message');
       }
 
       // Reset form
@@ -61,11 +69,18 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-        <p className="text-xl text-muted-foreground">Have questions or feedback? We'd love to hear from you.</p>
-      </div>
+    <div className="relative min-h-screen">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-15" 
+        style={{ backgroundImage: 'url(/images/ContactImage.jpg)' }}
+      />
+      
+      <div className="relative z-10 max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+          <p className="text-xl text-muted-foreground">Have questions or feedback? We'd love to hear from you.</p>
+        </div>
 
       <div className="grid md:grid-cols-2 gap-12">
         {/* Contact Information */}
@@ -177,6 +192,7 @@ export default function ContactPage() {
             </Button>
           </form>
         </Card>
+      </div>
       </div>
     </div>
   );

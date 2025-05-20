@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
-import { getAdminRole } from '@/lib/admin';
+import { User } from '@/models/User';
 import { Types } from 'mongoose';
 
 interface ListingDocument {
@@ -34,8 +34,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify user is an admin
-    const adminRole = getAdminRole(session.user.email);
-    if (!adminRole) {
+    const user = await User.findOne({ email: session.user.email });
+    
+    // Case-insensitive check for admin role
+    if (!user || (user.role.toUpperCase() !== 'ADMIN' && user.role.toLowerCase() !== 'admin')) {
       console.log(`Admin listings API: User ${session.user.email} is not admin`);
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
@@ -43,17 +45,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log('Admin listings API: Processing request');
+    
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const userId = searchParams.get('userId');
     const limit = parseInt(searchParams.get('limit') || '20', 10);
     const skip = parseInt(searchParams.get('skip') || '0', 10);
     
-    await connectDB();
+    console.log(`Admin listings API: Query params - status: ${status}, userId: ${userId}`);
+    
+    try {
+      await connectDB();
+      console.log('Admin listings API: MongoDB connection successful');
+    } catch (dbError) {
+      console.error('Admin listings API: MongoDB connection failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
     
     const filter: any = {};
-    if (status) filter.status = status;
+    // Only filter by status if it's not 'all'
+    if (status && status.toLowerCase() !== 'all') {
+      filter.status = status.toUpperCase();
+    }
     if (userId) filter.userId = userId;
+    
+    console.log('Admin listings API: Using filter:', JSON.stringify(filter));
     
     const listings = await Listing.find(filter)
       .sort({ createdAt: -1 })

@@ -3,9 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB, disconnectDB } from '@/lib/mongodb';
 import { Report } from '@/models/Report';
-import { Listing } from '@/models/Listing';
 import { User } from '@/models/User';
-import { getAdminRole } from '@/lib/admin';
+import { Listing } from '@/models/Listing';
 import { Types } from 'mongoose';
 
 interface ReportDocument {
@@ -32,64 +31,104 @@ interface ReportDocument {
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-    const session = await getServerSession(authOptions);
+    console.log('POST /api/reports: Starting request');
+    
+    // Connect to MongoDB
+    try {
+      await connectDB();
+      console.log('MongoDB connection successful');
+    } catch (dbError) {
+      console.error('MongoDB connection failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
 
+    // Check authentication
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
+      console.log('POST /api/reports: Unauthorized attempt');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    // Get user information
     const user = await User.findOne({ email: session.user.email });
     if (!user) {
+      console.log('POST /api/reports: User not found');
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
+    // Parse request body
     const body = await request.json();
-    const { listingId, reason } = body;
+    console.log('Report submission body:', body);
 
-    if (!listingId || !reason) {
+    // Validate required fields
+    if (!body.listingId) {
+      console.log('POST /api/reports: Missing listingId');
       return NextResponse.json(
-        { error: 'Listing ID and reason are required' },
+        { error: 'Listing ID is required' },
         { status: 400 }
       );
     }
 
-    const listing = await Listing.findById(listingId);
+    if (!body.reason) {
+      console.log('POST /api/reports: Missing reason');
+      return NextResponse.json(
+        { error: 'Reason is required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate listing exists
+    const listing = await Listing.findById(body.listingId);
     if (!listing) {
+      console.log('POST /api/reports: Listing not found');
       return NextResponse.json(
         { error: 'Listing not found' },
         { status: 404 }
       );
     }
 
-    const report = await Report.create({
-      listingId,
+    // Create the report with validated data
+    const reportData = {
+      listingId: body.listingId,
       reportedBy: user._id,
       listingOwner: listing.userId,
-      reason,
-      status: 'PENDING',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+      reason: body.reason,
+      description: body.description || '',
+      status: 'PENDING'
+    };
+    
+    // Create the report
+    console.log('Creating report with data:', reportData);
+    const report = new Report(reportData);
+    await report.save();
 
     return NextResponse.json({
       message: 'Report submitted successfully',
       reportId: report._id.toString(),
-    });
+      status: 'success'
+    }, { status: 201 });
+    
   } catch (error) {
     console.error('Error in POST /api/reports:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to submit report' },
+      { 
+        error: error instanceof Error ? error.message : 'Failed to submit report',
+        status: 'error'
+      },
       { status: 500 }
     );
   } finally {
-    await disconnectDB();
+    // Don't disconnect as it might affect other requests
+    // await disconnectDB();
   }
 }
 

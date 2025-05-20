@@ -19,7 +19,6 @@ const navigation = [
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Listings', href: '/admin/listings', icon: Building2 },
   { name: 'Reports', href: '/admin/reports', icon: Flag },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -57,13 +56,13 @@ export default function AdminLayout({
                       'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
                       isActive
                         ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                        : 'text-gray-800 dark:text-gray-200 hover:bg-accent hover:text-foreground'
                     )}
                   >
                     <Icon
                       className={cn(
                         'mr-3 h-5 w-5 flex-shrink-0',
-                        isActive ? 'text-primary' : 'text-muted-foreground'
+                        isActive ? 'text-primary' : 'text-gray-700 dark:text-gray-300'
                       )}
                     />
                     {item.name}

@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth';
 import mongoose from 'mongoose';
 import { User } from '@/models/User';
 import { connectDB, disconnectDB } from '@/lib/mongodb';
+import { notifyFavoritedListingChange, notifyAdminStatusChange } from '@/lib/notification';
 
 type Props = {
   params: { listingId: string };
@@ -16,6 +17,7 @@ interface ListingData {
   description: string;
   price: number;
   location: string;
+  address: string; // Added address field
   images: string[];
   bedrooms: number;
   bathrooms: number;
@@ -164,9 +166,10 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
 
     const listingId = params.listingId;
-    const listing = await Listing.findById(listingId);
+    // Fetch the original listing to compare changes later
+    const originalListing = await Listing.findById(listingId).lean() as ListingData;
     
-    if (!listing) {
+    if (!originalListing) {
       return NextResponse.json(
         { error: 'Listing not found' },
         { status: 404 }
@@ -174,11 +177,14 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
 
     // Check if user owns the listing
-    if (listing.userId.toString() !== user._id.toString()) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    if (originalListing.userId.toString() !== user._id.toString()) {
+      // Check if the user is an admin - admins can edit any listing
+      if (session.user.role !== 'admin') {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
     }
 
     const body = await request.json();
@@ -191,30 +197,56 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       );
     }
 
-    // Update the listing
+    // Log what we received in the edit request
+    console.log('Edit listing received data:', {
+      address: body.address,
+      images: Array.isArray(body.images) ? `${body.images.length} images` : typeof body.images,
+      features: typeof body.features,
+      amenities: typeof body.amenities,
+      buildingAmenities: typeof body.buildingAmenities
+    });
+
+    // More robust processing of received data
+    const images = validateImageUrls(body.images || []);
+    console.log('Processed images for edit:', images.length, 'valid images');
+    
+    // Ensure we have the address field 
+    const address = body.address || ''; 
+    console.log('Address for edit:', address);
+    
+    // Update the listing with improved handling
     const data = {
       title: body.title,
       description: body.description,
-      price: Number(body.price),
+      price: Number(body.price) || 0,
       location: body.location,
-      images: validateImageUrls(body.images),
-      bedrooms: Number(body.bedrooms),
-      bathrooms: Number(body.bathrooms),
-      squareFeet: Number(body.squareFeet),
-      amenities: safeParseJSON(body.amenities),
-      buildingAmenities: safeParseJSON(body.buildingAmenities),
-      features: safeParseJSON(body.features),
-      utilities: safeParseJSON(body.utilities),
+      // Explicitly include address 
+      address: address,
+      images: images,
+      bedrooms: Number(body.bedrooms) || 0,
+      bathrooms: Number(body.bathrooms) || 0,
+      squareFeet: Number(body.squareFeet) || 0,
+      amenities: typeof body.amenities === 'string' ? safeParseJSON(body.amenities) : (body.amenities || []),
+      buildingAmenities: typeof body.buildingAmenities === 'string' ? safeParseJSON(body.buildingAmenities) : (body.buildingAmenities || []),
+      features: typeof body.features === 'string' ? safeParseJSON(body.features) : (body.features || []),
+      utilities: typeof body.utilities === 'string' ? safeParseJSON(body.utilities) : (body.utilities || []),
       propertyType: body.propertyType,
       listingType: body.listingType,
       leaseType: body.leaseType,
       availableDate: new Date(body.availableDate),
-      status: body.status.toUpperCase(),
-      featured: body.featured,
+      status: body.status ? body.status.toUpperCase() : 'ACTIVE',
+      featured: body.featured || false,
       phoneNumber: body.phoneNumber || '',
       facebookUrl: body.facebookUrl || '',
       updatedAt: new Date()
     };
+    
+    console.log('Final listing data for update:', {
+      address: data.address,
+      images: data.images.length,
+      features: Array.isArray(data.features) ? data.features.length : typeof data.features,
+      utilities: Array.isArray(data.utilities) ? data.utilities.length : typeof data.utilities
+    });
 
     const updatedListing = await Listing.findByIdAndUpdate(
       listingId,
@@ -236,6 +268,34 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       userId: user._id.toString(),
       createdAt: updatedListing.createdAt,
     };
+
+    // Send notifications in background (non-blocking)
+    try {
+      // Case 1: Admin changed the listing status (notify the listing owner)
+      if (session.user.role === 'admin' && 
+          originalListing.status !== data.status && 
+          originalListing.userId.toString() !== user._id.toString()) {
+        
+        notifyAdminStatusChange(
+          listingId,
+          originalListing.status,
+          data.status,
+          originalListing.userId.toString(),
+          user._id.toString()
+        );
+      }
+
+      // Case 2: Any changes to the listing (notify users who favorited it)
+      notifyFavoritedListingChange(
+        listingId,
+        originalListing,
+        updatedListing,
+        user._id.toString()
+      );
+    } catch (notificationError) {
+      // Log but don't interrupt the response flow
+      console.error('Error sending notifications:', notificationError);
+    }
 
     return NextResponse.json(formattedListing);
   } catch (error) {

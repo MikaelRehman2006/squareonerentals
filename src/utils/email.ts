@@ -5,18 +5,16 @@ interface EmailTemplate {
   body: string;
 }
 
+// Create a more reliable Gmail transporter
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false, // Use TLS instead of SSL
   auth: {
-    type: 'OAuth2',
-    user: process.env.EMAIL_USER,
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    refreshToken: process.env.EMAIL_REFRESH_TOKEN,
-    accessToken: process.env.EMAIL_ACCESS_TOKEN
-  }
+    user: process.env.EMAIL_USER || 'squareone.rental@gmail.com',
+    pass: process.env.EMAIL_PASSWORD
+  },
+  debug: true // Enable debugging
 });
 
 export const createNewMessageEmail = (
@@ -59,7 +57,8 @@ export const createContactFormEmail = (
   name: string,
   email: string,
   subject: string,
-  message: string
+  message: string,
+  phone?: string
 ): EmailTemplate => ({
   subject: `Contact Form: ${subject}`,
   body: `
@@ -67,6 +66,7 @@ New contact form submission:
 
 Name: ${name}
 Email: ${email}
+Phone: ${phone || 'Not provided'}
 Subject: ${subject}
 
 Message:
@@ -77,18 +77,39 @@ ${message}
 
 export const sendEmail = async (to: string, template: EmailTemplate, replyTo?: string) => {
   try {
-    const result = await transporter.sendMail({
+    // Log attempt to send email for debugging
+    console.log('Attempting to send email from:', process.env.EMAIL_USER);
+    console.log('To:', to);
+    console.log('Subject:', template.subject);
+    
+    // Create mail options
+    const mailOptions = {
       from: process.env.EMAIL_USER,
       to,
       subject: template.subject,
       text: template.body,
       replyTo
-    });
+    };
+
+    // Send email with detailed error handling
+    const result = await transporter.sendMail(mailOptions);
 
     console.log('Email sent successfully:', result.messageId);
     return true;
   } catch (error) {
+    // Detailed error logging
     console.error('Error sending email:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
+    // Check for auth errors
+    const errorString = String(error);
+    if (errorString.includes('auth')) {
+      console.error('Authentication error detected. Please check EMAIL_USER and EMAIL_PASSWORD in .env');
+    }
+    
     return false;
   }
 };

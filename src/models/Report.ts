@@ -20,9 +20,13 @@ const reportSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  description: {
+    type: String,
+    required: false
+  },
   status: {
     type: String,
-    enum: ['PENDING', 'RESOLVED', 'REJECTED'],
+    enum: ['PENDING', 'RESOLVED', 'REJECTED', 'WARNED', 'ACTIONED'],
     default: 'PENDING'
   },
   createdAt: {
