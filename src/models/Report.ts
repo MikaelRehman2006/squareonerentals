@@ -39,4 +39,15 @@ const reportSchema = new mongoose.Schema({
   }
 });
 
-export const Report = mongoose.models.Report || mongoose.model('Report', reportSchema);
+// Safer model initialization pattern to avoid 'Cannot read properties of undefined' errors
+let ReportModel: mongoose.Model<any>;
+
+try {
+  // Check if the model is already registered
+  ReportModel = mongoose.model('Report');
+} catch (error) {
+  // If not, create a new model
+  ReportModel = mongoose.model('Report', reportSchema);
+}
+
+export const Report = ReportModel;

@@ -26,4 +26,15 @@ const notificationSchema = new mongoose.Schema<INotification>({
   timestamps: true,
 });
 
-export const Notification = mongoose.models.Notification || mongoose.model<INotification>('Notification', notificationSchema);
+// Safer model initialization that handles cases when mongoose connection isn't ready
+let NotificationModel: mongoose.Model<INotification>;
+
+try {
+  // Check if the model is already registered
+  NotificationModel = mongoose.model<INotification>('Notification');
+} catch (error) {
+  // If not, create a new model
+  NotificationModel = mongoose.model<INotification>('Notification', notificationSchema);
+}
+
+export const Notification = NotificationModel;

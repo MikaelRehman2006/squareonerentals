@@ -281,39 +281,12 @@ export default function ProfilePage() {
                 </div>
 
                 <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Saving...' : 'Save Changes'}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-          
-          {/* Admin Panel Card - Only visible to admin users */}
-          {isAdmin(session?.user?.role) && (
-            <CardFooter className="flex flex-col space-y-4 pt-6 border-t">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-3">
-                  <Shield className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Admin Controls</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Manage listings, users, and site settings
-                    </p>
-                  </div>
-                </div>
-                <Link href="/admin">
-                  <Button variant="outline" className="text-blue-600 border-blue-600">
-                    Admin Dashboard
-                  </Button>
-                </Link>
-              </div>
-            </CardFooter>
-          )}
-        </Card>
-      </div>
+              </Link>
+            </div>
+          </CardFooter>
+        )}
+      </Card>
     </div>
-  );
-}
+  </div>
+);

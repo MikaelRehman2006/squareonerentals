@@ -192,6 +192,40 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+    
+    // Check if user has an active membership
+    if (!user.membership || user.membership.status !== 'active') {
+      return NextResponse.json(
+        { error: 'Active membership required to create listings', redirectUrl: '/memberships' },
+        { status: 403 }
+      );
+    }
+    
+    // Check if membership has expired
+    if (user.membership.endDate && new Date(user.membership.endDate) < new Date()) {
+      return NextResponse.json(
+        { error: 'Your membership has expired. Please renew to create listings', redirectUrl: '/memberships' },
+        { status: 403 }
+      );
+    }
+    
+    // Check for listing limits - both membership types are limited to 1 listing
+    const activeListingsCount = await Listing.countDocuments({ 
+      userId: user._id, 
+      status: 'ACTIVE' 
+    });
+    
+    console.log(`User has ${activeListingsCount} active listings with ${user.membership.type} membership`);
+    
+    if (activeListingsCount >= 1) {
+      return NextResponse.json(
+        { 
+          error: 'Your membership allows only one active listing at a time. Please archive your existing listing before creating a new one.',
+          redirectUrl: '/dashboard'
+        },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json();
 
@@ -249,6 +283,9 @@ export async function POST(request: NextRequest) {
     const address = body.address || '';
     console.log('Address being saved:', address);
 
+    // Check if user has Featured membership to automatically set listing as featured
+    const hasFeaturedMembership = user.membership?.type === 'FEATURED' && user.membership.status === 'active';
+    
     // Create the listing with improved error handling
     const data: IListingInput = {
       title: body.title,
@@ -269,7 +306,8 @@ export async function POST(request: NextRequest) {
       leaseType: body.leaseType,
       availableDate: new Date(body.availableDate),
       status: body.status || 'ACTIVE',
-      featured: body.featured || false,
+      // Set featured automatically if user has Featured membership, otherwise use body value or default to false
+      featured: hasFeaturedMembership ? true : (body.featured || false),
       userId: user._id,
       phoneNumber: body.phoneNumber || '',
       facebookUrl: body.facebookUrl || '',

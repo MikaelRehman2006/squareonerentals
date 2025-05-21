@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import StorageUsageBar from '@/components/StorageUsageBar';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
@@ -239,9 +240,33 @@ export default function SubmitListingPage() {
     });
   };
 
+  // Track current storage usage
+  const [storageUsage, setStorageUsage] = useState(0);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
+  // Fetch current storage usage when component mounts
+  useEffect(() => {
+    const fetchStorageUsage = async () => {
+      try {
+        const response = await fetch('/api/users/me');
+        if (response.ok) {
+          const data = await response.json();
+          setStorageUsage(data.storageUsage?.bytes || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching storage usage:', error);
+      }
+    };
+
+    fetchStorageUsage();
+  }, []);
+  
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
+
+    // Update pending files for the storage bar
+    setPendingFiles(Array.from(files));
 
     try {
       const loadingToast = toast.loading('Uploading images...');
@@ -274,30 +299,104 @@ export default function SubmitListingPage() {
           body: formData,
         });
 
+        const result = await response.json();
+        
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Upload error for file', file.name, ':', errorData);
-          throw new Error(errorData.error || `Upload failed for ${file.name}`);
+          // Handle specific membership error
+          if (response.status === 403 && result.error && result.error.includes('membership required')) {
+            console.error('Membership required error:', result.error);
+            throw new Error('Membership required to upload images. Please purchase a membership plan.');
+          }
+          
+          console.error('Upload error for file', file.name, ':', result);
+          throw new Error(result.error || `Upload failed for ${file.name}`);
         }
 
-        const data = await response.json();
-        console.log('Upload success for file', file.name, ':', data);
-        return data.secure_url;
+        console.log('Upload success for file', file.name, ':', result);
+        return result.secure_url;
       });
 
-      const newImageUrls = await Promise.all(uploadPromises);
-      console.log('All uploads complete, new image URLs:', newImageUrls);
+      // Handle upload with proper error handling
+      let newImageUrls;
+      
+      // Check user membership status first - if they don't have one, redirect early
+      try {
+        const membershipResponse = await fetch('/api/users/me');
+        const userData = await membershipResponse.json();
+        
+        // If no active membership, direct to membership page immediately
+        if (!userData.membership || userData.membership.status !== 'active') {
+          toast.dismiss(loadingToast);
+          toast.error('Membership required', {
+            description: 'You need an active membership to upload images and create listings. Please purchase a plan to continue.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+          setPendingFiles([]);
+          return;
+        }
+      } catch (membershipError) {
+        console.error('Error checking membership status:', membershipError);
+        // Continue to image upload attempt - the upload API will also check membership status
+      }
+      
+      // Now try the actual upload
+      try {
+        newImageUrls = await Promise.all(uploadPromises);
+        console.log('All uploads complete, new image URLs:', newImageUrls);
+      } catch (error: any) {
+        toast.dismiss(loadingToast);
+        
+        // Special handling for different error types
+        if (error.message && error.message.includes('membership required')) {
+          // Membership issue
+          toast.error('Membership required', {
+            description: 'You need an active membership to upload images. Please purchase a plan.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+        } else {
+          // Generic error - no fallback to local storage since that's not production-ready
+          toast.error(`Upload error`, {
+            description: error.message || 'Failed to upload images. Please try again or consider purchasing a membership if you have not yet purchased one.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+          console.error('Upload error details:', error);
+        }
+        
+        // Clear pending files to reset the storage bar
+        setPendingFiles([]);
+        return;
+      }
+      
+      // If we get here and don't have newImageUrls, return early
+      if (!newImageUrls || newImageUrls.length === 0) {
+        toast.dismiss(loadingToast);
+        setPendingFiles([]);
+        return;
+      }
       
       // This is the critical part - make sure we properly update state AND form value
-      setUploadedImages(prev => {
-        const updatedImages = [...prev, ...newImageUrls];
-        console.log('Updated image array:', updatedImages);
-        
-        // Explicitly set form value with the updated images
-        form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
-        
-        return updatedImages;
-      });
+      // Get the current images from the form 
+      const currentFormImages = form.getValues('images') || [];
+      console.log('Current form images:', currentFormImages);
+      
+      // Combine existing with new images
+      const updatedImages = [...currentFormImages, ...newImageUrls];
+      console.log('Updated image array:', updatedImages);
+      
+      // Update state
+      setUploadedImages(updatedImages);
+      
+      // Explicitly set form value with the combined images
+      form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
 
       toast.dismiss(loadingToast);
       toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
@@ -613,6 +712,13 @@ export default function SubmitListingPage() {
 
                 <div className="space-y-4">
                   <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
+                  
+                  {/* Storage Usage Bar */}
+                  <StorageUsageBar 
+                    currentUsage={storageUsage} 
+                    uploadedFiles={pendingFiles}
+                  />
+                  
                   <div className="flex flex-col gap-4">
                     <Input
                       ref={fileInputRef}

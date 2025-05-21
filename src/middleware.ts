@@ -3,8 +3,26 @@ import { withAuth } from 'next-auth/middleware';
 
 export default withAuth(
   function middleware(req) {
-    // Protect /submit and /admin routes
-    if ((req.nextUrl.pathname === '/submit' || req.nextUrl.pathname.startsWith('/admin')) && !req.nextauth.token) {
+    // Get the user's role from the token
+    const userRole = req.nextauth.token?.role;
+    const isAdmin = userRole === 'ADMIN' || userRole === 'admin';
+
+    // Protect admin routes - only allow users with admin role
+    if (req.nextUrl.pathname.startsWith('/admin')) {
+      // If no token or not an admin, redirect to access denied page
+      if (!req.nextauth.token || !isAdmin) {
+        console.log('Unauthorized admin access attempt:', {
+          user: req.nextauth.token?.email || 'unauthenticated',
+          role: userRole || 'none',
+          path: req.nextUrl.pathname
+        });
+        
+        return NextResponse.redirect(new URL('/access-denied', req.url));
+      }
+    }
+    
+    // Protect /submit route - requires any authenticated user
+    if (req.nextUrl.pathname === '/submit' && !req.nextauth.token) {
       return NextResponse.redirect(new URL('/auth/signin', req.url));
     }
 
@@ -13,8 +31,10 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token }) => {
-        // Only require auth for protected routes
-        return true;
+        // This function determines if the user is authorized to access protected routes
+        // Return true to allow access to all protected routes
+        // The specific route access is handled in the middleware function above
+        return !!token;
       },
     },
   }
@@ -22,5 +42,5 @@ export default withAuth(
 
 // Match protected routes
 export const config = {
-  matcher: ['/submit', '/admin/:path*']
+  matcher: ['/submit', '/admin/:path*', '/api/admin/:path*']
 };

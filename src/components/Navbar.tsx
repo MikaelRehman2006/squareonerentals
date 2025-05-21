@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { isAdmin } from '@/lib/authHelpers';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Menu, User, X, Heart, Bell, Settings, MessageSquare, LayoutDashboard, ShieldCheck } from 'lucide-react';
-import { NotificationsDropdown } from './NotificationsDropdown';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -24,6 +24,7 @@ const navigation = [
   { name: 'Careers', href: '/careers' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
+  { name: 'Memberships', href: '/memberships' },
 ];
 
 export default function Navbar() {
@@ -80,10 +81,7 @@ export default function Navbar() {
           {/* Auth Buttons */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
             {session?.user ? (
-              <>
-                {/* Notifications Dropdown */}
-                <NotificationsDropdown />
-                <DropdownMenu>
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative">
                     <User className="h-5 w-5" />
@@ -129,19 +127,20 @@ export default function Navbar() {
                       Settings
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin" className="flex items-center">
-                      <ShieldCheck className="w-4 h-4 mr-2" />
-                      Admin
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin(session?.user?.role) && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center">
+                        <ShieldCheck className="w-4 h-4 mr-2" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              </>
             ) : (
               <div className="flex items-center space-x-4">
                 <Button variant="ghost" onClick={() => handleAuth('signin')}>

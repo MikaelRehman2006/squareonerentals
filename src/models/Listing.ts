@@ -79,4 +79,15 @@ listingSchema.index({ price: 1 });
 listingSchema.index({ bedrooms: 1 });
 listingSchema.index({ propertyType: 1 });
 
-export const Listing = mongoose.models.Listing || model<IListing>('Listing', listingSchema);
+// Safer model initialization that handles cases when mongoose connection isn't ready
+let ListingModel: mongoose.Model<IListing>;
+
+try {
+  // Check if the model is already registered
+  ListingModel = mongoose.model<IListing>('Listing');
+} catch (error) {
+  // If not, create a new model
+  ListingModel = mongoose.model<IListing>('Listing', listingSchema);
+}
+
+export const Listing = ListingModel;

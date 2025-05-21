@@ -2,21 +2,41 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
+import { connectDB } from '@/lib/mongodb';
+import { User } from '@/models/User';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
 
-// 5MB in bytes
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// Storage limits based on membership type (in bytes)
+const STORAGE_LIMITS = {
+  // 10MB for Basic membership
+  BASIC: 10 * 1024 * 1024,
+  // 25MB for Featured membership
+  FEATURED: 25 * 1024 * 1024,
+  // 5MB default for users without membership
+  DEFAULT: 5 * 1024 * 1024
+};
 
 // Check if Cloudinary is properly configured
 const isCloudinaryConfigured = () => {
-  return Boolean(
-    process.env.CLOUDINARY_URL || 
-    (process.env.CLOUDINARY_CLOUD_NAME && 
-     process.env.CLOUDINARY_API_KEY && 
-     process.env.CLOUDINARY_API_SECRET)
+  const hasUrl = Boolean(process.env.CLOUDINARY_URL);
+  const hasCredentials = Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME && 
+    process.env.CLOUDINARY_API_KEY && 
+    process.env.CLOUDINARY_API_SECRET
   );
+  
+  console.log('Cloudinary config check:', { 
+    hasUrl, 
+    hasCredentials,
+    url: process.env.CLOUDINARY_URL ? 'Present' : 'Missing',
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'Present' : 'Missing',
+    apiKey: process.env.CLOUDINARY_API_KEY ? 'Present' : 'Missing',
+    apiSecret: process.env.CLOUDINARY_API_SECRET ? 'Present' : 'Missing'
+  });
+  
+  return hasUrl || hasCredentials;
 };
 
 // Configure Cloudinary if credentials are available
@@ -62,12 +82,55 @@ export async function POST(request: Request) {
   try {
     console.log('Upload request received');
     
+    // Check if this is a forced local upload (fallback)
+    const url = new URL(request.url);
+    const forceLocal = url.searchParams.get('forceLocal') === 'true';
+    if (forceLocal) {
+      console.log('Forced local upload requested');
+    }
+    
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+    
+    // Get user from session
+    const userEmail = session.user.email;
+    
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: 'User email not found in session' },
+        { status: 401 }
+      );
+    }
+    
+    // Connect to the database
+    await connectDB();
+    
+    // Get user with membership information - use email instead of ID to avoid ObjectId issues
+    console.log('Looking up user by email:', userEmail);
+    const user = await User.findOne({ email: userEmail });
+    
+    if (!user) {
+      console.error('User not found with email:', userEmail);
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    console.log('Found user with ID:', user._id);
+    
+    // Check if user has an active membership
+    if (!user.membership || user.membership.status !== 'active') {
+      console.error('User does not have an active membership');
+      return NextResponse.json(
+        { error: 'Active membership required to upload images' },
+        { status: 403 }
       );
     }
 
@@ -84,11 +147,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      console.error('File too large:', file.size);
+    // Determine file size limit based on membership type
+    const membershipType = user.membership?.type || 'DEFAULT';
+    const sizeLimit = STORAGE_LIMITS[membershipType as keyof typeof STORAGE_LIMITS] || STORAGE_LIMITS.DEFAULT;
+    
+    // Check file size against membership limit
+    if (file.size > sizeLimit) {
+      console.error('File too large for membership tier:', file.size);
       return NextResponse.json(
-        { error: 'File size must be less than 5MB' },
+        { 
+          error: `File size exceeds your membership limit of ${sizeLimit / (1024 * 1024)}MB`, 
+          membershipType: membershipType,
+          currentLimit: sizeLimit / (1024 * 1024)
+        },
         { status: 400 }
       );
     }
@@ -104,8 +175,8 @@ export async function POST(request: Request) {
 
     console.log('File validation passed, preparing for upload');
 
-    // Try to use Cloudinary if configured, otherwise fall back to local storage
-    if (isCloudinaryConfigured()) {
+    // Try to use Cloudinary if configured and not forced to use local storage
+    if (isCloudinaryConfigured() && !forceLocal) {
       try {
         console.log('Using Cloudinary for image upload');
         
@@ -118,30 +189,61 @@ export async function POST(request: Request) {
         const fileStr = `data:${file.type};base64,${base64}`;
         
         // Upload to Cloudinary using the SDK
-        const uploadResult = await new Promise((resolve, reject) => {
-          cloudinary.uploader.upload(fileStr, {
-            folder: 'listings',
-            resource_type: 'image',
-          }, (error: any, result: any) => {
-            if (error) {
-              console.error('Cloudinary upload error:', error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
+        const uploadResult = await new Promise<{secure_url: string, public_id: string}>((resolve, reject) => {
+          try {
+            console.log('Attempting Cloudinary upload with params:', {
+              folder: 'listings',
+              resource_type: 'image',
+              fileType: file.type,
+              fileSize: file.size
+            });
+            
+            cloudinary.uploader.upload(fileStr, {
+              folder: 'listings',
+              resource_type: 'image',
+            }, (error, result) => {
+              if (error) {
+                console.error('Cloudinary upload error:', error);
+                reject(new Error(`Cloudinary upload error: ${error.message || JSON.stringify(error)}`));
+              } else if (result && result.secure_url) {
+                resolve({
+                  secure_url: result.secure_url,
+                  public_id: result.public_id
+                });
+              } else {
+                reject(new Error('Missing result data from Cloudinary'));
+              }
+            });
+          } catch (innerError) {
+            console.error('Error during Cloudinary upload setup:', innerError);
+            reject(new Error(`Cloudinary setup error: ${innerError instanceof Error ? innerError.message : String(innerError)}`));
+          }
         });
 
         console.log('Cloudinary upload successful');
 
         return NextResponse.json({
-          secure_url: (uploadResult as any).secure_url,
-          public_id: (uploadResult as any).public_id
+          secure_url: uploadResult.secure_url,
+          public_id: uploadResult.public_id
         });
       } catch (cloudinaryError) {
         console.error('Cloudinary upload failed, falling back to local storage:', cloudinaryError);
-        // Fall back to local storage if Cloudinary fails
+        
+        // More detailed error logging
+        if (cloudinaryError instanceof Error) {
+          console.error('Error details:', {
+            message: cloudinaryError.message,
+            stack: cloudinaryError.stack,
+            name: cloudinaryError.name
+          });
+        } else {
+          console.error('Non-Error object thrown:', cloudinaryError);
+        }
+        
+        // Will fall back to local storage below
       }
+    } else if (forceLocal) {
+      console.log('Forced to use local storage for this upload');
     } else {
       console.log('Cloudinary not configured, using local storage');
     }

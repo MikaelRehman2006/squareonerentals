@@ -7,11 +7,22 @@ declare global {
   var mongoose: typeof import('mongoose');
 }
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local');
-}
+// Get MongoDB URI from environment variables, support both .env and .env.local
+let MONGODB_URI = process.env.MONGODB_URI;
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// If not found in environment variables, check if we're in development mode
+if (!MONGODB_URI) {
+  console.warn('MONGODB_URI not found in environment. Checking for alternatives...');
+  
+  if (process.env.NODE_ENV === 'development') {
+    // Use a default MongoDB Atlas URI for development
+    // This should match the URI format from your MongoDB Atlas account
+    console.log('Using development MongoDB connection');
+    MONGODB_URI = 'mongodb+srv://squareoneuser:squareonepassword@cluster0.mongodb.net/squareonerentals?retryWrites=true&w=majority';
+  } else {
+    throw new Error('MongoDB URI is required. Add it to .env or .env.local file.');
+  }
+}
 
 const options: mongoose.ConnectOptions = {
   maxPoolSize: 10,
