@@ -66,8 +66,8 @@ export async function POST(request: Request) {
         },
       },
       // Use NEXTAUTH_URL to ensure port consistency between auth and redirects
-      success_url: `${process.env.NEXTAUTH_URL || 'http://localhost:3003'}/memberships/success?session_id={CHECKOUT_SESSION_ID}&plan_type=${planType}&is_annual=${isAnnual ? 'true' : 'false'}`,
-      cancel_url: `${process.env.NEXTAUTH_URL || 'http://localhost:3003'}/memberships`,
+      success_url: `${process.env.NEXTAUTH_URL}/memberships/success?session_id={CHECKOUT_SESSION_ID}&plan_type=${planType}&is_annual=${isAnnual ? 'true' : 'false'}`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/memberships`,
     });
 
     return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });
