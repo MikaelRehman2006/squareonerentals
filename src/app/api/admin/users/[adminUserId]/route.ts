@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { prisma } from '@/lib/prisma';
-import { logActivity } from '@/lib/activity';
+import { authOptions } from '@/lib/auth';
+import { connectDB } from '@/lib/mongodb';
+import { User } from '@/models/User';
+import mongoose from 'mongoose';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { adminUserId: string } }
 ) {
   const session = await getServerSession(authOptions);
 
@@ -15,38 +16,36 @@ export async function PATCH(
   }
 
   try {
+    // Connect to the database
+    await connectDB();
+    
     const { role } = await request.json();
 
     if (!role || !['USER', 'ADMIN'].includes(role)) {
       return new NextResponse('Invalid role', { status: 400 });
     }
 
-    const updatedUser = await prisma.user.update({
-      where: {
-        id: params.userId,
-      },
-      data: {
-        role,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-      },
-    });
-
-    // Log the activity
-    await logActivity(
-      'USER_UPDATED',
-      `User ${updatedUser.name || updatedUser.email} role changed to ${role}`,
-      {
-        userId: updatedUser.id,
-        oldRole: updatedUser.role,
-        newRole: role,
-        updatedBy: session.user.id,
-      }
+    // Use MongoDB to update the user
+    const userId = params.adminUserId;
+    const isValidId = mongoose.Types.ObjectId.isValid(userId);
+    
+    if (!isValidId) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+    
+    // Find and update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role },
+      { new: true, select: 'name email role' }
     );
+    
+    if (!updatedUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Log to console instead of using logActivity
+    console.log(`User ${updatedUser.name || updatedUser.email} role changed to ${role} by ${session.user.email}`);
 
     return NextResponse.json(updatedUser);
   } catch (error) {
@@ -57,7 +56,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { userId: string } }
+  { params }: { params: { adminUserId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -66,22 +65,37 @@ export async function DELETE(
     if (!session || session.user?.role !== 'ADMIN') {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-
-    // Don't allow deleting yourself
-    if (session.user.id === params.userId) {
-      return new NextResponse('Cannot delete your own account', { status: 400 });
+    
+    // Connect to the database
+    await connectDB();
+    
+    const userId = params.adminUserId;
+    const isValidId = mongoose.Types.ObjectId.isValid(userId);
+    
+    if (!isValidId) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 });
+    }
+    
+    // Get the user to be deleted first
+    const userToDelete = await User.findById(userId);
+    
+    if (!userToDelete) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    // Don't allow deleting yourself (comparing emails since ID formats may differ)
+    if (session.user.email === userToDelete.email) {
+      return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 
-    // Delete user
-    await prisma.user.delete({
-      where: {
-        id: params.userId,
-      },
-    });
+    // Delete user with MongoDB
+    await User.findByIdAndDelete(userId);
+    
+    console.log(`User ${userToDelete.email} deleted by admin ${session.user.email}`);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Error deleting user:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-} 
+}
