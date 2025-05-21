@@ -10,8 +10,8 @@ export default function ApiTestPage() {
     regular: false
   });
   const [error, setError] = useState({
-    debug: null,
-    regular: null
+    debug: null as string | null,
+    regular: null as string | null
   });
 
   async function testDebugApi() {

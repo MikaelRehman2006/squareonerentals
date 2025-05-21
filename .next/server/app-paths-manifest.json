@@ -1,8 +1,8 @@
 {
-  "/submit/page": "app/submit/page.js",
-  "/api/listings/route": "app/api/listings/route.js",
   "/page": "app/page.js",
+  "/api/listings/route": "app/api/listings/route.js",
+  "/auth/signin/page": "app/auth/signin/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/users/me/route": "app/api/users/me/route.js",
-  "/memberships/page": "app/memberships/page.js"
+  "/memberships/page": "app/memberships/page.js",
+  "/api/stripe/create-checkout-session/route": "app/api/stripe/create-checkout-session/route.js"
 }
