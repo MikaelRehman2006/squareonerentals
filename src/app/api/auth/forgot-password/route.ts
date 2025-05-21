@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
-import connectToDatabase from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Collection, ObjectId } from 'mongodb';
 import { z } from 'zod';
 
@@ -30,7 +30,8 @@ export async function POST(request: Request) {
     const json = await request.json();
     const body = forgotPasswordSchema.parse(json);
 
-    const { db } = await connectToDatabase();
+    const mongoose = await connectDB();
+    const db = mongoose.connection.db;
     const usersCollection: Collection<User> = db.collection('users');
     const passwordResetsCollection: Collection<PasswordReset> = db.collection('password_resets');
 

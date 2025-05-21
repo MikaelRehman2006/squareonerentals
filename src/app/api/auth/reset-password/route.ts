@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import connectToDatabase from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Collection, ObjectId } from 'mongodb';
 import { z } from 'zod';
 
@@ -32,7 +32,8 @@ export async function POST(request: Request) {
     const json = await request.json();
     const body = resetPasswordSchema.parse(json);
 
-    const { db } = await connectToDatabase();
+    const mongoose = await connectDB();
+    const db = mongoose.connection.db;
     const passwordResetsCollection: Collection<PasswordReset> = db.collection('password_resets');
     const usersCollection: Collection<User> = db.collection('users');
 

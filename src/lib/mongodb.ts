@@ -89,3 +89,7 @@ export const disconnectDB = async () => {
     throw error;
   }
 };
+
+// Add default export for backward compatibility with files that import as default
+const mongodb = { connectDB, disconnectDB };
+export default mongodb;

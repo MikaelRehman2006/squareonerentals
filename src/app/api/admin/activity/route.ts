@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import connectToDatabase from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Collection, ObjectId } from 'mongodb';
 
 interface Activity {
@@ -24,7 +24,8 @@ export async function GET(request: Request) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const { db } = await connectToDatabase();
+    const mongoose = await connectDB();
+    const db = mongoose.connection.db;
     const usersCollection: Collection = db.collection('users');
     const activitiesCollection: Collection<Activity> = db.collection('activities');
 
