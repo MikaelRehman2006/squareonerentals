@@ -29,8 +29,8 @@ async function verifyAdmin() {
     const user = await User.findOne({ email: session.user.email })
     console.log(`Admin listings API: User role check - Email: ${session.user.email}, Role: ${user?.role}`)
     
-    // Case-insensitive check for admin role
-    if (!user || (user.role.toUpperCase() !== 'ADMIN' && user.role.toLowerCase() !== 'admin')) {
+    // Check for admin role using uppercase to match TypeScript types
+    if (!user || user.role !== 'ADMIN') {
       return { authorized: false, error: 'Unauthorized - Admin access required', status: 403 }
     }
 

@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     console.log(`Admin reports API: User role check - Email: ${session.user.email}, Role: ${user?.role}`);
 
     // Case-insensitive check for admin role
-    if (!user || (user.role.toUpperCase() !== 'ADMIN' && user.role.toLowerCase() !== 'admin')) {
+    if (!user || user.role !== 'ADMIN') {
       console.log('Admin reports API: User is not an admin');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },

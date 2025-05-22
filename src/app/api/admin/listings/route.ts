@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
     // Verify user is an admin
     const user = await User.findOne({ email: session.user.email });
     
-    // Case-insensitive check for admin role
-    if (!user || (user.role.toUpperCase() !== 'ADMIN' && user.role.toLowerCase() !== 'admin')) {
+    // Check for admin role using uppercase to match TypeScript types
+    if (!user || user.role !== 'ADMIN') {
       console.log(`Admin listings API: User ${session.user.email} is not admin`);
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },

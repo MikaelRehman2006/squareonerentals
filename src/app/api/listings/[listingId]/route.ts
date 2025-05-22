@@ -179,7 +179,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     // Check if user owns the listing
     if (originalListing.userId.toString() !== user._id.toString()) {
       // Check if the user is an admin - admins can edit any listing
-      if (session.user.role !== 'admin') {
+      if (session.user.role !== 'ADMIN') {
         return NextResponse.json(
           { error: 'Unauthorized' },
           { status: 401 }
@@ -272,7 +272,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     // Send notifications in background (non-blocking)
     try {
       // Case 1: Admin changed the listing status (notify the listing owner)
-      if (session.user.role === 'admin' && 
+      if (session.user.role === 'ADMIN' && 
           originalListing.status !== data.status && 
           originalListing.userId.toString() !== user._id.toString()) {
         

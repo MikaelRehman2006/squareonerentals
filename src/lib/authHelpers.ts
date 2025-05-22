@@ -22,11 +22,11 @@ export async function verifyAdminAccess() {
       };
     }
     
-    // Get user role, supporting both uppercase and lowercase 'admin'
-    const userRole = session.user.role?.toLowerCase();
+    // Get user role
+    const userRole = session.user.role;
     
-    // Check if user is an admin
-    if (userRole !== 'admin') {
+    // Check if user is an admin (using uppercase to match TypeScript types)
+    if (userRole !== 'ADMIN') {
       console.warn('Admin access denied:', {
         user: session.user.email,
         role: userRole,
