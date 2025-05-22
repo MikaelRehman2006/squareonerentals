@@ -92,7 +92,8 @@ const AMENITIES = [
   'Pool',
   'Security',
   'Balcony',
-  'Elevator'
+  'Elevator',
+  'Other'
 ];
 
 const FEATURES = [
@@ -127,6 +128,9 @@ export default function SubmitListingPage() {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedUtilities, setSelectedUtilities] = useState<string[]>([]);
+  const [otherAmenity, setOtherAmenity] = useState('');
+  const [otherFeature, setOtherFeature] = useState('');
+  const [otherUtility, setOtherUtility] = useState('');
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -185,7 +189,17 @@ export default function SubmitListingPage() {
       const newAmenities = prev.includes(amenity)
         ? prev.filter(a => a !== amenity)
         : [...prev, amenity];
-      form.setValue('amenities', newAmenities);
+      
+      // If "Other" is unchecked, clear the other input
+      if (amenity === 'Other' && prev.includes('Other')) {
+        setOtherAmenity('');
+      }
+      
+      const finalAmenities = newAmenities.includes('Other')
+        ? [...newAmenities.filter(a => a !== 'Other'), otherAmenity]
+        : newAmenities;
+      
+      form.setValue('amenities', finalAmenities);
       return newAmenities;
     });
   };
@@ -195,6 +209,15 @@ export default function SubmitListingPage() {
       const newFeatures = prev.includes(feature)
         ? prev.filter(a => a !== feature)
         : [...prev, feature];
+      
+      // If "Other" is unchecked, clear the other input
+      if (feature === 'Other' && prev.includes('Other')) {
+        setOtherFeature('');
+      }
+      
+      const finalFeatures = newFeatures.includes('Other')
+        ? [...newFeatures.filter(a => a !== 'Other'), otherFeature]
+        : newFeatures;
       
       // Convert feature names to object keys
       const featureObj = {
@@ -407,8 +430,12 @@ export default function SubmitListingPage() {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.dismiss();
-      toast.error(error instanceof Error ? error.message : 'Failed to upload images. Please try again.');
+      toast.dismiss(loadingToast);
+      toast.error('Failed to submit listing', {
+        className: 'bg-red-50 border border-red-200',
+        description: error instanceof Error ? error.message : 'Please check all required fields and try again.',
+        duration: 5000,
+      });
       
       // Reset file input on error
       if (fileInputRef.current) {
@@ -545,7 +572,11 @@ export default function SubmitListingPage() {
       }
 
       toast.dismiss(loadingToast);
-      toast.success('Listing submitted successfully!');
+      toast.success('Listing submitted successfully!', {
+        className: 'bg-green-50 border border-green-200',
+        description: 'Your listing has been created and is now live.',
+        duration: 5000,
+      });
       if (result.id) {
         router.push(`/listings/${result.id}`);
       } else {
@@ -711,7 +742,17 @@ export default function SubmitListingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Listings with photos attract 3x more views!</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                   
                   {/* Storage Usage Bar */}
                   <StorageUsageBar 
@@ -813,21 +854,29 @@ export default function SubmitListingPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[#CCCCCC]">Property Type</FormLabel>
-                        <FormControl>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
-                                <SelectValue placeholder="Select property type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="APARTMENT">Apartment</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="CONDO">Condo</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="HOUSE">House</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="TOWNHOUSE">Townhouse</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm px-4">
+                              <SelectValue placeholder="Select property type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-[#2A2A2A] border-[#444444]">
+                            <SelectItem value="APARTMENT">Apartment</SelectItem>
+                            <SelectItem value="HOUSE">House</SelectItem>
+                            <SelectItem value="CONDO">Condo</SelectItem>
+                            <SelectItem value="TOWNHOUSE">Townhouse</SelectItem>
+                            <SelectItem value="STUDIO">Studio</SelectItem>
+                            <SelectItem value="OTHER">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {field.value === 'OTHER' && (
+                          <Input
+                            type="text"
+                            placeholder="Please specify property type"
+                            className="mt-2 bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                            onChange={(e) => form.setValue('propertyType', e.target.value)}
+                          />
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -868,17 +917,25 @@ export default function SubmitListingPage() {
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm px-4">
                                 <SelectValue placeholder="Select lease type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="MONTH_TO_MONTH">Month to Month</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="OTHER">Other</SelectItem>
+                            <SelectContent className="bg-[#2A2A2A] border-[#444444]">
+                              <SelectItem value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
+                              <SelectItem value="MONTH_TO_MONTH">Month to Month</SelectItem>
+                              <SelectItem value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
+                              <SelectItem value="OTHER">Other</SelectItem>
                             </SelectContent>
                           </Select>
+                          {field.value === 'OTHER' && (
+                            <Input
+                              type="text"
+                              placeholder="Please specify lease type"
+                              className="mt-2 bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                              onChange={(e) => form.setValue('leaseType', e.target.value)}
+                            />
+                          )}
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -995,17 +1052,35 @@ export default function SubmitListingPage() {
                 <CardDescription className="text-[#A0A0A0]">What the property/building offers</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {AMENITIES.map((amenity) => (
-                    <div key={amenity} className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={selectedAmenities.includes(amenity)}
-                        onCheckedChange={() => handleAmenityToggle(amenity)}
-                        className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                      />
-                      <label className="text-sm font-normal text-[#CCCCCC]">{amenity}</label>
-                    </div>
-                  ))}
+                <div className="space-y-4">
+                  <FormLabel className="text-[#CCCCCC]">Building Amenities</FormLabel>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-3">
+                    {AMENITIES.map((amenity) => (
+                      <div key={amenity} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`amenity-${amenity}`}
+                          checked={selectedAmenities.includes(amenity)}
+                          onCheckedChange={() => handleAmenityToggle(amenity)}
+                          className="bg-[#2A2A2A] border-[#444444] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:border-[#3B82F6]"
+                        />
+                        <label
+                          htmlFor={`amenity-${amenity}`}
+                          className="text-sm font-medium leading-none text-[#CCCCCC] cursor-pointer whitespace-nowrap"
+                        >
+                          {amenity}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedAmenities.includes('Other') && (
+                    <Input
+                      type="text"
+                      placeholder="Please specify other amenity"
+                      value={otherAmenity}
+                      onChange={(e) => setOtherAmenity(e.target.value)}
+                      className="mt-2 bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>
