@@ -211,7 +211,7 @@ export default function DebugPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
-            <MembershipDebugPanel session={clientSession} />
+            <MembershipDebugPanel session={clientSession ? { user: { email: clientSession.user?.email || undefined } } : null} />
           </CardContent>
         </Card>
       </div>
