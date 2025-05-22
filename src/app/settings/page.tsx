@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import dynamic from 'next/dynamic';
 
 interface Settings {
   emailNotifications: boolean;
@@ -18,7 +19,8 @@ interface Settings {
   marketingEmails: boolean;
 }
 
-export default function SettingsPage() {
+// Create a no-SSR wrapper to prevent 'location is not defined' error
+const SettingsPageContent = () => {
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -213,4 +215,7 @@ export default function SettingsPage() {
       </div>
     </main>
   );
-}
+};
+
+// Export a dynamic component with SSR disabled to prevent 'location is not defined' error
+export default dynamic(() => Promise.resolve(SettingsPageContent), { ssr: false });
