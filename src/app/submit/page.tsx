@@ -451,7 +451,7 @@ export default function SubmitListingPage() {
       console.log('Features value:', data.features);
       
       // Convert features object to array - more robust handling
-      let featureArray = [];
+      let featureArray: string[] = [];
       if (data.features && typeof data.features === 'object') {
         featureArray = Object.entries(data.features)
           .filter(([_, value]) => value === true)
@@ -467,7 +467,7 @@ export default function SubmitListingPage() {
       console.log('Final feature array:', featureArray);
 
       // Convert utilities object to array - more robust handling
-      let utilitiesArray = [];
+      let utilitiesArray: string[] = [];
       if (data.utilities && typeof data.utilities === 'object') {
         utilitiesArray = Object.entries(data.utilities)
           .filter(([_, value]) => value === true)
