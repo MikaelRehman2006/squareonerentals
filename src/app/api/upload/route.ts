@@ -191,7 +191,7 @@ export async function POST(request: Request) {
     let formData;
     try {
       formData = await request.formData();
-      console.log('Form data received, entries:', [...formData.entries()].map(e => e[0]));
+      console.log('Form data received, entries:', Array.from(formData.keys()));
     } catch (formError) {
       console.error('Error parsing form data:', formError);
       return NextResponse.json(
