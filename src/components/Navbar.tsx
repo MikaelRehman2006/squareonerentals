@@ -45,10 +45,10 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side: Logo and navigation */}
-          <div className="flex items-center flex-1">
-            <Link href="/" className="flex-shrink-0 flex items-center space-x-2">
+        <div className="flex h-16 items-center justify-between">
+          {/* Left side: Logo */}
+          <div className="flex-shrink-0">
+            <Link href="/" className="flex items-center space-x-2">
               <Image
                 src="/images/logo.png"
                 alt="Square One Rentals"
@@ -58,12 +58,16 @@ export default function Navbar() {
               />
               <span className="font-bold text-xl">Square One Rentals</span>
             </Link>
-            <div className={`hidden sm:ml-8 sm:flex ${session?.user ? 'sm:space-x-6' : 'sm:space-x-8'}`}>
+          </div>
+
+          {/* Center: Main Navigation */}
+          <div className="hidden sm:flex flex-1 justify-center px-8">
+            <div className="flex items-center space-x-5">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap"
+                  className="text-gray-700 hover:text-primary px-2 py-2 text-sm font-medium whitespace-nowrap"
                 >
                   {item.name}
                 </Link>
@@ -72,10 +76,10 @@ export default function Navbar() {
           </div>
 
           {/* Right side: Submit Listing and Auth */}
-          <div className="flex items-center justify-end space-x-4 ml-4">
+          <div className="hidden sm:flex items-center space-x-6">
             <Link
               href="/submit"
-              className="text-primary hover:text-primary/80 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap"
+              className="text-primary hover:text-primary/80 px-3 py-2 text-sm font-medium whitespace-nowrap"
             >
               Submit Listing
             </Link>
@@ -141,11 +145,19 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden sm:flex items-center space-x-4">
-                <Button variant="ghost" onClick={() => handleAuth('signin')}>
+              <div className="flex items-center space-x-4 pl-4 border-l border-gray-200">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleAuth('signin')}
+                  className="text-gray-700 hover:text-primary"
+                >
                   Sign In
                 </Button>
-                <Button variant="default" onClick={() => handleAuth('signup')}>
+                <Button 
+                  variant="default" 
+                  onClick={() => handleAuth('signup')}
+                  className="bg-primary hover:bg-primary/90"
+                >
                   Sign Up
                 </Button>
               </div>
@@ -171,35 +183,47 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         {isOpen && (
-          <div className="sm:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="sm:hidden border-t border-gray-200">
+            <div className="pt-2 pb-3 space-y-1">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary"
+                  className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              <Link
-                href="/submit"
-                className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:text-primary/80"
-                onClick={() => setIsOpen(false)}
-              >
-                Submit Listing
-              </Link>
-              {!session?.user && (
-                <div className="flex flex-col space-y-2 px-3 py-2">
-                  <Button variant="ghost" onClick={() => handleAuth('signin')}>
-                    Sign In
-                  </Button>
-                  <Button variant="default" onClick={() => handleAuth('signup')}>
-                    Sign Up
-                  </Button>
-                </div>
-              )}
+              <div className="border-t border-gray-200 mt-2 pt-2">
+                <Link
+                  href="/submit"
+                  className="block px-4 py-2 text-base font-medium text-primary hover:text-primary/80 hover:bg-gray-50"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Submit Listing
+                </Link>
+                {!session?.user && (
+                  <div className="mt-2 px-4 pt-2 border-t border-gray-200">
+                    <div className="grid gap-2">
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => handleAuth('signin')}
+                        className="justify-center text-gray-700 hover:text-primary w-full"
+                      >
+                        Sign In
+                      </Button>
+                      <Button 
+                        variant="default" 
+                        onClick={() => handleAuth('signup')}
+                        className="justify-center bg-primary hover:bg-primary/90 w-full"
+                      >
+                        Sign Up
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
