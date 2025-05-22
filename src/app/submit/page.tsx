@@ -1,5 +1,6 @@
 'use client';
 
+import { Info } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -16,6 +17,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Form,
   FormControl,
@@ -292,20 +299,22 @@ export default function SubmitListingPage() {
     setPendingFiles(Array.from(files));
 
     try {
-      const loadingToast = toast.loading('Uploading images...');
-      
       // Check file size before upload (5MB limit)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       for (let i = 0; i < files.length; i++) {
         if (files[i].size > MAX_FILE_SIZE) {
-          toast.dismiss(loadingToast);
-          toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
+          toast.error(`File ${files[i].name} exceeds the 5MB size limit`, {
+            className: 'bg-red-50 border border-red-200',
+            duration: 5000
+          });
           return;
         }
         
         if (!files[i].type.startsWith('image/')) {
-          toast.dismiss(loadingToast);
-          toast.error(`File ${files[i].name} is not an image`);
+          toast.error(`File ${files[i].name} is not an image`, {
+            className: 'bg-red-50 border border-red-200',
+            duration: 5000
+          });
           return;
         }
       }
@@ -349,13 +358,14 @@ export default function SubmitListingPage() {
         
         // If no active membership, direct to membership page immediately
         if (!userData.membership || userData.membership.status !== 'active') {
-          toast.dismiss(loadingToast);
           toast.error('Membership required', {
+            className: 'bg-red-50 border border-red-200',
             description: 'You need an active membership to upload images and create listings. Please purchase a plan to continue.',
             action: {
               label: 'Get Membership',
               onClick: () => router.push('/memberships')
-            }
+            },
+            duration: 5000
           });
           setPendingFiles([]);
           return;
@@ -370,17 +380,17 @@ export default function SubmitListingPage() {
         newImageUrls = await Promise.all(uploadPromises);
         console.log('All uploads complete, new image URLs:', newImageUrls);
       } catch (error: any) {
-        toast.dismiss(loadingToast);
-        
         // Special handling for different error types
         if (error.message && error.message.includes('membership required')) {
           // Membership issue
           toast.error('Membership required', {
+            className: 'bg-red-50 border border-red-200',
             description: 'You need an active membership to upload images. Please purchase a plan.',
             action: {
               label: 'Get Membership',
               onClick: () => router.push('/memberships')
-            }
+            },
+            duration: 5000
           });
         } else {
           // Generic error - no fallback to local storage since that's not production-ready
@@ -401,7 +411,6 @@ export default function SubmitListingPage() {
       
       // If we get here and don't have newImageUrls, return early
       if (!newImageUrls || newImageUrls.length === 0) {
-        toast.dismiss(loadingToast);
         setPendingFiles([]);
         return;
       }
@@ -421,16 +430,18 @@ export default function SubmitListingPage() {
       // Explicitly set form value with the combined images
       form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
 
-      toast.dismiss(loadingToast);
-      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
-      
+      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`, {
+        className: 'bg-green-50 border border-green-200',
+        description: 'Your images have been added to the listing.',
+        duration: 5000
+      });
+
       // Reset file input but keep the images in state
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.dismiss(loadingToast);
       toast.error('Failed to submit listing', {
         className: 'bg-red-50 border border-red-200',
         description: error instanceof Error ? error.message : 'Please check all required fields and try again.',
@@ -744,14 +755,16 @@ export default function SubmitListingPage() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Listings with photos attract 3x more views!</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Listings with photos attract 3x more views!</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   
                   {/* Storage Usage Bar */}
