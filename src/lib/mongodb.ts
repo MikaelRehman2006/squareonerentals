@@ -43,6 +43,11 @@ export const connectDB = async (): Promise<typeof mongoose> => {
     }
 
     console.log('Connecting to MongoDB...');
+    // Check if MONGODB_URI is defined before using it
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined');
+    }
+    
     console.log('MongoDB URI:', MONGODB_URI.replace(/:[^:@]+@/, ':****@')); // Hide password in logs
 
     const conn = await mongoose.connect(MONGODB_URI, options);

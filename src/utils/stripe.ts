@@ -59,7 +59,7 @@ if (!stripeSecretKey) {
 }
 
 export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2023-10-16', // Use the latest API version
+  apiVersion: '2025-04-30.basil', // Updated to match TypeScript definitions
 });
 
 // Helper function to get price ID based on plan and billing interval
