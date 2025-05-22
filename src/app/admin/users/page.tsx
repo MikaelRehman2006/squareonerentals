@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import { isOwner } from '@/lib/admin';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { formatPrice } from '@/utils/formatPrice';
 
 interface User {
   id: string;
@@ -93,20 +94,18 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [joinDateFilter, setJoinDateFilter] = useState('all');
+  const [roleFilter, setRoleFilter] = useState('all');
   const [showBanDialog, setShowBanDialog] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
-  }, [statusFilter, joinDateFilter]);
+  }, [roleFilter]);
 
   const fetchUsers = async () => {
     try {
       const queryParams = new URLSearchParams({
-        status: statusFilter,
-        joinDate: joinDateFilter,
+        role: roleFilter,
         search: searchQuery,
       });
 
@@ -232,146 +231,116 @@ export default function UsersPage() {
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8"
+              className="pl-8 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700"
             />
           </div>
         </form>
 
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-[180px] bg-gray-800 text-white border border-gray-700">
+            <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Users</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="banned">Banned</SelectItem>
-            <SelectItem value="restricted">Restricted</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={joinDateFilter} onValueChange={setJoinDateFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by join date" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Time</SelectItem>
-            <SelectItem value="today">Today</SelectItem>
-            <SelectItem value="week">This Week</SelectItem>
-            <SelectItem value="month">This Month</SelectItem>
-            <SelectItem value="year">This Year</SelectItem>
+          <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
+            <SelectItem value="all">All Roles</SelectItem>
+            <SelectItem value="ADMIN">Admin</SelectItem>
+            <SelectItem value="USER">User</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Listings</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users && users.length > 0 ? (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.image || ''} />
-                      <AvatarFallback>{user.name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-foreground">{user.name || user.email}</span>
-                  </TableCell>
-                  <TableCell className="text-foreground">{user.email}</TableCell>
-                  <TableCell>
-                    {user.banExpiresAt && (
-                      <Badge variant="destructive">Banned</Badge>
-                    )}
-                    {user.restrictedUntil && (
-                      <Badge variant="secondary">Restricted</Badge>
-                    )}
-                    {!user.banExpiresAt && !user.restrictedUntil && (
-                      <Badge variant="outline">Active</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/admin/listings?userId=${user.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {user.listingCount} listings
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-foreground">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    {!isOwner(user.email || '') && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() =>
-                              updateUserRole(
-                                user.id,
-                                user.role === 'ADMIN' ? 'USER' : 'ADMIN'
-                              )
-                            }
-                          >
-                            {user.role === 'ADMIN'
-                              ? 'Remove Admin Role'
-                              : 'Make Admin'}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedUserId(user.id);
-                              setShowBanDialog(true);
-                            }}
-                          >
-                            Ban User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleRestrictUser(user.id, 'listing')}
-                          >
-                            Restrict Listings
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleRestrictUser(user.id, 'messaging')}
-                          >
-                            Restrict Messaging
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="text-red-600"
-                          >
-                            Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-4 text-foreground">
-                  No users found
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>User</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Joined</TableHead>
+            <TableHead className="w-[100px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users && users.length > 0 ? (
+            users.map((user) => (
+              <TableRow key={user.id} className="even:bg-gray-50 dark:even:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                <TableCell className="px-4 py-2 flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.image || ''} />
+                    <AvatarFallback>{user.name?.[0] || user.email?.[0] || 'U'}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-foreground truncate max-w-xs" title={user.name || user.email || ''}>{user.name || user.email}</span>
+                </TableCell>
+                <TableCell className="px-4 py-2">
+                  <span className="truncate max-w-xs" title={user.email || ''}>{user.email}</span>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
+                    {user.role}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {!isOwner(user.email || '') && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() =>
+                            updateUserRole(
+                              user.id,
+                              user.role === 'ADMIN' ? 'USER' : 'ADMIN'
+                            )
+                          }
+                        >
+                          {user.role === 'ADMIN'
+                            ? 'Remove Admin Role'
+                            : 'Make Admin'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUserId(user.id);
+                            setShowBanDialog(true);
+                          }}
+                        >
+                          Ban User
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRestrictUser(user.id, 'listing')}
+                        >
+                          Restrict Listings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleRestrictUser(user.id, 'messaging')}
+                        >
+                          Restrict Messaging
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-600"
+                        >
+                          Delete User
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center">
+                No users found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
       <BanDialog
         open={showBanDialog}

@@ -22,16 +22,16 @@ export async function GET() {
 
     await connectDB();
     
-    // Get all users with admin roles
-    const adminUsers = await User.find({ 
-      role: { $in: ['ADMIN', 'OWNER'] }
-    }).select('email role createdAt');
+    // Get all users with their roles
+    const users = await User.find({})
+      .select('email name role createdAt image')
+      .sort({ createdAt: -1 });
     
-    return NextResponse.json({ users: adminUsers });
+    return NextResponse.json({ users });
   } catch (error) {
     console.error('Error in GET /api/admin/users:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch admin users' },
+      { error: 'Failed to fetch users' },
       { status: 500 }
     );
   }

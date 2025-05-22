@@ -236,10 +236,10 @@ export default function ReportsPage() {
         </form>
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
             <SelectItem value="all">All Reports</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="resolved">Resolved</SelectItem>
@@ -267,7 +267,7 @@ export default function ReportsPage() {
           <TableBody>
             {reports && reports.length > 0 ? (
               reports.map((report) => (
-                <TableRow key={report.id}>
+                <TableRow key={report.id} className="even:bg-gray-50 dark:even:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                   <TableCell>
                     <Link
                       href={`/listings/${report.listing.id}`}
@@ -300,8 +300,8 @@ export default function ReportsPage() {
                   <TableCell className="max-w-[150px] truncate">
                     {report.reason}
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {report.description || 'No description provided'}
+                  <TableCell className="px-4 py-2">
+                    <span className="truncate max-w-xs" title={report.description || 'No description provided'}>{report.description || 'No description provided'}</span>
                   </TableCell>
                   <TableCell>
                     <Badge

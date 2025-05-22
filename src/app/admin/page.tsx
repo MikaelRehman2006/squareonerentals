@@ -194,74 +194,26 @@ export default function DashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.currentStats.totalUsers}</div>
-            <div className="flex items-center pt-1 text-xs text-muted-foreground">
-              {Number(stats?.currentStats.userGrowthPercent) > 0 ? (
-                <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
-              ) : (
-                <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
-              )}
-              <span className={Number(stats?.currentStats.userGrowthPercent) > 0 ? 'text-green-500' : 'text-red-500'}>
-                {stats?.currentStats.userGrowthPercent}%
-              </span>
-              <span className="ml-1">from last month</span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-sm">Total Users</span>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.currentStats.totalUsers}</span>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.currentStats.totalListings}</div>
-            <div className="flex items-center pt-1 text-xs text-muted-foreground">
-              {Number(stats?.currentStats.listingGrowthPercent) > 0 ? (
-                <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
-              ) : (
-                <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
-              )}
-              <span className={Number(stats?.currentStats.listingGrowthPercent) > 0 ? 'text-green-500' : 'text-red-500'}>
-                {stats?.currentStats.listingGrowthPercent}%
-              </span>
-              <span className="ml-1">from last month</span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-sm">Total Listings</span>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.currentStats.totalListings}</span>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Listings</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.currentStats.activeListings}</div>
-            <p className="pt-1 text-xs text-muted-foreground">
-              {((stats?.currentStats.activeListings || 0) / (stats?.currentStats.totalListings || 1) * 100).toFixed(1)}% of total
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-sm">Active Listings</span>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.currentStats.activeListings}</span>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Price</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats?.currentStats.averagePrice}</div>
-            <p className="pt-1 text-xs text-muted-foreground">
-              Per active listing
-            </p>
-          </CardContent>
-        </Card>
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center">
+          <span className="text-gray-500 dark:text-gray-400 text-sm">Average Price</span>
+          <span className="text-2xl font-bold text-gray-900 dark:text-white">${stats?.currentStats.averagePrice}</span>
+        </div>
       </div>
 
       {/* Advanced Analytics Section */}

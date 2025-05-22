@@ -69,10 +69,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="timezone">Timezone</Label>
               <Select defaultValue="America/Chicago">
-                <SelectTrigger id="timezone">
+                <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
                   <SelectValue placeholder="Select timezone" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
                   <SelectItem value="America/Chicago">Central Time (US & Canada)</SelectItem>
                   <SelectItem value="America/New_York">Eastern Time (US & Canada)</SelectItem>
                   <SelectItem value="America/Los_Angeles">Pacific Time (US & Canada)</SelectItem>
@@ -84,10 +84,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="currency">Default Currency</Label>
               <Select defaultValue="USD">
-                <SelectTrigger id="currency">
+                <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
                   <SelectItem value="USD">USD ($)</SelectItem>
                   <SelectItem value="CAD">CAD (C$)</SelectItem>
                   <SelectItem value="EUR">EUR (€)</SelectItem>
@@ -115,10 +115,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="ban-duration">Default Ban Duration</Label>
               <Select defaultValue="24h">
-                <SelectTrigger id="ban-duration">
+                <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
                   <SelectItem value="24h">24 Hours</SelectItem>
                   <SelectItem value="7d">7 Days</SelectItem>
                   <SelectItem value="30d">30 Days</SelectItem>
@@ -159,10 +159,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="listing-expiration">Listing Expiration Time</Label>
               <Select defaultValue="30">
-                <SelectTrigger id="listing-expiration">
+                <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
                   <SelectValue placeholder="Select expiration time" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
                   <SelectItem value="7">7 Days</SelectItem>
                   <SelectItem value="14">14 Days</SelectItem>
                   <SelectItem value="30">30 Days</SelectItem>
@@ -267,10 +267,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="session-timeout">Session Timeout</Label>
               <Select defaultValue="60">
-                <SelectTrigger id="session-timeout">
+                <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
                   <SelectValue placeholder="Select timeout" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
                   <SelectItem value="30">30 Minutes</SelectItem>
                   <SelectItem value="60">1 Hour</SelectItem>
                   <SelectItem value="120">2 Hours</SelectItem>
@@ -283,10 +283,10 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="password-expiry">Admin Password Expiry</Label>
               <Select defaultValue="90">
-                <SelectTrigger id="password-expiry">
+                <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
                   <SelectValue placeholder="Select expiry time" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
                   <SelectItem value="30">30 Days</SelectItem>
                   <SelectItem value="60">60 Days</SelectItem>
                   <SelectItem value="90">90 Days</SelectItem>
