@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import Link from 'next/link';
 
 interface Notification {
