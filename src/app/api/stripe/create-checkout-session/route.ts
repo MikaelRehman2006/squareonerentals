@@ -65,8 +65,8 @@ export async function POST(request: Request) {
           isAnnual: isAnnual ? 'true' : 'false',
         },
       },
-      // Use NEXTAUTH_URL to ensure port consistency between auth and redirects
-      success_url: `${process.env.NEXTAUTH_URL}/memberships/success?session_id={CHECKOUT_SESSION_ID}&plan_type=${planType}&is_annual=${isAnnual ? 'true' : 'false'}`,
+      // Use absolute URLs for success and cancel to prevent 404 errors
+      success_url: `${process.env.NEXTAUTH_URL}/memberships/payment-success`,
       cancel_url: `${process.env.NEXTAUTH_URL}/memberships`,
     });
 

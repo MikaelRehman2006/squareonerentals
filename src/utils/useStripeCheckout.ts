@@ -57,10 +57,15 @@ export function useStripeCheckout() {
         throw new Error(errorData.error || 'API error: ' + response.status);
       }
 
-      const { url, error } = await response.json();
+      const { url, sessionId, error } = await response.json();
 
       if (error) {
         throw new Error(error);
+      }
+
+      // Store the session ID in localStorage before redirecting
+      if (sessionId) {
+        localStorage.setItem('stripe_session_id', sessionId);
       }
 
       // Redirect to Stripe Checkout
