@@ -10,18 +10,17 @@ declare global {
 // Get MongoDB URI from environment variables, support both .env and .env.local
 let MONGODB_URI = process.env.MONGODB_URI;
 
+// Debug environment variables - safely log environment
+console.log('Environment check: NODE_ENV =', process.env.NODE_ENV);
+console.log('Available environment variables:', Object.keys(process.env).filter(key => !key.includes('SECRET')).join(', '));
+
 // If not found in environment variables, check if we're in development mode
 if (!MONGODB_URI) {
   console.warn('MONGODB_URI not found in environment. Checking for alternatives...');
   
-  if (process.env.NODE_ENV === 'development') {
-    // Use a default MongoDB Atlas URI for development
-    // This should match the URI format from your MongoDB Atlas account
-    console.log('Using development MongoDB connection');
-    MONGODB_URI = 'mongodb+srv://squareoneuser:squareonepassword@cluster0.mongodb.net/squareonerentals?retryWrites=true&w=majority';
-  } else {
-    throw new Error('MongoDB URI is required. Add it to .env or .env.local file.');
-  }
+  // Fall back to hardcoded URL for production as a last resort
+  MONGODB_URI = 'mongodb+srv://Mikael:He1enhunt@cluster0.lfya6.mongodb.net/squareonerentals?retryWrites=true&w=majority';
+  console.log('Using fallback MongoDB connection');
 }
 
 const options: mongoose.ConnectOptions = {
