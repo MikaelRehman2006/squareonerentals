@@ -55,9 +55,16 @@ export async function POST(request: NextRequest) {
       { upsert: true, new: true }
     );
 
-    // Update user role if needed
+    // Update the user's membership information in the User document
     await User.findByIdAndUpdate(userId, { 
-      hasMembership: true 
+      membership: {
+        type: planType,
+        isAnnual: isAnnual,
+        startDate: new Date(),
+        endDate: isAnnual ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        stripeSubscriptionId: checkoutSession.subscription as string,
+        status: 'active'
+      }
     });
 
     // Log the activity

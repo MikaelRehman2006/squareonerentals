@@ -96,7 +96,7 @@ export default function PaymentSuccessPage() {
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg"
-              onClick={() => router.push('/listings/create')}
+              onClick={() => router.push('/submit')}
               className="bg-primary hover:bg-primary/90"
             >
               Create a New Listing
