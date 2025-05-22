@@ -55,12 +55,15 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       );
     }
 
+    // Cast the entire report to any to handle TypeScript errors with Mongoose's lean() return type
+    const typedReport = report as any;
+    
     return NextResponse.json({
       message: 'Report status updated successfully',
       report: {
-        id: report._id.toString(),
-        status: report.status,
-        updatedAt: report.updatedAt
+        id: typedReport._id?.toString(),
+        status: typedReport.status,
+        updatedAt: typedReport.updatedAt
       }
     });
   } catch (error) {
