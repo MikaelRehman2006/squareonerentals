@@ -218,4 +218,19 @@ const SettingsPageContent = () => {
 };
 
 // Export a dynamic component with SSR disabled to prevent 'location is not defined' error
-export default dynamic(() => Promise.resolve(SettingsPageContent), { ssr: false });
+// The loading component provides a consistent state between server and client
+export default dynamic(() => Promise.resolve(SettingsPageContent), { 
+  ssr: false,
+  loading: () => <div className="container max-w-4xl py-8">
+    <h1 className="text-3xl font-bold mb-8">Settings</h1>
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading...</CardTitle>
+          <CardDescription>Please wait while we load your settings</CardDescription>
+        </CardHeader>
+        <CardContent className="min-h-24" />
+      </Card>
+    </div>
+  </div>
+});
