@@ -94,6 +94,23 @@ async function saveFileLocally(file: File): Promise<string> {
   }
 }
 
+// Add an OPTIONS handler to support preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+  });
+}
+
+// Add a GET handler to avoid 405 errors
+export async function GET() {
+  return NextResponse.json({ message: 'Upload API is working. Use POST to upload files.' });
+}
+
 export async function POST(request: Request) {
   try {
     console.log('Upload request received');
@@ -170,9 +187,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get the form data
-    const formData = await request.formData();
+    // Get the form data with better error handling
+    let formData;
+    try {
+      formData = await request.formData();
+      console.log('Form data received, entries:', [...formData.entries()].map(e => e[0]));
+    } catch (formError) {
+      console.error('Error parsing form data:', formError);
+      return NextResponse.json(
+        { error: 'Invalid form data submitted' },
+        { status: 400 }
+      );
+    }
+    
     const file = formData.get('file') as File;
+    console.log('File received:', file ? { name: file.name, type: file.type, size: file.size } : 'No file');
 
     // Validate file
     if (!file) {
