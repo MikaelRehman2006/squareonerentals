@@ -59,7 +59,7 @@ export default function Navbar() {
             </Link>
             
             {/* Desktop Navigation */}
-            <div className="hidden sm:ml-8 sm:flex sm:space-x-6">
+            <div className={`hidden sm:ml-8 sm:flex ${session?.user ? 'sm:space-x-6' : 'sm:space-x-8'}`}>
               {navigation.map((item) => (
                 <Link
                   key={item.name}
