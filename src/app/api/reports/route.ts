@@ -31,103 +31,96 @@ interface ReportDocument {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/reports: Starting request');
-    
-    // Connect to MongoDB
-    try {
-      await connectDB();
-      console.log('MongoDB connection successful');
-    } catch (dbError) {
-      console.error('MongoDB connection failed:', dbError);
-      return NextResponse.json(
-        { error: 'Database connection failed' },
-        { status: 500 }
-      );
-    }
-
-    // Check authentication
+    await connectDB();
     const session = await getServerSession(authOptions);
+
     if (!session?.user?.email) {
-      console.log('POST /api/reports: Unauthorized attempt');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    // Get user information
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      console.log('POST /api/reports: User not found');
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    // Parse request body
     const body = await request.json();
-    console.log('Report submission body:', body);
+    const { listingId, reason } = body;
 
-    // Validate required fields
-    if (!body.listingId) {
-      console.log('POST /api/reports: Missing listingId');
+    if (!listingId || !reason) {
       return NextResponse.json(
-        { error: 'Listing ID is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!body.reason) {
-      console.log('POST /api/reports: Missing reason');
-      return NextResponse.json(
-        { error: 'Reason is required' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
     // Validate listing exists
-    const listing = await Listing.findById(body.listingId);
+    const listing = await Listing.findById(listingId);
     if (!listing) {
-      console.log('POST /api/reports: Listing not found');
       return NextResponse.json(
         { error: 'Listing not found' },
         { status: 404 }
       );
     }
 
-    // Create the report with validated data
-    const reportData = {
-      listingId: body.listingId,
-      reportedBy: user._id,
-      listingOwner: listing.userId,
-      reason: body.reason,
-      description: body.description || '',
+    // Get user info
+    const reportedBy = await User.findOne({ email: session.user.email });
+    if (!reportedBy) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Find listing owner
+    const listingOwner = await User.findById(listing.userId);
+
+    // Check if user is reporting their own listing
+    if (listingOwner && reportedBy._id.toString() === listingOwner._id.toString()) {
+      return NextResponse.json(
+        { error: 'You cannot report your own listing' },
+        { status: 400 }
+      );
+    }
+
+    // Check for duplicate reports
+    const existingReport = await Report.findOne({
+      listingId,
+      reportedBy: reportedBy._id,
       status: 'PENDING'
-    };
-    
-    // Create the report
-    console.log('Creating report with data:', reportData);
-    const report = new Report(reportData);
-    await report.save();
+    });
+
+    if (existingReport) {
+      return NextResponse.json(
+        { error: 'You have already reported this listing' },
+        { status: 400 }
+      );
+    }
+
+    // Create report
+    const report = await Report.create({
+      listingId,
+      reportedBy: reportedBy._id,
+      listingOwner: listingOwner ? listingOwner._id : null,
+      reason,
+      status: 'PENDING',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
 
     return NextResponse.json({
       message: 'Report submitted successfully',
-      reportId: report._id.toString(),
-      status: 'success'
-    }, { status: 201 });
-    
+      report: {
+        id: report._id.toString(),
+        reason: report.reason,
+        status: report.status,
+        createdAt: report.createdAt
+      }
+    });
   } catch (error) {
     console.error('Error in POST /api/reports:', error);
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Failed to submit report',
-        status: 'error'
-      },
+      { error: error instanceof Error ? error.message : 'Failed to submit report' },
       { status: 500 }
     );
   } finally {
-    // Don't disconnect as it might affect other requests
     // await disconnectDB();
   }
 }
@@ -145,8 +138,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user has admin role
-    const adminRole = getAdminRole(session.user.email);
-    if (!adminRole) {
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -160,26 +153,33 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .lean() as ReportDocument[];
 
+    if (!reports || reports.length === 0) {
+      return NextResponse.json({
+        reports: [],
+        message: 'No reports found'
+      });
+    }
+
     const formattedReports = reports.map(report => ({
       id: report._id.toString(),
-      listing: {
-        id: report.listingId?._id.toString(),
-        title: report.listingId?.title || 'Deleted Listing',
-      },
-      reportedBy: {
-        id: report.reportedBy?._id.toString(),
-        name: report.reportedBy?.name || report.reportedBy?.email || 'Unknown User',
-        email: report.reportedBy?.email,
-      },
-      listingOwner: {
-        id: report.listingOwner?._id.toString(),
-        name: report.listingOwner?.name || report.listingOwner?.email || 'Unknown User',
-        email: report.listingOwner?.email,
-      },
+      listing: report.listingId ? {
+        id: report.listingId._id.toString(),
+        title: report.listingId.title
+      } : null,
+      reportedBy: report.reportedBy ? {
+        id: report.reportedBy._id.toString(),
+        name: report.reportedBy.name,
+        email: report.reportedBy.email
+      } : null,
+      listingOwner: report.listingOwner ? {
+        id: report.listingOwner._id.toString(),
+        name: report.listingOwner.name,
+        email: report.listingOwner.email
+      } : null,
       reason: report.reason,
       status: report.status,
       createdAt: report.createdAt,
-      updatedAt: report.updatedAt,
+      updatedAt: report.updatedAt
     }));
 
     return NextResponse.json({ reports: formattedReports });
@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    await disconnectDB();
+    // await disconnectDB();
   }
 }
 
@@ -207,8 +207,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Check if user has admin role
-    const adminRole = getAdminRole(session.user.email);
-    if (!adminRole) {
+    const user = await User.findOne({ email: session.user.email });
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -216,16 +216,31 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { reportId, status } = body;
+    const { reportId, status, action } = body;
 
     if (!reportId || !status) {
       return NextResponse.json(
-        { error: 'Report ID and status are required' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    const report = await Report.findById(reportId);
+    if (!['PENDING', 'RESOLVED', 'REJECTED'].includes(status)) {
+      return NextResponse.json(
+        { error: 'Invalid status' },
+        { status: 400 }
+      );
+    }
+
+    const report = await Report.findByIdAndUpdate(
+      reportId,
+      {
+        status,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+
     if (!report) {
       return NextResponse.json(
         { error: 'Report not found' },
@@ -233,25 +248,21 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    report.status = status;
-    report.updatedAt = new Date();
-    await report.save();
-
     return NextResponse.json({
-      message: 'Report updated successfully',
+      message: 'Report status updated successfully',
       report: {
         id: report._id.toString(),
         status: report.status,
-        updatedAt: report.updatedAt,
-      },
+        updatedAt: report.updatedAt
+      }
     });
   } catch (error) {
     console.error('Error in PATCH /api/reports:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update report' },
+      { error: error instanceof Error ? error.message : 'Failed to update report status' },
       { status: 500 }
     );
   } finally {
-    await disconnectDB();
+    // await disconnectDB();
   }
 }
