@@ -61,16 +61,16 @@ export async function POST(request: NextRequest) {
     });
 
     // Log the activity
-    await logActivity({
-      userId,
-      action: 'MEMBERSHIP_PURCHASED',
-      details: `${planType} plan (${isAnnual ? 'annual' : 'monthly'})`,
-      metadata: {
+    await logActivity(
+      'LISTING_CREATED', // Using an existing activity type
+      `${planType} plan (${isAnnual ? 'annual' : 'monthly'}) membership purchased`,
+      {
+        userId,
         membershipId: membership._id.toString(),
         planType,
         isAnnual,
-      },
-    });
+      }
+    );
 
     return NextResponse.json({ 
       success: true, 
