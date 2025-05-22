@@ -49,8 +49,13 @@ export async function PATCH(
       { new: true, select: 'name email role' }
     );
     
+    // Check if user was found and updated
+    if (!updatedUser) {
+      return NextResponse.json({ error: 'User not found after update' }, { status: 404 });
+    }
+    
     // Log the action
-    console.log(`User role updated: ${updatedUser.email} changed to ${role} by admin ${session.user.email}`);
+    console.log(`User role updated: ${updatedUser.email || 'unknown'} changed to ${role} by admin ${session.user.email}`);
 
     return NextResponse.json({
       user: updatedUser,
