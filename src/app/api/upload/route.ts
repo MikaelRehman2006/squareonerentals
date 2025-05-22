@@ -20,20 +20,27 @@ const STORAGE_LIMITS = {
 
 // Check if Cloudinary is properly configured
 const isCloudinaryConfigured = () => {
+  // Get cloud name from either prefixed or non-prefixed env var
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  
+  // Get API key from either prefixed or non-prefixed env var
+  const apiKey = process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+  
+  // API secret should only be in the non-public variable
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  
+  // Alternative way to configure via URL
   const hasUrl = Boolean(process.env.CLOUDINARY_URL);
-  const hasCredentials = Boolean(
-    process.env.CLOUDINARY_CLOUD_NAME && 
-    process.env.CLOUDINARY_API_KEY && 
-    process.env.CLOUDINARY_API_SECRET
-  );
+  
+  // Check if we have all required credentials
+  const hasCredentials = Boolean(cloudName && apiKey && apiSecret);
   
   console.log('Cloudinary config check:', { 
     hasUrl, 
     hasCredentials,
-    url: process.env.CLOUDINARY_URL ? 'Present' : 'Missing',
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'Present' : 'Missing',
-    apiKey: process.env.CLOUDINARY_API_KEY ? 'Present' : 'Missing',
-    apiSecret: process.env.CLOUDINARY_API_SECRET ? 'Present' : 'Missing'
+    cloudName: cloudName ? 'Present' : 'Missing',
+    apiKey: apiKey ? 'Present' : 'Missing',
+    apiSecret: apiSecret ? 'Present' : 'Missing'
   });
   
   return hasUrl || hasCredentials;
@@ -41,12 +48,19 @@ const isCloudinaryConfigured = () => {
 
 // Configure Cloudinary if credentials are available
 if (isCloudinaryConfigured()) {
+  // Get the cloud name, prefer non-public vars but fall back to public ones
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  
   cloudinary.config({
     secure: true,
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret
   });
+  
+  console.log('Cloudinary configured with cloud name:', cloudName);
 }
 
 // Helper function to save file locally - note this will not work in production on Vercel
@@ -220,9 +234,15 @@ export async function POST(request: Request) {
               fileSize: file.size
             });
             
+            // Get upload preset if available
+            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rentals_upload';
+            
+            console.log('Using upload preset:', uploadPreset);
+            
             cloudinary.uploader.upload(fileStr, {
               folder: 'listings',
               resource_type: 'image',
+              upload_preset: uploadPreset,
             }, (error, result) => {
               if (error) {
                 console.error('Cloudinary upload error:', error);
