@@ -22,7 +22,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     }
 
     const user = await User.findOne({ email: session.user.email });
-    if (!user?.role !== 'ADMIN') {
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
