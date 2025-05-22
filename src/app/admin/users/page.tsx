@@ -133,7 +133,10 @@ export default function UsersPage() {
 
       if (response.ok) {
         fetchUsers();
-        toast.success('User role updated successfully');
+        toast.success(
+          `User role updated to ${newRole}. User must sign out and sign back in for changes to take effect.`,
+          { duration: 6000 }
+        );
       }
     } catch (error) {
       console.error('Error updating user role:', error);
