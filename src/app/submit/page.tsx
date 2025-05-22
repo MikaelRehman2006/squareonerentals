@@ -757,10 +757,12 @@ export default function SubmitListingPage() {
                     <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
                     <TooltipProvider>
                       <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
+                        <TooltipTrigger asChild>
+                          <button type="button" className="focus:outline-none">
+                            <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
+                          </button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent className="bg-[#2A2A2A] text-white border border-[#444444]">
                           <p>Listings with photos attract 3x more views!</p>
                         </TooltipContent>
                       </Tooltip>
