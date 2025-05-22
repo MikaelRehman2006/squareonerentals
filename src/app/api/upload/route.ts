@@ -49,7 +49,7 @@ if (isCloudinaryConfigured()) {
   });
 }
 
-// Helper function to save file locally
+// Helper function to save file locally - note this will not work in production on Vercel
 async function saveFileLocally(file: File): Promise<string> {
   try {
     // Create a unique filename
@@ -66,9 +66,11 @@ async function saveFileLocally(file: File): Promise<string> {
     
     // Save the file
     const filePath = path.join(uploadDir, filename);
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer as Buffer);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Use Uint8Array to fix type compatibility issues
+    await writeFile(filePath, new Uint8Array(buffer));
     
     // Return the public URL
     return `/uploads/${filename}`;
@@ -82,11 +84,21 @@ export async function POST(request: Request) {
   try {
     console.log('Upload request received');
     
-    // Check if this is a forced local upload (fallback)
+    // Always use Cloudinary in production
+    const isProd = process.env.NODE_ENV === 'production';
     const url = new URL(request.url);
-    const forceLocal = url.searchParams.get('forceLocal') === 'true';
+    const forceLocal = url.searchParams.get('forceLocal') === 'true' && !isProd;
     if (forceLocal) {
       console.log('Forced local upload requested');
+    }
+    
+    // In production, we need to verify Cloudinary is configured
+    if (isProd && !isCloudinaryConfigured()) {
+      console.error('Cloudinary not configured in production environment');
+      return NextResponse.json(
+        { error: 'Image upload service not properly configured' },
+        { status: 500 }
+      );
     }
     
     // Check authentication
@@ -125,8 +137,18 @@ export async function POST(request: Request) {
     
     console.log('Found user with ID:', user._id);
     
-    // Check if user has an active membership
-    if (!user.membership || user.membership.status !== 'active') {
+    // Check if user has an active membership - more robust check
+    const hasMembership = !!user.membership;
+    const isActive = user.membership?.status === 'active';
+    
+    console.log('Membership check:', { 
+      hasMembership, 
+      membershipStatus: user.membership?.status || 'none',
+      membershipType: user.membership?.type || 'none',
+      isActive
+    });
+
+    if (!hasMembership || !isActive) {
       console.error('User does not have an active membership');
       return NextResponse.json(
         { error: 'Active membership required to upload images' },
