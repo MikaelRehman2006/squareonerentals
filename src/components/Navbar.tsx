@@ -69,17 +69,18 @@ export default function Navbar() {
                   {item.name}
                 </Link>
               ))}
-              <Link
-                href="/submit"
-                className="text-primary hover:text-primary/80 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Submit Listing
-              </Link>
             </div>
           </div>
 
           {/* Auth Buttons */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
+            <Link
+              href="/submit"
+              className="text-primary hover:text-primary/80 px-3 py-2 rounded-md text-sm font-medium mr-4"
+            >
+              Submit Listing
+            </Link>
+            
             {session?.user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
