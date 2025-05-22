@@ -1,5 +1,6 @@
 import { Collection, ObjectId } from 'mongodb';
-import connectToDatabase from './mongodb';
+import mongoose from 'mongoose';
+import { connectDB, disconnectDB } from './mongodb';
 
 interface Activity {
   _id: ObjectId;
@@ -36,7 +37,8 @@ export async function logActivity(
   metadata?: ActivityMetadata
 ) {
   try {
-    const { db } = await connectToDatabase();
+    await connectDB(); // Connect to MongoDB using mongoose
+    const db = mongoose.connection.db; // Get the native MongoDB driver database instance
     const activitiesCollection: Collection<Activity> = db.collection('activities');
 
     const activity: Activity = {
