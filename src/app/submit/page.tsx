@@ -758,12 +758,12 @@ export default function SubmitListingPage() {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="focus:outline-none">
+                          <span className="inline-flex cursor-pointer">
                             <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
-                          </button>
+                          </span>
                         </TooltipTrigger>
-                        <TooltipContent className="bg-[#2A2A2A] text-white border border-[#444444]">
-                          <p>Listings with photos attract 3x more views!</p>
+                        <TooltipContent side="right" className="bg-[#2A2A2A] text-white border border-[#444444]">
+                          <p className="text-sm">Listings with photos attract 3x more views!</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>

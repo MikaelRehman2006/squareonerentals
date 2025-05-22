@@ -479,21 +479,21 @@ function ListItem({ children, tooltip, light, premium }: { children: React.React
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center">
-                <p className={cn(
+              <button type="button" className="flex items-center focus:outline-none">
+                <span className={cn(
                   "ml-3 text-sm font-medium",
                   light ? "text-[#E0E0E0] group-hover:text-white" : 
                   premium ? "text-gray-800 group-hover:text-gray-900" : 
                   "text-gray-800 group-hover:text-gray-900"
                 )}>
                   {children}
-                </p>
+                </span>
                 <Info className={cn(
                   "ml-1.5 h-3.5 w-3.5",
                   light ? "text-gray-400 group-hover:text-gray-300" : 
                   "text-gray-400 group-hover:text-gray-600"
                 )} />
-              </div>
+              </button>
             </TooltipTrigger>
             <TooltipContent 
               side="top"

@@ -103,14 +103,41 @@ const FormLabel = React.forwardRef<
 })
 FormLabel.displayName = "FormLabel"
 
+// Create a custom version of Slot that doesn't have the problematic behavior
+const SafeSlot = React.forwardRef<
+  HTMLElement,
+  React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }
+>(({ children, ...props }, ref) => {
+  // If children is a valid React element, clone it with the props
+  if (React.isValidElement(children)) {
+    return React.cloneElement(children, {
+      ...props,
+      ...children.props,
+      ref: ref ? (mergedRef: any) => {
+        // Handle ref merging
+        if (typeof ref === 'function') ref(mergedRef);
+        else if (ref) ref.current = mergedRef;
+        
+        // Forward ref to child if it has one
+        const childRef = (children as any).ref;
+        if (typeof childRef === 'function') childRef(mergedRef);
+        else if (childRef) childRef.current = mergedRef;
+      } : (children as any).ref,
+    });
+  }
+
+  // Fallback for non-element children
+  return <span {...props} ref={ref as any}>{children}</span>;
+});
+
 const FormControl = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot>
+  HTMLElement,
+  React.HTMLAttributes<HTMLElement>
 >(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
   return (
-    <Slot
+    <SafeSlot
       ref={ref}
       id={formItemId}
       aria-describedby={
