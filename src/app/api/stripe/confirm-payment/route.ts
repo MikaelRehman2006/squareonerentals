@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-export const corsHeaders = {
+// Define CORS headers as a constant (not an export)
+const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     const { sessionId } = await request.json();
     
     if (!sessionId) {
-      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400, headers: corsHeaders });
     }
 
     // Retrieve the checkout session from Stripe
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     
     // Verify the session was successful
     if (checkoutSession.payment_status !== 'paid') {
-      return NextResponse.json({ error: 'Payment not completed' }, { status: 400 });
+      return NextResponse.json({ error: 'Payment not completed' }, { status: 400, headers: corsHeaders });
     }
 
     // Connect to the database
@@ -95,12 +96,12 @@ export async function POST(request: NextRequest) {
       success: true, 
       membership,
       redirectUrl: '/dashboard'
-    });
+    }, { headers: corsHeaders });
   } catch (error) {
     console.error('Error confirming payment:', error);
     return NextResponse.json(
-      { error: 'Failed to confirm payment' },
-      { status: 500 }
+      { error: 'Error confirming payment' },
+      { status: 500, headers: corsHeaders }
     );
   }
 }
