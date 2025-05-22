@@ -45,8 +45,9 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
+        <div className="flex justify-between items-center h-16">
+          {/* Left side: Logo and navigation */}
+          <div className="flex items-center flex-1">
             <Link href="/" className="flex-shrink-0 flex items-center space-x-2">
               <Image
                 src="/images/logo.png"
@@ -57,14 +58,12 @@ export default function Navbar() {
               />
               <span className="font-bold text-xl">Square One Rentals</span>
             </Link>
-            
-            {/* Desktop Navigation */}
             <div className={`hidden sm:ml-8 sm:flex ${session?.user ? 'sm:space-x-6' : 'sm:space-x-8'}`}>
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-gray-700 hover:text-primary px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap"
                 >
                   {item.name}
                 </Link>
@@ -72,11 +71,11 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden sm:flex sm:items-center sm:space-x-4">
+          {/* Right side: Submit Listing and Auth */}
+          <div className="flex items-center justify-end space-x-4 ml-4">
             <Link
               href="/submit"
-              className="text-primary hover:text-primary/80 px-3 py-2 rounded-md text-sm font-medium mr-4"
+              className="text-primary hover:text-primary/80 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap"
             >
               Submit Listing
             </Link>
@@ -121,7 +120,6 @@ export default function Navbar() {
                       Notifications
                     </Link>
                   </DropdownMenuItem>
-
                   <DropdownMenuItem asChild>
                     <Link href="/settings" className="flex items-center">
                       <Settings className="w-4 h-4 mr-2" />
@@ -143,11 +141,11 @@ export default function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-4">
                 <Button variant="ghost" onClick={() => handleAuth('signin')}>
                   Sign In
                 </Button>
-                <Button onClick={() => handleAuth('signup')}>
+                <Button variant="default" onClick={() => handleAuth('signup')}>
                   Sign Up
                 </Button>
               </div>
@@ -155,62 +153,57 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="sm:hidden flex items-center">
-            <button
-              type="button"
+          <div className="sm:hidden flex items-center ml-4">
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary focus:outline-none"
+              className="inline-flex items-center justify-center rounded-md text-gray-700 hover:text-primary focus:outline-none"
             >
               {isOpen ? (
-                <X className="block h-6 w-6" aria-hidden="true" />
+                <X className="h-6 w-6" aria-hidden="true" />
               ) : (
-                <Menu className="block h-6 w-6" aria-hidden="true" />
+                <Menu className="h-6 w-6" aria-hidden="true" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      {isOpen && (
-        <div className="sm:hidden">
-          <div className="pt-2 pb-3 space-y-1">
-            {navigation.map((item) => (
+        {/* Mobile menu */}
+        {isOpen && (
+          <div className="sm:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
               <Link
-                key={item.name}
-                href={item.href}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
+                href="/submit"
+                className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:text-primary/80"
                 onClick={() => setIsOpen(false)}
               >
-                {item.name}
+                Submit Listing
               </Link>
-            ))}
-            <Link
-              href="/submit"
-              className="block px-3 py-2 text-base font-medium text-primary hover:text-primary/80"
-              onClick={() => setIsOpen(false)}
-            >
-              Submit Listing
-            </Link>
-            {!session?.user && (
-              <>
-                <button
-                  onClick={() => handleAuth('signin')}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => handleAuth('signup')}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary"
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
+              {!session?.user && (
+                <div className="flex flex-col space-y-2 px-3 py-2">
+                  <Button variant="ghost" onClick={() => handleAuth('signin')}>
+                    Sign In
+                  </Button>
+                  <Button variant="default" onClick={() => handleAuth('signup')}>
+                    Sign Up
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
 }
