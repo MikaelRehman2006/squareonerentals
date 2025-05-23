@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
 interface FilterState {
   priceRange: { min: number; max: number };
@@ -68,6 +68,7 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     utilities: [],
     showAdditionalOptions: false,
   });
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleFilterChange = (key: keyof FilterState, value: any) => {
     const newFilters = { ...filters, [key]: value };
@@ -98,45 +99,53 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     onFilterChange(defaultFilters);
   };
 
-  return (
-    <Card className="bg-[#1F1F1F] border border-[#333333] shadow-md">
-      <CardHeader className="border-b border-[#333333]">
-        <CardTitle className="text-xl font-semibold text-[#E0E0E0]">Filters</CardTitle>
+  const FilterContent = () => (
+    <Card className="bg-white border border-gray-200 shadow-sm w-[250px]">
+      <CardHeader className="border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-gray-800">Filters</CardTitle>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="sm:hidden p-1 hover:bg-gray-100 rounded-md"
+          >
+            <X className="h-4 w-4 text-gray-500" />
+          </button>
+        </div>
       </CardHeader>
       <CardContent className="p-4 space-y-6">
         {/* Price Range */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-[#E0E0E0]">Price Range</h3>
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-gray-800">Price Range</h3>
           <div className="grid grid-cols-2 gap-3">
             <Input
               type="number"
               value={filters.priceRange.min}
               onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, min: parseInt(e.target.value) })}
-              className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]"
+              className="w-full text-sm"
               placeholder="Min Price"
             />
             <Input
               type="number"
               value={filters.priceRange.max}
               onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, max: parseInt(e.target.value) })}
-              className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]"
+              className="w-full text-sm"
               placeholder="Max Price"
             />
           </div>
         </div>
 
         {/* Property Details */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-[#E0E0E0]">Property Details</h3>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-gray-800">Property Details</h3>
+          <div className="space-y-3">
             <Select
               value={filters.bedrooms?.toString() || 'any'}
               onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? null : parseInt(value))}
             >
-              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
+              <SelectTrigger className="w-full text-sm">
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
-              <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+              <SelectContent>
                 <SelectItem value="any">Any</SelectItem>
                 {[1, 2, 3, 4, 5].map(num => (
                   <SelectItem key={num} value={num.toString()}>{num}+ beds</SelectItem>
@@ -148,50 +157,50 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
               value={filters.bathrooms?.toString() || 'any'}
               onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? null : parseInt(value))}
             >
-              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
+              <SelectTrigger className="w-full text-sm">
                 <SelectValue placeholder="Bathrooms" />
               </SelectTrigger>
-              <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+              <SelectContent>
                 <SelectItem value="any">Any</SelectItem>
                 {[1, 2, 3, 4].map(num => (
                   <SelectItem key={num} value={num.toString()}>{num}+ baths</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
 
-          <Select
-            value={filters.propertyType || 'any'}
-            onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? null : value)}
-          >
-            <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
-              <SelectValue placeholder="Property Type" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-              <SelectItem value="any">Any Type</SelectItem>
-              {PROPERTY_TYPES.map(type => (
-                <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Select
+              value={filters.propertyType || 'any'}
+              onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? null : value)}
+            >
+              <SelectTrigger className="w-full text-sm">
+                <SelectValue placeholder="Property Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Type</SelectItem>
+                {PROPERTY_TYPES.map(type => (
+                  <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Amenities */}
         <Collapsible>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-[#E0E0E0] hover:text-[#3B82F6] transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
             <span>Amenities</span>
-            <ChevronDown className="h-5 w-5" />
+            <ChevronDown className="h-4 w-4" />
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4 space-y-2">
-            <div className="grid grid-cols-1 gap-2">
+          <CollapsibleContent className="mt-3 space-y-2">
+            <div className="space-y-2">
               {AMENITIES.map(amenity => (
-                <div key={amenity} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                <div key={amenity} className="flex items-center gap-2">
                   <Checkbox
                     checked={filters.amenities.includes(amenity)}
                     onCheckedChange={() => handleArrayToggle('amenities', amenity)}
-                    className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                    className="h-4 w-4"
                   />
-                  <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{amenity}</label>
+                  <label className="text-sm text-gray-600 cursor-pointer select-none">{amenity}</label>
                 </div>
               ))}
             </div>
@@ -200,20 +209,20 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
 
         {/* Features */}
         <Collapsible>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-[#E0E0E0] hover:text-[#3B82F6] transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
             <span>Features</span>
-            <ChevronDown className="h-5 w-5" />
+            <ChevronDown className="h-4 w-4" />
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4 space-y-2">
-            <div className="grid grid-cols-1 gap-2">
+          <CollapsibleContent className="mt-3 space-y-2">
+            <div className="space-y-2">
               {FEATURES.map(feature => (
-                <div key={feature} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                <div key={feature} className="flex items-center gap-2">
                   <Checkbox
                     checked={filters.features.includes(feature)}
                     onCheckedChange={() => handleArrayToggle('features', feature)}
-                    className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                    className="h-4 w-4"
                   />
-                  <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{feature}</label>
+                  <label className="text-sm text-gray-600 cursor-pointer select-none">{feature}</label>
                 </div>
               ))}
             </div>
@@ -222,20 +231,20 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
 
         {/* Utilities */}
         <Collapsible>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-[#E0E0E0] hover:text-[#3B82F6] transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
             <span>Utilities</span>
-            <ChevronDown className="h-5 w-5" />
+            <ChevronDown className="h-4 w-4" />
           </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4 space-y-2">
-            <div className="grid grid-cols-1 gap-2">
+          <CollapsibleContent className="mt-3 space-y-2">
+            <div className="space-y-2">
               {UTILITIES.map(utility => (
-                <div key={utility} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                <div key={utility} className="flex items-center gap-2">
                   <Checkbox
                     checked={filters.utilities.includes(utility)}
                     onCheckedChange={() => handleArrayToggle('utilities', utility)}
-                    className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                    className="h-4 w-4"
                   />
-                  <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{utility}</label>
+                  <label className="text-sm text-gray-600 cursor-pointer select-none">{utility}</label>
                 </div>
               ))}
             </div>
@@ -243,22 +252,48 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
         </Collapsible>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 pt-4 border-t border-[#333333]">
+        <div className="space-y-3 pt-4 border-t border-gray-200">
+          <Button
+            onClick={() => onFilterChange(filters)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Apply Filters
+          </Button>
           <Button
             variant="outline"
             onClick={resetFilters}
-            className="flex-1 bg-[#444444] text-white hover:bg-[#555555] border-[#333333]"
+            className="w-full bg-gray-100 text-gray-800 hover:bg-gray-200"
           >
             Reset Filters
-          </Button>
-          <Button
-            onClick={() => onFilterChange(filters)}
-            className="flex-1 bg-[#3B82F6] hover:bg-[#2563EB] text-white"
-          >
-            Apply Filters
           </Button>
         </div>
       </CardContent>
     </Card>
+  );
+
+  return (
+    <>
+      {/* Mobile Filter Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="sm:hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50"
+      >
+        Filters
+      </button>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden sm:block">
+        <FilterContent />
+      </div>
+
+      {/* Mobile Sidebar */}
+      {isOpen && (
+        <div className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+          <div className="fixed left-0 top-0 h-full">
+            <FilterContent />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
