@@ -116,8 +116,8 @@ export async function POST(request: Request) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Unauthorized' }),
+      return NextResponse.json(
+        { error: 'Unauthorized' },
         { 
           status: 401,
           headers: { 'Content-Type': 'application/json' }
@@ -128,8 +128,8 @@ export async function POST(request: Request) {
     // Get user from session
     const userEmail = session.user?.email;
     if (!userEmail) {
-      return new NextResponse(
-        JSON.stringify({ error: 'User email not found in session' }),
+      return NextResponse.json(
+        { error: 'User email not found in session' },
         { 
           status: 401,
           headers: { 'Content-Type': 'application/json' }
@@ -143,8 +143,8 @@ export async function POST(request: Request) {
     // Get user with membership information
     const user = await User.findOne({ email: userEmail });
     if (!user) {
-      return new NextResponse(
-        JSON.stringify({ error: 'User not found' }),
+      return NextResponse.json(
+        { error: 'User not found' },
         { 
           status: 404,
           headers: { 'Content-Type': 'application/json' }
@@ -157,8 +157,8 @@ export async function POST(request: Request) {
     const isActive = user.membership?.status === 'active';
 
     if (!hasMembership || !isActive) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Active membership required to upload images' }),
+      return NextResponse.json(
+        { error: 'Active membership required to upload images' },
         { 
           status: 403,
           headers: { 'Content-Type': 'application/json' }
@@ -171,8 +171,8 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return new NextResponse(
-        JSON.stringify({ error: 'No file provided' }),
+      return NextResponse.json(
+        { error: 'No file provided' },
         { 
           status: 400,
           headers: { 'Content-Type': 'application/json' }
@@ -182,8 +182,8 @@ export async function POST(request: Request) {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      return new NextResponse(
-        JSON.stringify({ error: 'File must be an image' }),
+      return NextResponse.json(
+        { error: 'File must be an image' },
         { 
           status: 400,
           headers: { 'Content-Type': 'application/json' }
@@ -213,23 +213,17 @@ export async function POST(request: Request) {
       });
     });
 
-    return new NextResponse(
-      JSON.stringify({
-        secure_url: (uploadResult as any).secure_url,
-        public_id: (uploadResult as any).public_id
-      }),
-      { 
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    return NextResponse.json({
+      secure_url: (uploadResult as any).secure_url,
+      public_id: (uploadResult as any).public_id
+    }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
   } catch (error) {
     console.error('Upload error:', error);
-    return new NextResponse(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Failed to upload image' 
-      }),
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to upload image' },
       { 
         status: 500,
         headers: { 'Content-Type': 'application/json' }
