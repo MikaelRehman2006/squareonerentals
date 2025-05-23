@@ -11,13 +11,13 @@ import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
 interface FilterState {
   priceRange: { min: number | ''; max: number | '' };
-  bedrooms: number | null;
-  bathrooms: number | null;
-  propertyType: string | null;
+  bedrooms: number | '';
+  bathrooms: number | '';
+  propertyType: string | '';
   amenities: string[];
   features: string[];
   utilities: string[];
-  showAdditionalOptions: boolean;
+  sortBy: 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc';
 }
 
 interface ListingFiltersProps {
@@ -60,13 +60,13 @@ const UTILITIES = [
 export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     priceRange: { min: '', max: '' },
-    bedrooms: null,
-    bathrooms: null,
-    propertyType: null,
+    bedrooms: '',
+    bathrooms: '',
+    propertyType: '',
     amenities: [],
     features: [],
     utilities: [],
-    showAdditionalOptions: false,
+    sortBy: 'date-desc',
   });
   const [isOpen, setIsOpen] = useState(false);
   const [openSections, setOpenSections] = useState({
@@ -110,13 +110,13 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
   const resetFilters = useCallback(() => {
     const defaultFilters: FilterState = {
       priceRange: { min: '', max: '' },
-      bedrooms: null,
-      bathrooms: null,
-      propertyType: null,
+      bedrooms: '',
+      bathrooms: '',
+      propertyType: '',
       amenities: [],
       features: [],
       utilities: [],
-      showAdditionalOptions: false,
+      sortBy: 'date-desc',
     };
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
@@ -162,8 +162,8 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           <h3 className="text-sm font-medium text-gray-800">Property Details</h3>
           <div className="space-y-3">
             <Select
-              value={filters.bedrooms?.toString() || 'any'}
-              onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? null : parseInt(value))}
+              value={filters.bedrooms === '' ? 'any' : filters.bedrooms.toString()}
+              onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? '' : parseInt(value))}
             >
               <SelectTrigger className="w-full text-sm">
                 <SelectValue placeholder="Bedrooms" />
@@ -177,8 +177,8 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
             </Select>
 
             <Select
-              value={filters.bathrooms?.toString() || 'any'}
-              onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? null : parseInt(value))}
+              value={filters.bathrooms === '' ? 'any' : filters.bathrooms.toString()}
+              onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? '' : parseInt(value))}
             >
               <SelectTrigger className="w-full text-sm">
                 <SelectValue placeholder="Bathrooms" />
@@ -193,7 +193,7 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
 
             <Select
               value={filters.propertyType || 'any'}
-              onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? null : value)}
+              onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? '' : value)}
             >
               <SelectTrigger className="w-full text-sm">
                 <SelectValue placeholder="Property Type" />

@@ -18,14 +18,17 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FilterState {
-  priceRange: { min: number; max: number };
-  bedrooms: number | null;
-  bathrooms: number | null;
-  propertyType: string | null;
+  priceRange: {
+    min: number | '';
+    max: number | '';
+  };
+  bedrooms: number | '';
+  bathrooms: number | '';
+  propertyType: string | '';
   amenities: string[];
   features: string[];
   utilities: string[];
-  showAdditionalOptions: boolean;
+  sortBy: 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc';
 }
 
 export default function ListingsPage() {
@@ -79,7 +82,7 @@ export default function ListingsPage() {
 
   // Apply sorting
   const handleSortChange = (value: string) => {
-    setSortBy(value);
+    setSortBy(value as 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc');
     let sortedListings = [...filteredListings];
 
     switch (value) {
@@ -89,15 +92,11 @@ export default function ListingsPage() {
       case 'price-desc':
         sortedListings.sort((a, b) => b.price - a.price);
         break;
-      case 'newest':
-        sortedListings.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
+      case 'date-desc':
+        sortedListings.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
-      case 'oldest':
-        sortedListings.sort((a, b) => 
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
+      case 'date-asc':
+        sortedListings.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         break;
       default:
         // Keep featured listings first by default
@@ -120,29 +119,29 @@ export default function ListingsPage() {
     let filtered = [...listings];
 
     // Apply filters
-    if (filters.priceRange.min > 0) {
-      filtered = filtered.filter(listing => listing.price >= filters.priceRange.min);
+    if (filters.priceRange.min !== '') {
+      filtered = filtered.filter(listing => listing.price >= Number(filters.priceRange.min));
     }
-    if (filters.priceRange.max > 0) {
-      filtered = filtered.filter(listing => listing.price <= filters.priceRange.max);
+    if (filters.priceRange.max !== '') {
+      filtered = filtered.filter(listing => listing.price <= Number(filters.priceRange.max));
     }
-    if (filters.bedrooms) {
-      filtered = filtered.filter(listing => listing.bedrooms >= filters.bedrooms!);
+    if (filters.bedrooms !== '') {
+      filtered = filtered.filter(listing => listing.bedrooms >= Number(filters.bedrooms));
     }
-    if (filters.bathrooms) {
-      filtered = filtered.filter(listing => listing.bathrooms >= filters.bathrooms!);
+    if (filters.bathrooms !== '') {
+      filtered = filtered.filter(listing => listing.bathrooms >= Number(filters.bathrooms));
     }
-    if (filters.propertyType) {
+    if (filters.propertyType !== '') {
       filtered = filtered.filter(listing => listing.propertyType === filters.propertyType);
     }
 
     // Update applied filters list
     const newAppliedFilters: string[] = [];
-    if (filters.priceRange.min > 0) newAppliedFilters.push(`Min $${filters.priceRange.min.toLocaleString()}`);
-    if (filters.priceRange.max > 0) newAppliedFilters.push(`Max $${filters.priceRange.max.toLocaleString()}`);
-    if (filters.bedrooms) newAppliedFilters.push(`${filters.bedrooms}+ beds`);
-    if (filters.bathrooms) newAppliedFilters.push(`${filters.bathrooms}+ baths`);
-    if (filters.propertyType) newAppliedFilters.push(filters.propertyType);
+    if (filters.priceRange.min !== '') newAppliedFilters.push(`Min $${filters.priceRange.min.toLocaleString()}`);
+    if (filters.priceRange.max !== '') newAppliedFilters.push(`Max $${filters.priceRange.max.toLocaleString()}`);
+    if (filters.bedrooms !== '') newAppliedFilters.push(`${filters.bedrooms}+ beds`);
+    if (filters.bathrooms !== '') newAppliedFilters.push(`${filters.bathrooms}+ baths`);
+    if (filters.propertyType !== '') newAppliedFilters.push(filters.propertyType);
     filters.amenities.forEach(amenity => newAppliedFilters.push(amenity));
     filters.features.forEach(feature => newAppliedFilters.push(feature));
     filters.utilities.forEach(utility => newAppliedFilters.push(utility));
@@ -151,17 +150,17 @@ export default function ListingsPage() {
     
     // Apply current sort to filtered results
     let sortedFiltered = [...filtered];
-    switch (sortBy) {
+    switch (filters.sortBy) {
       case 'price-asc':
         sortedFiltered.sort((a, b) => a.price - b.price);
         break;
       case 'price-desc':
         sortedFiltered.sort((a, b) => b.price - a.price);
         break;
-      case 'newest':
+      case 'date-desc':
         sortedFiltered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         break;
-      case 'oldest':
+      case 'date-asc':
         sortedFiltered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         break;
       default:
@@ -202,8 +201,8 @@ export default function ListingsPage() {
                     <SelectValue placeholder="Sort by..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
+                    <SelectItem value="date-asc">Date: Oldest First</SelectItem>
+                    <SelectItem value="date-desc">Date: Newest First</SelectItem>
                     <SelectItem value="price-asc">Price: Low to High</SelectItem>
                     <SelectItem value="price-desc">Price: High to Low</SelectItem>
                   </SelectContent>
@@ -260,14 +259,14 @@ export default function ListingsPage() {
                 onClick={() => {
                   setAppliedFilters([]);
                   handleFilterChange({
-                    priceRange: { min: 0, max: 0 },
-                    bedrooms: null,
-                    bathrooms: null,
-                    propertyType: null,
+                    priceRange: { min: '', max: '' },
+                    bedrooms: '',
+                    bathrooms: '',
+                    propertyType: '',
                     amenities: [],
                     features: [],
                     utilities: [],
-                    showAdditionalOptions: false,
+                    sortBy: 'date-desc',
                   });
                 }}
               >
