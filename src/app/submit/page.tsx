@@ -1018,15 +1018,15 @@ export default function SubmitListingPage() {
                 <div>
                   <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Features</h3>
                   <CardDescription className="text-[#A0A0A0] mb-4">What's inside the unit</CardDescription>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {FEATURES.map((feature) => (
-                      <div key={feature} className="flex items-center space-x-2">
+                      <div key={feature} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
                         <Checkbox
                           checked={selectedFeatures.includes(feature)}
                           onCheckedChange={() => handleFeatureToggle(feature)}
-                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                         />
-                        <label className="text-sm font-normal text-[#CCCCCC]">{feature}</label>
+                        <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{feature}</label>
                       </div>
                     ))}
                   </div>
@@ -1035,15 +1035,15 @@ export default function SubmitListingPage() {
                 <div>
                   <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Utilities Included</h3>
                   <CardDescription className="text-[#A0A0A0] mb-4">What's covered in the rent</CardDescription>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {UTILITIES.map((utility) => (
-                      <div key={utility} className="flex items-center space-x-2">
+                      <div key={utility} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
                         <Checkbox
                           checked={selectedUtilities.includes(utility)}
                           onCheckedChange={() => handleUtilityToggle(utility)}
-                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                         />
-                        <label className="text-sm font-normal text-[#CCCCCC]">{utility}</label>
+                        <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{utility}</label>
                       </div>
                     ))}
                   </div>
