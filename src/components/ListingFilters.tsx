@@ -141,17 +141,21 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           <h3 className="text-sm font-medium text-gray-800">Price Range</h3>
           <div className="grid grid-cols-2 gap-3">
             <Input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={filters.priceRange.min}
               onChange={(e) => handlePriceChange('min', e.target.value)}
-              className="w-full text-sm text-gray-900"
+              className="w-full text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               placeholder="Min Price"
             />
             <Input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={filters.priceRange.max}
               onChange={(e) => handlePriceChange('max', e.target.value)}
-              className="w-full text-sm text-gray-900"
+              className="w-full text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               placeholder="Max Price"
             />
           </div>
