@@ -50,7 +50,31 @@ function ResetPasswordContent() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams?.get('token');
+
+  // Early return if no token is present
+  if (!token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-red-600">Invalid Reset Link</CardTitle>
+            <CardDescription>
+              This password reset link is invalid or has expired. Please request a new password reset link.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => router.push('/auth/forgot-password')}
+              className="w-full"
+            >
+              Request New Reset Link
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const form = useForm<ResetPasswordForm>({
     resolver: zodResolver(resetPasswordSchema),
@@ -61,11 +85,6 @@ function ResetPasswordContent() {
   });
 
   const onSubmit = async (data: ResetPasswordForm) => {
-    if (!token) {
-      toast.error('Invalid reset link');
-      return;
-    }
-
     try {
       setIsLoading(true);
       
@@ -94,29 +113,6 @@ function ResetPasswordContent() {
       setIsLoading(false);
     }
   };
-
-  if (!token) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-red-600">Invalid Reset Link</CardTitle>
-            <CardDescription>
-              This password reset link is invalid or has expired. Please request a new password reset link.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={() => router.push('/auth/forgot-password')}
-              className="w-full"
-            >
-              Request New Reset Link
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
