@@ -88,6 +88,11 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     onFilterChange(newFilters);
   };
 
+  const handlePriceChange = (type: 'min' | 'max', value: string) => {
+    const numValue = value === '' ? 0 : parseInt(value);
+    handleFilterChange('priceRange', { ...filters.priceRange, [type]: numValue });
+  };
+
   const handleArrayToggle = (key: 'amenities' | 'features' | 'utilities', item: string) => {
     const currentArray = filters[key];
     const newArray = currentArray.includes(item)
@@ -131,15 +136,15 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           <div className="grid grid-cols-2 gap-3">
             <Input
               type="number"
-              value={filters.priceRange.min}
-              onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, min: parseInt(e.target.value) })}
+              value={filters.priceRange.min || ''}
+              onChange={(e) => handlePriceChange('min', e.target.value)}
               className="w-full text-sm text-gray-900"
               placeholder="Min Price"
             />
             <Input
               type="number"
-              value={filters.priceRange.max}
-              onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, max: parseInt(e.target.value) })}
+              value={filters.priceRange.max || ''}
+              onChange={(e) => handlePriceChange('max', e.target.value)}
               className="w-full text-sm text-gray-900"
               placeholder="Max Price"
             />
@@ -264,13 +269,7 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
         </Collapsible>
 
         {/* Action Buttons */}
-        <div className="space-y-3 pt-4 border-t border-gray-200">
-          <Button
-            onClick={() => onFilterChange(filters)}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            Apply Filters
-          </Button>
+        <div className="pt-4 border-t border-gray-200">
           <Button
             variant="outline"
             onClick={resetFilters}
