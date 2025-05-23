@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 
 interface FilterState {
-  priceRange: { min: number; max: number };
+  priceRange: { min: number | ''; max: number | '' };
   bedrooms: number | null;
   bathrooms: number | null;
   propertyType: string | null;
@@ -59,7 +59,7 @@ const UTILITIES = [
 
 export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
-    priceRange: { min: 0, max: 5000 },
+    priceRange: { min: '', max: '' },
     bedrooms: null,
     bathrooms: null,
     propertyType: null,
@@ -75,35 +75,41 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     utilities: true
   });
 
-  const toggleSection = (section: keyof typeof openSections) => {
+  const toggleSection = useCallback((section: keyof typeof openSections) => {
     setOpenSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
-  };
+  }, []);
 
-  const handleFilterChange = (key: keyof FilterState, value: any) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
+  const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      onFilterChange(newFilters);
+      return newFilters;
+    });
+  }, [onFilterChange]);
 
-  const handlePriceChange = (type: 'min' | 'max', value: string) => {
-    const numValue = value === '' ? 0 : parseInt(value);
+  const handlePriceChange = useCallback((type: 'min' | 'max', value: string) => {
+    const numValue = value === '' ? '' : parseInt(value);
     handleFilterChange('priceRange', { ...filters.priceRange, [type]: numValue });
-  };
+  }, [filters.priceRange, handleFilterChange]);
 
-  const handleArrayToggle = (key: 'amenities' | 'features' | 'utilities', item: string) => {
-    const currentArray = filters[key];
-    const newArray = currentArray.includes(item)
-      ? currentArray.filter(a => a !== item)
-      : [...currentArray, item];
-    handleFilterChange(key, newArray);
-  };
+  const handleArrayToggle = useCallback((key: 'amenities' | 'features' | 'utilities', item: string) => {
+    setFilters(prev => {
+      const currentArray = prev[key];
+      const newArray = currentArray.includes(item)
+        ? currentArray.filter(a => a !== item)
+        : [...currentArray, item];
+      const newFilters = { ...prev, [key]: newArray };
+      onFilterChange(newFilters);
+      return newFilters;
+    });
+  }, [onFilterChange]);
 
-  const resetFilters = () => {
-    const defaultFilters = {
-      priceRange: { min: 0, max: 5000 },
+  const resetFilters = useCallback(() => {
+    const defaultFilters: FilterState = {
+      priceRange: { min: '', max: '' },
       bedrooms: null,
       bathrooms: null,
       propertyType: null,
@@ -114,7 +120,7 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     };
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
-  };
+  }, [onFilterChange]);
 
   const FilterContent = () => (
     <Card className="bg-white border border-gray-200 shadow-sm w-[250px]">
@@ -136,14 +142,14 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           <div className="grid grid-cols-2 gap-3">
             <Input
               type="number"
-              value={filters.priceRange.min || ''}
+              value={filters.priceRange.min}
               onChange={(e) => handlePriceChange('min', e.target.value)}
               className="w-full text-sm text-gray-900"
               placeholder="Min Price"
             />
             <Input
               type="number"
-              value={filters.priceRange.max || ''}
+              value={filters.priceRange.max}
               onChange={(e) => handlePriceChange('max', e.target.value)}
               className="w-full text-sm text-gray-900"
               placeholder="Max Price"
