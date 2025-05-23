@@ -1,6 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FilterState {
   priceRange: { min: number; max: number };
@@ -17,16 +24,38 @@ interface ListingFiltersProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-const PROPERTY_TYPES = ['Apartment', 'Condo', 'House'];
+const PROPERTY_TYPES = ['APARTMENT', 'CONDO', 'HOUSE', 'TOWNHOUSE'];
 const AMENITIES = [
-  'Parking', 'Pet-friendly', 'WiFi Available', 'On-site Laundry', 'Furnished',
-  'Air Conditioning', 'Gym', 'Pool', 'Security', 'Balcony', 'Elevator'
+  'Parking',
+  'Pet-friendly',
+  'WiFi Available',
+  'On-site Laundry',
+  'Furnished',
+  'Air Conditioning',
+  'Gym',
+  'Pool',
+  'Security',
+  'Balcony',
+  'Elevator'
 ];
+
 const FEATURES = [
-  'WiFi Included', 'Air Conditioning', 'In-unit Laundry', 'Heating',
-  'Furnished', 'Smart Home Features', 'Walk-in Closet'
+  'WiFi Included',
+  'Air Conditioning',
+  'In-unit Laundry',
+  'Heating',
+  'Furnished',
+  'Smart Home Features',
+  'Walk-in Closet'
 ];
-const UTILITIES = ['Electricity', 'Gas', 'Water', 'Internet', 'Trash Collection'];
+
+const UTILITIES = [
+  'Electricity',
+  'Gas',
+  'Water',
+  'Internet',
+  'Trash Collection'
+];
 
 export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
@@ -54,147 +83,182 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     handleFilterChange(key, newArray);
   };
 
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-lg sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto w-full">
-      <h3 className="text-xl font-semibold mb-6 border-b pb-3 text-gray-500">Filters</h3>
+  const resetFilters = () => {
+    const defaultFilters = {
+      priceRange: { min: 0, max: 5000 },
+      bedrooms: null,
+      bathrooms: null,
+      propertyType: null,
+      amenities: [],
+      features: [],
+      utilities: [],
+      showAdditionalOptions: false,
+    };
+    setFilters(defaultFilters);
+    onFilterChange(defaultFilters);
+  };
 
-      {/* Price Range */}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-500 mb-2">Price Range</label>
+  return (
+    <Card className="bg-[#1F1F1F] border border-[#333333] shadow-md">
+      <CardHeader className="border-b border-[#333333]">
+        <CardTitle className="text-xl font-semibold text-[#E0E0E0]">Filters</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 space-y-6">
+        {/* Price Range */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-[#E0E0E0]">Price Range</h3>
           <div className="grid grid-cols-2 gap-3">
-            <input
+            <Input
               type="number"
               value={filters.priceRange.min}
               onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, min: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 border rounded-md bg-black text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]"
               placeholder="Min Price"
             />
-            <input
+            <Input
               type="number"
               value={filters.priceRange.max}
               onChange={(e) => handleFilterChange('priceRange', { ...filters.priceRange, max: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 border rounded-md bg-black text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]"
               placeholder="Max Price"
             />
           </div>
         </div>
 
-        {/* Main Filters */}
-        <div className="space-y-5">
-          {/* Bedrooms */}
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Bedrooms</label>
-            <select
-              value={filters.bedrooms || ''}
-              onChange={(e) => handleFilterChange('bedrooms', e.target.value ? parseInt(e.target.value) : null)}
-              className="w-full px-3 py-2 border rounded-md bg-black text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        {/* Property Details */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-[#E0E0E0]">Property Details</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              value={filters.bedrooms?.toString() || ''}
+              onValueChange={(value) => handleFilterChange('bedrooms', value ? parseInt(value) : null)}
             >
-              <option value="">Any Bedrooms</option>
-              {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>{num}+ beds</option>)}
-            </select>
+              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
+                <SelectValue placeholder="Bedrooms" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                <SelectItem value="">Any</SelectItem>
+                {[1, 2, 3, 4, 5].map(num => (
+                  <SelectItem key={num} value={num.toString()}>{num}+ beds</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.bathrooms?.toString() || ''}
+              onValueChange={(value) => handleFilterChange('bathrooms', value ? parseInt(value) : null)}
+            >
+              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
+                <SelectValue placeholder="Bathrooms" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                <SelectItem value="">Any</SelectItem>
+                {[1, 2, 3, 4].map(num => (
+                  <SelectItem key={num} value={num.toString()}>{num}+ baths</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Bathrooms */}
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Bathrooms</label>
-            <select
-              value={filters.bathrooms || ''}
-              onChange={(e) => handleFilterChange('bathrooms', e.target.value ? parseInt(e.target.value) : null)}
-              className="w-full px-3 py-2 border rounded-md bg-black text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Any Bathrooms</option>
-              {[1, 2, 3, 4].map(num => <option key={num} value={num}>{num}+ baths</option>)}
-            </select>
-          </div>
-
-          {/* Property Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-2">Property Type</label>
-            <select
-              value={filters.propertyType || ''}
-              onChange={(e) => handleFilterChange('propertyType', e.target.value || null)}
-              className="w-full px-3 py-2 border rounded-md bg-black text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Any Type</option>
-              {PROPERTY_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-            </select>
-          </div>
+          <Select
+            value={filters.propertyType || ''}
+            onValueChange={(value) => handleFilterChange('propertyType', value || null)}
+          >
+            <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
+              <SelectValue placeholder="Property Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+              <SelectItem value="">Any Type</SelectItem>
+              {PROPERTY_TYPES.map(type => (
+                <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Amenities */}
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-500 mb-2">Amenities</label>
-          <div className="grid grid-cols-1 gap-2">
-            {AMENITIES.map(amenity => (
-              <label key={amenity} className="flex items-center pl-1 py-1 rounded hover:bg-gray-50">
-                <div className="w-5">
-                  <input
-                    type="checkbox"
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-[#E0E0E0] hover:text-[#3B82F6] transition-colors">
+            <span>Amenities</span>
+            <ChevronDown className="h-5 w-5" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4 space-y-2">
+            <div className="grid grid-cols-1 gap-2">
+              {AMENITIES.map(amenity => (
+                <div key={amenity} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                  <Checkbox
                     checked={filters.amenities.includes(amenity)}
-                    onChange={() => handleArrayToggle('amenities', amenity)}
-                    className="rounded text-blue-600 focus:ring-blue-500"
+                    onCheckedChange={() => handleArrayToggle('amenities', amenity)}
+                    className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                   />
+                  <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{amenity}</label>
                 </div>
-                <span className="text-sm text-gray-600 ml-2">{amenity}</span>
-              </label>
-            ))}
-          </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Features */}
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-[#E0E0E0] hover:text-[#3B82F6] transition-colors">
+            <span>Features</span>
+            <ChevronDown className="h-5 w-5" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4 space-y-2">
+            <div className="grid grid-cols-1 gap-2">
+              {FEATURES.map(feature => (
+                <div key={feature} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                  <Checkbox
+                    checked={filters.features.includes(feature)}
+                    onCheckedChange={() => handleArrayToggle('features', feature)}
+                    className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                  />
+                  <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{feature}</label>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Utilities */}
+        <Collapsible>
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-medium text-[#E0E0E0] hover:text-[#3B82F6] transition-colors">
+            <span>Utilities</span>
+            <ChevronDown className="h-5 w-5" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4 space-y-2">
+            <div className="grid grid-cols-1 gap-2">
+              {UTILITIES.map(utility => (
+                <div key={utility} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                  <Checkbox
+                    checked={filters.utilities.includes(utility)}
+                    onCheckedChange={() => handleArrayToggle('utilities', utility)}
+                    className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                  />
+                  <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{utility}</label>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4 pt-4 border-t border-[#333333]">
+          <Button
+            variant="outline"
+            onClick={resetFilters}
+            className="flex-1 bg-[#444444] text-white hover:bg-[#555555] border-[#333333]"
+          >
+            Reset Filters
+          </Button>
+          <Button
+            onClick={() => onFilterChange(filters)}
+            className="flex-1 bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+          >
+            Apply Filters
+          </Button>
         </div>
-
-        {/* Additional Options Toggle */}
-        <button
-          onClick={() => handleFilterChange('showAdditionalOptions', !filters.showAdditionalOptions)}
-          className="w-full mt-5 py-2 px-4 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-md transition"
-        >
-          Additional Options {filters.showAdditionalOptions ? '▲' : '▼'}
-        </button>
-
-        {/* Additional Options */}
-        {filters.showAdditionalOptions && (
-          <div className="space-y-5 mt-6 border-t pt-6">
-            {/* Features */}
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">Features</label>
-              <div className="grid grid-cols-1 gap-2">
-                {FEATURES.map(feature => (
-                  <label key={feature} className="flex items-center hover:bg-gray-50 pl-1 py-1 rounded">
-                    <div className='w-5'>
-                      <input
-                        type="checkbox"
-                        checked={filters.features.includes(feature)}
-                        onChange={() => handleArrayToggle('features', feature)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                    </div>  
-                    <span className="text-sm text-gray-600 ml-2">{feature}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Utilities */}
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-2">Utilities</label>
-              <div className="grid grid-cols-1 gap-2">
-                {UTILITIES.map(utility => (
-                  <label key={utility} className="flex items-center hover:bg-gray-50 pl-1 py-1 rounded">
-                     <div className='w-5'> 
-                      <input
-                        type="checkbox"
-                        checked={filters.utilities.includes(utility)}
-                        onChange={() => handleArrayToggle('utilities', utility)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                    </div>    
-                    <span className="text-sm text-gray-600 ml-2">{utility}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
