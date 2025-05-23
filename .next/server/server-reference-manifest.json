@@ -1,5 +1,1 @@
-{
-  "node": {},
-  "edge": {},
-  "encryptionKey": "Rof20h0hWOEClH8XL470G/VgU0mOPj6hCasjqI/XmoQ="
-}
+{"node":{"1a487972e66246f3918f31123267c3fd486bbab4":{"workers":{"app/notifications/page":"68429"},"layer":{"app/notifications/page":"rsc"}}},"edge":{},"encryptionKey":"vA0ch+H79hehwlNxOdRtdUlNB9IXmv2fFNfmq2WyW7k="}

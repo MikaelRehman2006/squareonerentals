@@ -619,9 +619,30 @@ export default function SubmitListingPage() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8 text-black dark:text-white">Submit a New Listing</h1>
       <ListingForm
-        initialData={{ /* pass default values as needed */ }}
+        initialData={{
+          title: '',
+          description: '',
+          price: 0,
+          location: '',
+          images: [],
+          bedrooms: 0,
+          bathrooms: 0,
+          squareFeet: 0,
+          amenities: [],
+          buildingAmenities: [],
+          features: [],
+          utilities: [],
+          propertyType: '',
+          listingType: '',
+          leaseType: '',
+          availableDate: new Date().toISOString().split('T')[0],
+          status: 'ACTIVE',
+          featured: false,
+          phoneNumber: '',
+          facebookUrl: ''
+        }}
         onSubmit={async (data) => {
-          // ...submit logic...
+          // ... submit logic ...
         }}
       />
     </div>
