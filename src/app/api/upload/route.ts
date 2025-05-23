@@ -113,25 +113,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    console.log('Upload request received');
-    
-    // Always use Cloudinary in production
-    const isProd = process.env.NODE_ENV === 'production';
-    const url = new URL(request.url);
-    const forceLocal = url.searchParams.get('forceLocal') === 'true' && !isProd;
-    if (forceLocal) {
-      console.log('Forced local upload requested');
-    }
-    
-    // In production, we need to verify Cloudinary is configured
-    if (isProd && !isCloudinaryConfigured()) {
-      console.error('Cloudinary not configured in production environment');
-      return NextResponse.json(
-        { error: 'Image upload service not properly configured' },
-        { status: 500 }
-      );
-    }
-    
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -140,198 +121,89 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
-    
+
     // Get user from session
-    const userEmail = session.user.email;
-    
+    const userEmail = session.user?.email;
     if (!userEmail) {
       return NextResponse.json(
         { error: 'User email not found in session' },
         { status: 401 }
       );
     }
-    
-    // Connect to the database
+
+    // Connect to database
     await connectDB();
-    
-    // Get user with membership information - use email instead of ID to avoid ObjectId issues
-    console.log('Looking up user by email:', userEmail);
+
+    // Get user with membership information
     const user = await User.findOne({ email: userEmail });
-    
     if (!user) {
-      console.error('User not found with email:', userEmail);
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
-    
-    console.log('Found user with ID:', user._id);
-    
-    // Check if user has an active membership - more robust check
+
+    // Check if user has an active membership
     const hasMembership = !!user.membership;
     const isActive = user.membership?.status === 'active';
-    
-    console.log('Membership check:', { 
-      hasMembership, 
-      membershipStatus: user.membership?.status || 'none',
-      membershipType: user.membership?.type || 'none',
-      isActive
-    });
 
     if (!hasMembership || !isActive) {
-      console.error('User does not have an active membership');
       return NextResponse.json(
         { error: 'Active membership required to upload images' },
         { status: 403 }
       );
     }
 
-    // Get the form data with better error handling
-    let formData;
-    try {
-      formData = await request.formData();
-      console.log('Form data received, entries:', Array.from(formData.keys()));
-    } catch (formError) {
-      console.error('Error parsing form data:', formError);
-      return NextResponse.json(
-        { error: 'Invalid form data submitted' },
-        { status: 400 }
-      );
-    }
-    
+    // Get the form data
+    const formData = await request.formData();
     const file = formData.get('file') as File;
-    console.log('File received:', file ? { name: file.name, type: file.type, size: file.size } : 'No file');
 
-    // Validate file
     if (!file) {
-      console.error('No file provided');
       return NextResponse.json(
         { error: 'No file provided' },
         { status: 400 }
       );
     }
 
-    // Determine file size limit based on membership type
-    const membershipType = user.membership?.type || 'DEFAULT';
-    const sizeLimit = STORAGE_LIMITS[membershipType as keyof typeof STORAGE_LIMITS] || STORAGE_LIMITS.DEFAULT;
-    
-    // Check file size against membership limit
-    if (file.size > sizeLimit) {
-      console.error('File too large for membership tier:', file.size);
-      return NextResponse.json(
-        { 
-          error: `File size exceeds your membership limit of ${sizeLimit / (1024 * 1024)}MB`, 
-          membershipType: membershipType,
-          currentLimit: sizeLimit / (1024 * 1024)
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check file type
+    // Validate file type
     if (!file.type.startsWith('image/')) {
-      console.error('Invalid file type:', file.type);
       return NextResponse.json(
         { error: 'File must be an image' },
         { status: 400 }
       );
     }
 
-    console.log('File validation passed, preparing for upload');
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    // Try to use Cloudinary if configured and not forced to use local storage
-    if (isCloudinaryConfigured() && !forceLocal) {
-      try {
-        console.log('Using Cloudinary for image upload');
-        
-        // Convert file to buffer
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        
-        // Convert buffer to base64 string for Cloudinary upload
-        const base64 = buffer.toString('base64');
-        const fileStr = `data:${file.type};base64,${base64}`;
-        
-        // Upload to Cloudinary using the SDK
-        const uploadResult = await new Promise<{secure_url: string, public_id: string}>((resolve, reject) => {
-          try {
-            console.log('Attempting Cloudinary upload with params:', {
-              folder: 'listings',
-              resource_type: 'image',
-              fileType: file.type,
-              fileSize: file.size
-            });
-            
-            // Get upload preset if available
-            const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rentals_upload';
-            
-            console.log('Using upload preset:', uploadPreset);
-            
-            cloudinary.uploader.upload(fileStr, {
-              folder: 'listings',
-              resource_type: 'image',
-              upload_preset: uploadPreset,
-            }, (error, result) => {
-              if (error) {
-                console.error('Cloudinary upload error:', error);
-                reject(new Error(`Cloudinary upload error: ${error.message || JSON.stringify(error)}`));
-              } else if (result && result.secure_url) {
-                resolve({
-                  secure_url: result.secure_url,
-                  public_id: result.public_id
-                });
-              } else {
-                reject(new Error('Missing result data from Cloudinary'));
-              }
-            });
-          } catch (innerError) {
-            console.error('Error during Cloudinary upload setup:', innerError);
-            reject(new Error(`Cloudinary setup error: ${innerError instanceof Error ? innerError.message : String(innerError)}`));
-          }
-        });
+    // Convert buffer to base64 string for Cloudinary upload
+    const base64 = buffer.toString('base64');
+    const fileStr = `data:${file.type};base64,${base64}`;
 
-        console.log('Cloudinary upload successful');
-
-        return NextResponse.json({
-          secure_url: uploadResult.secure_url,
-          public_id: uploadResult.public_id
-        });
-      } catch (cloudinaryError) {
-        console.error('Cloudinary upload failed, falling back to local storage:', cloudinaryError);
-        
-        // More detailed error logging
-        if (cloudinaryError instanceof Error) {
-          console.error('Error details:', {
-            message: cloudinaryError.message,
-            stack: cloudinaryError.stack,
-            name: cloudinaryError.name
-          });
+    // Upload to Cloudinary
+    const uploadResult = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload(fileStr, {
+        folder: 'listings',
+        resource_type: 'image',
+      }, (error, result) => {
+        if (error) {
+          reject(error);
         } else {
-          console.error('Non-Error object thrown:', cloudinaryError);
+          resolve(result);
         }
-        
-        // Will fall back to local storage below
-      }
-    } else if (forceLocal) {
-      console.log('Forced to use local storage for this upload');
-    } else {
-      console.log('Cloudinary not configured, using local storage');
-    }
-    
-    // Local storage fallback
-    const fileUrl = await saveFileLocally(file);
-    console.log('Local file upload successful:', fileUrl);
-    
+      });
+    });
+
     return NextResponse.json({
-      secure_url: fileUrl,
-      public_id: fileUrl
+      secure_url: (uploadResult as any).secure_url,
+      public_id: (uploadResult as any).public_id
     });
 
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unknown error occurred' },
+      { error: error instanceof Error ? error.message : 'Failed to upload image' },
       { status: 500 }
     );
   }
