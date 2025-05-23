@@ -51,7 +51,7 @@ export default function ListingsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [dateFilter, setDateFilter] = useState('all');
-  const [userFilter, setUserFilter] = useState(searchParams.get('userId') || '');
+  const [userFilter, setUserFilter] = useState(searchParams?.get('userId') || '');
 
   // Make sure we fetch listings on initial load
   useEffect(() => {
