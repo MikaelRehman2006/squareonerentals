@@ -100,7 +100,7 @@ export async function OPTIONS() {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
   });
@@ -116,18 +116,24 @@ export async function POST(request: Request) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
     // Get user from session
     const userEmail = session.user?.email;
     if (!userEmail) {
-      return NextResponse.json(
-        { error: 'User email not found in session' },
-        { status: 401 }
+      return new NextResponse(
+        JSON.stringify({ error: 'User email not found in session' }),
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -137,9 +143,12 @@ export async function POST(request: Request) {
     // Get user with membership information
     const user = await User.findOne({ email: userEmail });
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+      return new NextResponse(
+        JSON.stringify({ error: 'User not found' }),
+        { 
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -148,9 +157,12 @@ export async function POST(request: Request) {
     const isActive = user.membership?.status === 'active';
 
     if (!hasMembership || !isActive) {
-      return NextResponse.json(
-        { error: 'Active membership required to upload images' },
-        { status: 403 }
+      return new NextResponse(
+        JSON.stringify({ error: 'Active membership required to upload images' }),
+        { 
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -159,17 +171,23 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
+      return new NextResponse(
+        JSON.stringify({ error: 'No file provided' }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'File must be an image' },
-        { status: 400 }
+      return new NextResponse(
+        JSON.stringify({ error: 'File must be an image' }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -195,16 +213,27 @@ export async function POST(request: Request) {
       });
     });
 
-    return NextResponse.json({
-      secure_url: (uploadResult as any).secure_url,
-      public_id: (uploadResult as any).public_id
-    });
+    return new NextResponse(
+      JSON.stringify({
+        secure_url: (uploadResult as any).secure_url,
+        public_id: (uploadResult as any).public_id
+      }),
+      { 
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
 
   } catch (error) {
     console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to upload image' },
-      { status: 500 }
+    return new NextResponse(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Failed to upload image' 
+      }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 }
