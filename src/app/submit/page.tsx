@@ -3,13 +3,12 @@
 import { Info } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import StorageUsageBar from '@/components/StorageUsageBar';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
+import { FaQuestionCircle } from 'react-icons/fa';
+import { IoMdClose } from 'react-icons/io';
+import { format } from 'date-fns';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,61 +32,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { ListingForm } from '@/components/listing-form';
-
-const listingSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  price: z.number().min(0, 'Price must be positive'),
-  location: z.string().min(1, 'Location is required'),
-  address: z.string().min(1, 'Address is required'),
-  squareFeet: z.number().min(0, 'Square feet must be positive'),
-  images: z.array(z.string()).default([]),
-  bedrooms: z.number().min(0, 'Number of bedrooms must be positive'),
-  bathrooms: z.number().min(0, 'Number of bathrooms must be positive'),
-  amenities: z.array(z.string()).default([]),
-  buildingAmenities: z.array(z.string()).default([]),
-  propertyType: z.string().min(1, 'Property type is required'),
-  listingType: z.string().min(1, 'Listing type is required'),
-  leaseType: z.string().min(1, 'Lease type is required'),
-  availableDate: z.string().min(1, 'Available date is required'),
-  parking: z.string().default('None'),
-  featured: z.boolean().default(false),
-  status: z.string().default('ACTIVE'),
-  features: z.object({
-    wifi: z.boolean().default(false),
-    airConditioning: z.boolean().default(false),
-    laundry: z.boolean().default(false),
-    heating: z.boolean().default(false),
-    furnished: z.boolean().default(false),
-    smartHomeFeatures: z.boolean().default(false),
-    walkInCloset: z.boolean().default(false),
-  }).default({
-    wifi: false,
-    airConditioning: false,
-    laundry: false,
-    heating: false,
-    furnished: false,
-    smartHomeFeatures: false,
-    walkInCloset: false,
-  }),
-  utilities: z.object({
-    electricity: z.boolean().default(false),
-    gas: z.boolean().default(false),
-    water: z.boolean().default(false),
-    internet: z.boolean().default(false),
-    trashCollection: z.boolean().default(false),
-  }).default({
-    electricity: false,
-    gas: false,
-    water: false,
-    internet: false,
-    trashCollection: false,
-  }),
-  phoneNumber: z.string().optional(),
-  facebookUrl: z.string().url("Please enter a valid Facebook URL").optional(),
-});
-
-type ListingFormData = z.infer<typeof listingSchema>;
 
 const AMENITIES = [
   'Parking',
@@ -122,6 +66,32 @@ const UTILITIES = [
   'Trash Collection'
 ];
 
+const MAX_IMAGES = 10;
+const MAX_STORAGE_MB = 25;
+const MAX_STORAGE_BYTES = MAX_STORAGE_MB * 1024 * 1024;
+
+const PROPERTY_TYPES = [
+  'Apartment', 'House', 'Condo', 'Townhouse', 'Studio', 'Other'
+];
+const LISTING_TYPES = [
+  'Long Term', 'Short Term', 'Sublet', 'Vacation Rental'
+];
+const LEASE_TYPES = [
+  'Fixed Term', 'Month-to-Month', 'Short Term', 'Other'
+];
+const PARKING_OPTIONS = [
+  'None', 'Street', 'Private', 'Underground', 'Permit', 'Other'
+];
+const BEDROOMS = ['Studio', ...Array.from({ length: 10 }, (_, i) => `${i + 1}`)];
+const BATHROOMS = ['0.5', ...Array.from({ length: 10 }, (_, i) => `${i + 1}`)];
+
+const BUILDING_AMENITIES = [
+  'Parking', 'Pet-friendly', 'WiFi', 'On-site Laundry', 'Security', 'Furnished', 'Air Conditioning', 'Balcony', 'Gym', 'Pool', 'Elevator', 'Concierge', 'Rooftop', 'Business Center', 'Other'
+];
+const UNIT_FEATURES = [
+  'WiFi Included', 'Air Conditioning', 'In-unit Laundry', 'Heating', 'Furnished', 'Smart Home', 'Walk-in Closet', 'Other'
+];
+
 export default function SubmitListingPage() {
   const { data: session } = useSession({
     required: true,
@@ -141,47 +111,13 @@ export default function SubmitListingPage() {
   const [otherUtility, setOtherUtility] = useState('');
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const form = useForm<ListingFormData>({
-    resolver: zodResolver(listingSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      price: 0,
-      location: '',
-      address: '',
-      squareFeet: 0,
-      images: [],
-      bedrooms: 0,
-      bathrooms: 0,
-      amenities: [],
-      buildingAmenities: [],
-      propertyType: 'APARTMENT',
-      listingType: 'LONG_TERM',
-      leaseType: '',
-      availableDate: '',
-      parking: 'None',
-      featured: false,
-      status: 'ACTIVE',
-      features: {
-        wifi: false,
-        airConditioning: false,
-        laundry: false,
-        heating: false,
-        furnished: false,
-        smartHomeFeatures: false,
-        walkInCloset: false,
-      },
-      utilities: {
-        electricity: false,
-        gas: false,
-        water: false,
-        internet: false,
-        trashCollection: false,
-      },
-    },
+  const [form, setForm] = useState({
+    title: '', price: '', description: '', location: '', address: '', squareFeet: '', unknownSqft: false, images: [] as File[], bedrooms: '', bathrooms: '', propertyType: '', otherPropertyType: '', listingType: '', leaseType: '', otherLeaseType: '', availableDate: '', availableImmediately: false, parking: '', otherParking: '', phoneNumber: '', facebook: '', email: '', buildingAmenities: [] as string[], otherBuildingAmenity: '', unitFeatures: [] as string[], otherUnitFeature: '', utilities: [] as string[], otherUtility: '', featured: false,
   });
-
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [storageUsed, setStorageUsed] = useState(0);
+  
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -207,8 +143,7 @@ export default function SubmitListingPage() {
         ? [...newAmenities.filter(a => a !== 'Other'), otherAmenity]
         : newAmenities;
       
-      form.setValue('amenities', finalAmenities);
-      return newAmenities;
+      return finalAmenities;
     });
   };
 
@@ -227,23 +162,7 @@ export default function SubmitListingPage() {
         ? [...newFeatures.filter(a => a !== 'Other'), otherFeature]
         : newFeatures;
       
-      // Convert feature names to object keys
-      const featureObj = {
-        wifi: false,
-        airConditioning: false,
-        laundry: false,
-        heating: false,
-        furnished: false,
-        smartHomeFeatures: false,
-        walkInCloset: false,
-        ...newFeatures.reduce((acc, curr) => ({
-          ...acc,
-          [curr.toLowerCase().replace(/\s+/g, '')]: true
-        }), {})
-      };
-      
-      form.setValue('features', featureObj);
-      return newFeatures;
+      return finalFeatures;
     });
   };
 
@@ -253,20 +172,6 @@ export default function SubmitListingPage() {
         ? prev.filter(a => a !== utility)
         : [...prev, utility];
       
-      // Convert utility names to object keys
-      const utilityObj = {
-        electricity: false,
-        gas: false,
-        water: false,
-        internet: false,
-        trashCollection: false,
-        ...newUtilities.reduce((acc, curr) => ({
-          ...acc,
-          [curr.toLowerCase().replace(/\s+/g, '')]: true
-        }), {})
-      };
-      
-      form.setValue('utilities', utilityObj);
       return newUtilities;
     });
   };
@@ -418,7 +323,7 @@ export default function SubmitListingPage() {
       
       // This is the critical part - make sure we properly update state AND form value
       // Get the current images from the form 
-      const currentFormImages = form.getValues('images') || [];
+      const currentFormImages = form.images || [];
       console.log('Current form images:', currentFormImages);
       
       // Combine existing with new images
@@ -429,7 +334,7 @@ export default function SubmitListingPage() {
       setUploadedImages(updatedImages);
       
       // Explicitly set form value with the combined images
-      form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
+      setForm(prev => ({ ...prev, images: updatedImages }));
 
       toast.success(`${newImageUrls.length} image(s) uploaded successfully!`, {
         className: 'bg-green-50 border border-green-200',
@@ -459,13 +364,12 @@ export default function SubmitListingPage() {
   const removeImage = (indexToRemove: number) => {
     setUploadedImages(prev => {
       const newImages = prev.filter((_, index) => index !== indexToRemove);
-      form.setValue('images', newImages, { shouldValidate: true });
       return newImages;
     });
     toast.success('Image removed');
   };
 
-  const onSubmit = async (data: z.infer<typeof listingSchema>) => {
+  const onSubmit = async (data: any) => {
     try {
       console.log('Starting form submission...');
       console.log('Form data before submission:', data);
@@ -640,9 +544,7 @@ export default function SubmitListingPage() {
           phoneNumber: '',
           facebookUrl: ''
         }}
-        onSubmit={async (data) => {
-          // ... submit logic ...
-        }}
+        onSubmit={onSubmit}
       />
     </div>
   );
