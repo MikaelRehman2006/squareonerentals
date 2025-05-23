@@ -80,6 +80,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+function isPlainObject(obj: unknown): obj is Record<string, boolean> {
+  return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+}
+
 export const ListingForm = ({
   initialData,
   onSubmit,
@@ -109,13 +113,36 @@ export const ListingForm = ({
   const handleSubmit = async (data: FormValues) => {
     try {
       setLoading(true);
-      console.log('Form submitted with data:', data);
       if (!session?.user?.email) {
         throw new Error('Unauthorized');
       }
-
-      await onSubmit(data);
-      console.log('Form submission successful');
+      let featuresArray: string[] = [];
+      if (isPlainObject(data.features)) {
+        const featuresObj = data.features as Record<string, boolean>;
+        featuresArray = Object.keys(featuresObj).filter((key: string) => {
+          const val: boolean = featuresObj[key];
+          return typeof val === 'boolean' && val;
+        });
+      } else if (Array.isArray(data.features)) {
+        featuresArray = data.features;
+      }
+      let utilitiesArray: string[] = [];
+      if (isPlainObject(data.utilities)) {
+        const utilitiesObj = data.utilities as Record<string, boolean>;
+        utilitiesArray = Object.keys(utilitiesObj).filter((key: string) => {
+          const val: boolean = utilitiesObj[key];
+          return typeof val === 'boolean' && val;
+        });
+      } else if (Array.isArray(data.utilities)) {
+        utilitiesArray = data.utilities;
+      }
+      const formattedData = {
+        ...data,
+        buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities : [],
+        features: featuresArray,
+        utilities: utilitiesArray,
+      };
+      await onSubmit(formattedData);
       toast.success('Listing updated successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);

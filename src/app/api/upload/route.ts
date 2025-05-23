@@ -331,58 +331,19 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to upload image', 
-        details: error instanceof Error ? error.message : String(error) 
-      },
+      { error: error instanceof Error ? error.message : 'Unknown error occurred' },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(request: Request) {
-  try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const { publicId } = await request.json();
-
-    if (!publicId) {
-      return NextResponse.json(
-        { error: 'No public ID provided' },
-        { status: 400 }
-      );
-    }
-
-    console.log('Deleting image from Cloudinary:', publicId);
-
-    // Delete from Cloudinary using the SDK
-    const result = await new Promise<any>((resolve, reject) => {
-      cloudinary.uploader.destroy(publicId, (error: any, result: any) => {
-        if (error) {
-          console.error('Cloudinary delete error:', error);
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-
-    return NextResponse.json({
-      result: (result as any).result
-    });
-
-  } catch (error) {
-    console.error('Delete error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete image', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+// Catch-all for unsupported methods
+export async function PUT() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+export async function PATCH() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+export async function DELETE() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
