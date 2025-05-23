@@ -794,14 +794,354 @@ export default function EditListingPage({ params }: { params: { listingId: strin
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-black dark:text-white">Edit Listing</h1>
-      <ListingForm
-        initialData={listing}
-        onSubmit={async (data) => {
-          // ...submit logic...
-        }}
-      />
+    <div className="min-h-screen bg-[#121212] py-8">
+      <div className="container max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-[#E0E0E0] uppercase">Edit Your Listing</h1>
+            <p className="mt-2 text-[#A0A0A0]">Update your property details below.</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="bg-[#333333] text-white hover:bg-[#444444] border-[#444444]"
+          >
+            Back
+          </Button>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Basic Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Title</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Price (per month)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            value={field.value || ''} 
+                            onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#CCCCCC]">Description</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} rows={4} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm resize-none" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Location</FormLabel>
+                        <FormControl>
+                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Address</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              console.log('Address changed to:', e.target.value);
+                            }}
+                            placeholder="Enter the property address"
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormDescription className="text-[#A0A0A0]">
+                          The full address of the property being listed
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Property Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="bedrooms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Bedrooms</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            value={field.value || ''} 
+                            onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bathrooms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Bathrooms</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            value={field.value || ''} 
+                            onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="squareFeet"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Square Feet</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            value={field.value || ''} 
+                            onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="propertyType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Property Type</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                                <SelectValue placeholder="Select property type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="APARTMENT">Apartment</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="CONDO">Condo</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="HOUSE">House</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="TOWNHOUSE">Townhouse</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="listingType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Listing Type</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                                <SelectValue placeholder="Select listing type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="LONG_TERM">Long Term</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="SHORT_TERM">Short Term</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Features & Amenities</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Features</h3>
+                  <CardDescription className="text-[#A0A0A0] mb-4">What's included in the unit</CardDescription>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {FEATURES.map((feature) => (
+                      <div key={feature} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedFeatures.includes(feature)}
+                          onCheckedChange={() => handleFeatureToggle(feature)}
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                        />
+                        <label className="text-sm font-normal text-[#CCCCCC]">{feature}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Building Amenities</h3>
+                  <CardDescription className="text-[#A0A0A0] mb-4">What's available in the building</CardDescription>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {AMENITIES.map((amenity) => (
+                      <div key={amenity} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedAmenities.includes(amenity)}
+                          onCheckedChange={() => handleAmenityToggle(amenity)}
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                        />
+                        <label className="text-sm font-normal text-[#CCCCCC]">{amenity}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Utilities Included</h3>
+                  <CardDescription className="text-[#A0A0A0] mb-4">What's covered in the rent</CardDescription>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {UTILITIES.map((utility) => (
+                      <div key={utility} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedUtilities.includes(utility)}
+                          onCheckedChange={() => handleUtilityToggle(utility)}
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                        />
+                        <label className="text-sm font-normal text-[#CCCCCC]">{utility}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Listing Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#CCCCCC]">Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                          <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="ACTIVE">Active</SelectItem>
+                          <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="ARCHIVED">Archived</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-[#A0A0A0]">
+                        Active listings are visible to potential renters. Archived listings are hidden from search results.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push('/dashboard')}
+                className="flex-1 bg-[#444444] text-white hover:bg-[#555555] border-[#333333]"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-md transition-all duration-200 hover:shadow-lg"
+              >
+                {isSubmitting ? 'Updating...' : 'Update Listing'}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }
