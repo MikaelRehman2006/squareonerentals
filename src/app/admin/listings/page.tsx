@@ -28,6 +28,7 @@ import { Slider } from '@/components/ui/slider';
 import { MoreHorizontal, Search, CalendarIcon, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { formatPrice } from '@/utils/formatPrice';
 
 interface Listing {
   id: string;
@@ -181,7 +182,7 @@ export default function ListingsPage() {
           </form>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-[180px] border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
               <div className="flex items-center">
                 <div className="w-2 h-2 rounded-full mr-2 bg-gray-400
                   ${statusFilter === 'active' ? 'bg-green-500' : ''}
@@ -191,7 +192,7 @@ export default function ListingsPage() {
                 <SelectValue placeholder="Filter by status" className="text-gray-800 dark:text-gray-100" />
               </div>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
               <SelectItem value="all">All Listings</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="archived">Archived</SelectItem>
@@ -200,13 +201,13 @@ export default function ListingsPage() {
           </Select>
 
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-full md:w-[180px] border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <SelectTrigger className="bg-gray-800 text-white border border-gray-700">
               <div className="flex items-center">
                 <CalendarIcon className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
                 <SelectValue placeholder="Filter by date" className="text-gray-800 dark:text-gray-100" />
               </div>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg">
               <SelectItem value="all">All Time</SelectItem>
               <SelectItem value="today">Today</SelectItem>
               <SelectItem value="week">This Week</SelectItem>
@@ -263,7 +264,7 @@ export default function ListingsPage() {
                       href={`/listings/${listing.id}`}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hover:underline"
                     >
-                      {listing.title}
+                      <span className="truncate max-w-xs" title={listing.title}>{listing.title}</span>
                     </Link>
                   </TableCell>
                   <TableCell className="py-4 px-4 text-sm text-gray-700 dark:text-gray-300">
@@ -271,7 +272,7 @@ export default function ListingsPage() {
                       href={`/admin/users?search=${listing.user.email}`}
                       className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:underline"
                     >
-                      {listing.user.name || listing.user.email}
+                      <span className="truncate max-w-xs" title={listing.user.name || listing.user.email}>{listing.user.name || listing.user.email}</span>
                     </Link>
                   </TableCell>
                   <TableCell className="py-4 px-4 text-sm">
@@ -286,7 +287,7 @@ export default function ListingsPage() {
                       {listing.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">${listing.price.toLocaleString()}</TableCell>
+                  <TableCell className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">{formatPrice(listing.price)}</TableCell>
                   <TableCell className="py-4 px-4 text-sm text-gray-500 dark:text-gray-400">{new Date(listing.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="py-4 px-4 text-right">
                     <DropdownMenu>

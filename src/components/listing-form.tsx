@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 import {
   Form,
@@ -79,6 +80,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+function isPlainObject(obj: unknown): obj is Record<string, boolean> {
+  return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+}
+
 export const ListingForm = ({
   initialData,
   onSubmit,
@@ -108,13 +113,36 @@ export const ListingForm = ({
   const handleSubmit = async (data: FormValues) => {
     try {
       setLoading(true);
-      console.log('Form submitted with data:', data);
       if (!session?.user?.email) {
         throw new Error('Unauthorized');
       }
-
-      await onSubmit(data);
-      console.log('Form submission successful');
+      let featuresArray: string[] = [];
+      if (isPlainObject(data.features)) {
+        const featuresObj = data.features as Record<string, boolean>;
+        featuresArray = Object.keys(featuresObj).filter((key: string) => {
+          const val: boolean = featuresObj[key];
+          return typeof val === 'boolean' && val;
+        });
+      } else if (Array.isArray(data.features)) {
+        featuresArray = data.features;
+      }
+      let utilitiesArray: string[] = [];
+      if (isPlainObject(data.utilities)) {
+        const utilitiesObj = data.utilities as Record<string, boolean>;
+        utilitiesArray = Object.keys(utilitiesObj).filter((key: string) => {
+          const val: boolean = utilitiesObj[key];
+          return typeof val === 'boolean' && val;
+        });
+      } else if (Array.isArray(data.utilities)) {
+        utilitiesArray = data.utilities;
+      }
+      const formattedData = {
+        ...data,
+        buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities : [],
+        features: featuresArray,
+        utilities: utilitiesArray,
+      };
+      await onSubmit(formattedData);
       toast.success('Listing updated successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -127,6 +155,35 @@ export const ListingForm = ({
       setLoading(false);
     }
   };
+
+  // Add new dropdown options
+  const PROPERTY_TYPES = [
+    'Apartment', 'House', 'Condo', 'Townhouse', 'Studio', 'Loft', 'Basement Suite', 'Tiny Home', 'Garage Unit', 'Other'
+  ];
+  const PARKING_OPTIONS = [
+    'None', 'Street Parking', 'Private Parking', 'Garage Parking', 'Underground Parking', 'Permit Required', 'Shared Driveway', 'Other'
+  ];
+  const LEASE_TYPES = [
+    'Fixed Term (6 months/1 year)', 'Month to Month', 'Short Term (<6 months)', 'Other'
+  ];
+  const LEASE_OTHER_OPTIONS = [
+    'Student Lease (e.g., 8 months)', 'Sublet', 'Flexible Lease'
+  ];
+  const LISTING_TYPES = [
+    'Long Term', 'Short Term', 'Vacation Rental', 'Sublet', 'Rent-to-Own', 'Other'
+  ];
+
+  // Add state for 'Other' fields
+  const [propertyTypeOther, setPropertyTypeOther] = useState('');
+  const [parkingOther, setParkingOther] = useState('');
+  const [leaseTypeOther, setLeaseTypeOther] = useState('');
+  const [listingTypeOther, setListingTypeOther] = useState('');
+
+  // Add state for 'Available Immediately'
+  const [availableImmediately, setAvailableImmediately] = useState(false);
+
+  const handlePreview = () => { /* TODO: Implement preview logic */ };
+  const handleSaveDraft = () => { /* TODO: Implement save draft logic */ };
 
   return (
     <Form {...form}>
@@ -229,6 +286,7 @@ export const ListingForm = ({
           )}
         />
 
+        <h2 className="text-lg font-semibold mb-2">Property Details</h2>
         <FormField
           control={form.control}
           name="propertyType"
@@ -237,17 +295,20 @@ export const ListingForm = ({
               <FormLabel>Property Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-blue-500">
                     <SelectValue placeholder="Select property type" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="apartment">Apartment</SelectItem>
-                  <SelectItem value="house">House</SelectItem>
-                  <SelectItem value="condo">Condo</SelectItem>
-                  <SelectItem value="townhouse">Townhouse</SelectItem>
+                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg max-h-60 overflow-y-auto">
+                  {PROPERTY_TYPES.map(type => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {/* Show 'Other' input if selected */}
+              {form.watch('propertyType') === 'Other' && (
+                <Input value={propertyTypeOther} onChange={e => setPropertyTypeOther(e.target.value)} placeholder="Please specify" className="mt-2" />
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -305,9 +366,9 @@ export const ListingForm = ({
         />
 
         {/* Contact Information */}
+        <h2 className="text-lg font-semibold mb-2 mt-6">Contact Information</h2>
         <div className="bg-[#1F1F1F] border border-[#333333] rounded-xl shadow-md p-6 space-y-4 hover:shadow-lg transition-shadow">
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-[#E0E0E0] uppercase">Contact Information</h3>
             <p className="text-[#A0A0A0] text-sm">
               Add your contact details below (optional). This information will be displayed on your listing 
               so potential renters can reach out to you directly about the property.
@@ -419,9 +480,28 @@ export const ListingForm = ({
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={loading || isSubmitting}>
-          Save Changes
-        </Button>
+        <div className="flex items-center gap-2 mt-2">
+          <Checkbox checked={availableImmediately} onCheckedChange={checked => {
+            setAvailableImmediately(!!checked);
+            if (checked) form.setValue('availableDate', new Date().toISOString().split('T')[0]);
+          }} />
+          <span>Available Immediately</span>
+        </div>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="ml-2 cursor-pointer text-gray-400">ℹ️</span>
+            </TooltipTrigger>
+            <TooltipContent>Upload up to 10 images. Max size: 5MB each.</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <div className="flex gap-2 mt-4">
+          <Button type="button" variant="secondary" onClick={handlePreview}>Preview Listing</Button>
+          <Button type="button" variant="outline" onClick={handleSaveDraft}>Save as Draft</Button>
+          <Button type="submit" disabled={loading || isSubmitting}>Submit</Button>
+        </div>
       </form>
     </Form>
   );

@@ -1,6 +1,5 @@
 'use client';
 
-import { Info } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -17,12 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Form,
   FormControl,
@@ -99,8 +92,7 @@ const AMENITIES = [
   'Pool',
   'Security',
   'Balcony',
-  'Elevator',
-  'Other'
+  'Elevator'
 ];
 
 const FEATURES = [
@@ -135,9 +127,6 @@ export default function SubmitListingPage() {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedUtilities, setSelectedUtilities] = useState<string[]>([]);
-  const [otherAmenity, setOtherAmenity] = useState('');
-  const [otherFeature, setOtherFeature] = useState('');
-  const [otherUtility, setOtherUtility] = useState('');
   const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -196,17 +185,7 @@ export default function SubmitListingPage() {
       const newAmenities = prev.includes(amenity)
         ? prev.filter(a => a !== amenity)
         : [...prev, amenity];
-      
-      // If "Other" is unchecked, clear the other input
-      if (amenity === 'Other' && prev.includes('Other')) {
-        setOtherAmenity('');
-      }
-      
-      const finalAmenities = newAmenities.includes('Other')
-        ? [...newAmenities.filter(a => a !== 'Other'), otherAmenity]
-        : newAmenities;
-      
-      form.setValue('amenities', finalAmenities);
+      form.setValue('amenities', newAmenities);
       return newAmenities;
     });
   };
@@ -216,15 +195,6 @@ export default function SubmitListingPage() {
       const newFeatures = prev.includes(feature)
         ? prev.filter(a => a !== feature)
         : [...prev, feature];
-      
-      // If "Other" is unchecked, clear the other input
-      if (feature === 'Other' && prev.includes('Other')) {
-        setOtherFeature('');
-      }
-      
-      const finalFeatures = newFeatures.includes('Other')
-        ? [...newFeatures.filter(a => a !== 'Other'), otherFeature]
-        : newFeatures;
       
       // Convert feature names to object keys
       const featureObj = {
@@ -299,22 +269,20 @@ export default function SubmitListingPage() {
     setPendingFiles(Array.from(files));
 
     try {
+      const loadingToast = toast.loading('Uploading images...');
+      
       // Check file size before upload (5MB limit)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       for (let i = 0; i < files.length; i++) {
         if (files[i].size > MAX_FILE_SIZE) {
-          toast.error(`File ${files[i].name} exceeds the 5MB size limit`, {
-            className: 'bg-red-50 border border-red-200',
-            duration: 5000
-          });
+          toast.dismiss(loadingToast);
+          toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
           return;
         }
         
         if (!files[i].type.startsWith('image/')) {
-          toast.error(`File ${files[i].name} is not an image`, {
-            className: 'bg-red-50 border border-red-200',
-            duration: 5000
-          });
+          toast.dismiss(loadingToast);
+          toast.error(`File ${files[i].name} is not an image`);
           return;
         }
       }
@@ -358,14 +326,13 @@ export default function SubmitListingPage() {
         
         // If no active membership, direct to membership page immediately
         if (!userData.membership || userData.membership.status !== 'active') {
+          toast.dismiss(loadingToast);
           toast.error('Membership required', {
-            className: 'bg-red-50 border border-red-200',
             description: 'You need an active membership to upload images and create listings. Please purchase a plan to continue.',
             action: {
               label: 'Get Membership',
               onClick: () => router.push('/memberships')
-            },
-            duration: 5000
+            }
           });
           setPendingFiles([]);
           return;
@@ -380,17 +347,17 @@ export default function SubmitListingPage() {
         newImageUrls = await Promise.all(uploadPromises);
         console.log('All uploads complete, new image URLs:', newImageUrls);
       } catch (error: any) {
+        toast.dismiss(loadingToast);
+        
         // Special handling for different error types
         if (error.message && error.message.includes('membership required')) {
           // Membership issue
           toast.error('Membership required', {
-            className: 'bg-red-50 border border-red-200',
             description: 'You need an active membership to upload images. Please purchase a plan.',
             action: {
               label: 'Get Membership',
               onClick: () => router.push('/memberships')
-            },
-            duration: 5000
+            }
           });
         } else {
           // Generic error - no fallback to local storage since that's not production-ready
@@ -411,6 +378,7 @@ export default function SubmitListingPage() {
       
       // If we get here and don't have newImageUrls, return early
       if (!newImageUrls || newImageUrls.length === 0) {
+        toast.dismiss(loadingToast);
         setPendingFiles([]);
         return;
       }
@@ -430,23 +398,17 @@ export default function SubmitListingPage() {
       // Explicitly set form value with the combined images
       form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
 
-      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`, {
-        className: 'bg-green-50 border border-green-200',
-        description: 'Your images have been added to the listing.',
-        duration: 5000
-      });
-
+      toast.dismiss(loadingToast);
+      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
+      
       // Reset file input but keep the images in state
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to submit listing', {
-        className: 'bg-red-50 border border-red-200',
-        description: error instanceof Error ? error.message : 'Please check all required fields and try again.',
-        duration: 5000,
-      });
+      toast.dismiss();
+      toast.error(error instanceof Error ? error.message : 'Failed to upload images. Please try again.');
       
       // Reset file input on error
       if (fileInputRef.current) {
@@ -583,11 +545,7 @@ export default function SubmitListingPage() {
       }
 
       toast.dismiss(loadingToast);
-      toast.success('Listing submitted successfully!', {
-        className: 'bg-green-50 border border-green-200',
-        description: 'Your listing has been created and is now live.',
-        duration: 5000,
-      });
+      toast.success('Listing submitted successfully!');
       if (result.id) {
         router.push(`/listings/${result.id}`);
       } else {
@@ -753,21 +711,7 @@ export default function SubmitListingPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex cursor-pointer">
-                            <Info className="h-4 w-4 text-[#666666] hover:text-[#999999]" />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="bg-[#2A2A2A] text-white border border-[#444444]">
-                          <p className="text-sm">Listings with photos attract 3x more views!</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
+                  <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
                   
                   {/* Storage Usage Bar */}
                   <StorageUsageBar 
@@ -869,29 +813,21 @@ export default function SubmitListingPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-[#CCCCCC]">Property Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm px-4">
-                              <SelectValue placeholder="Select property type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#2A2A2A] border-[#444444]">
-                            <SelectItem value="APARTMENT">Apartment</SelectItem>
-                            <SelectItem value="HOUSE">House</SelectItem>
-                            <SelectItem value="CONDO">Condo</SelectItem>
-                            <SelectItem value="TOWNHOUSE">Townhouse</SelectItem>
-                            <SelectItem value="STUDIO">Studio</SelectItem>
-                            <SelectItem value="OTHER">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {field.value === 'OTHER' && (
-                          <Input
-                            type="text"
-                            placeholder="Please specify property type"
-                            className="mt-2 bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
-                            onChange={(e) => form.setValue('propertyType', e.target.value)}
-                          />
-                        )}
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                                <SelectValue placeholder="Select property type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="APARTMENT">Apartment</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="CONDO">Condo</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="HOUSE">House</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="TOWNHOUSE">Townhouse</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -932,25 +868,17 @@ export default function SubmitListingPage() {
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm px-4">
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
                                 <SelectValue placeholder="Select lease type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-[#2A2A2A] border-[#444444]">
-                              <SelectItem value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
-                              <SelectItem value="MONTH_TO_MONTH">Month to Month</SelectItem>
-                              <SelectItem value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
-                              <SelectItem value="OTHER">Other</SelectItem>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="MONTH_TO_MONTH">Month to Month</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="OTHER">Other</SelectItem>
                             </SelectContent>
                           </Select>
-                          {field.value === 'OTHER' && (
-                            <Input
-                              type="text"
-                              placeholder="Please specify lease type"
-                              className="mt-2 bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
-                              onChange={(e) => form.setValue('leaseType', e.target.value)}
-                            />
-                          )}
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1067,35 +995,17 @@ export default function SubmitListingPage() {
                 <CardDescription className="text-[#A0A0A0]">What the property/building offers</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <FormLabel className="text-[#CCCCCC]">Building Amenities</FormLabel>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-3">
-                    {AMENITIES.map((amenity) => (
-                      <div key={amenity} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`amenity-${amenity}`}
-                          checked={selectedAmenities.includes(amenity)}
-                          onCheckedChange={() => handleAmenityToggle(amenity)}
-                          className="bg-[#2A2A2A] border-[#444444] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:border-[#3B82F6]"
-                        />
-                        <label
-                          htmlFor={`amenity-${amenity}`}
-                          className="text-sm font-medium leading-none text-[#CCCCCC] cursor-pointer whitespace-nowrap"
-                        >
-                          {amenity}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                  {selectedAmenities.includes('Other') && (
-                    <Input
-                      type="text"
-                      placeholder="Please specify other amenity"
-                      value={otherAmenity}
-                      onChange={(e) => setOtherAmenity(e.target.value)}
-                      className="mt-2 bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
-                    />
-                  )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {AMENITIES.map((amenity) => (
+                    <div key={amenity} className="flex items-center space-x-2">
+                      <Checkbox
+                        checked={selectedAmenities.includes(amenity)}
+                        onCheckedChange={() => handleAmenityToggle(amenity)}
+                        className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                      />
+                      <label className="text-sm font-normal text-[#CCCCCC]">{amenity}</label>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
