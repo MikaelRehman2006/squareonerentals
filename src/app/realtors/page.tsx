@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Mail, Star, Check, Info } from 'lucide-react';
+import { Search, MapPin, Mail, Star, Check, Info, Building2, ArrowRight, X } from 'lucide-react';
+import Link from 'next/link';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface Realtor {
   id: string;
@@ -15,6 +17,7 @@ interface Realtor {
   experience: string;
   description: string;
   about: string;
+  email: string;
 }
 
 const realtors: Realtor[] = [
@@ -28,7 +31,8 @@ const realtors: Realtor[] = [
     specialties: ['Luxury Rentals', 'Student Housing'],
     experience: '8',
     description: 'Highly experienced realtor with a passion for helping clients find their dream home.',
-    about: 'Sarah has been in the real estate industry for over 8 years and has a proven track record of success.'
+    about: 'Sarah has been in the real estate industry for over 8 years and has a proven track record of success.',
+    email: 'sarah.johnson@squareonerentals.com'
   },
   {
     id: '2',
@@ -40,7 +44,8 @@ const realtors: Realtor[] = [
     specialties: ['Condos', 'Family Homes'],
     experience: '12',
     description: 'Dedicated and knowledgeable realtor with a focus on providing exceptional client service.',
-    about: 'Michael has been a realtor for over 12 years and has a deep understanding of the local market.'
+    about: 'Michael has been a realtor for over 12 years and has a deep understanding of the local market.',
+    email: 'michael.chen@squareonerentals.com'
   },
   // Add more realtors as needed
 ];
@@ -76,12 +81,12 @@ const SpecialtyBadge = ({ specialty }: { specialty: string }) => {
   const isLuxury = specialty.toLowerCase().includes('luxury');
   const isStudent = specialty.toLowerCase().includes('student');
   
-  let bgColor = "bg-gray-100 text-gray-800";
-  if (isLuxury) bgColor = "bg-amber-100 text-amber-800";
-  if (isStudent) bgColor = "bg-blue-100 text-blue-800";
+  let bgColor = "bg-gray-100/20 text-gray-300";
+  if (isLuxury) bgColor = "bg-amber-100/20 text-amber-300";
+  if (isStudent) bgColor = "bg-blue-100/20 text-blue-300";
   
   return (
-    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${bgColor}`}>
+    <span className={`text-xs font-medium px-3 py-1 rounded-full ${bgColor} backdrop-blur-sm`}>
       {specialty}
     </span>
   );
@@ -92,6 +97,9 @@ export default function RealtorsPage() {
   const [locationFilter, setLocationFilter] = useState('');
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [selectedRealtor, setSelectedRealtor] = useState<Realtor | null>(null);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -140,8 +148,51 @@ export default function RealtorsPage() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* Real Estate Partner Opportunity Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-12 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-200/30 dark:border-gray-700/30"
+        >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Become a Real Estate Partner</h2>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Partner with us as a Canadian realtor to grow your listings and reach 107K+ renters—no fees, just commission-based exposure.
+              </p>
+              <Link 
+                href="https://www.linkedin.com/hiring/jobs/4231485688"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:translate-y-[-2px] group"
+              >
+                Apply Now
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+            <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>No Fees</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Commission Based</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Check className="h-4 w-4 text-green-500" />
+                <span>Remote Work</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,11 +207,23 @@ export default function RealtorsPage() {
           </p>
         </motion.div>
         
+        {/* Mobile Filter Toggle */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="w-full flex items-center justify-center gap-2 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg text-gray-900 dark:text-white py-3 px-4 rounded-xl border border-gray-200/30 dark:border-gray-700/30"
+          >
+            <Search className="h-5 w-5" />
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
+        </div>
+
+        {/* Search Filters */}
         <motion.div 
           variants={searchVariants}
           initial="hidden"
           animate="visible"
-          className="flex flex-col sm:flex-row gap-4 mb-12"
+          className={`flex flex-col sm:flex-row gap-4 mb-12 ${showFilters ? 'block' : 'hidden lg:flex'}`}
         >
           <div className="relative flex-1 group">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -168,14 +231,11 @@ export default function RealtorsPage() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+              className="block w-full pl-10 pr-3 py-3 border border-gray-300/30 dark:border-gray-700/30 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="Search by name"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity duration-200">
-              <Info className="h-4 w-4 text-blue-500" />
-            </div>
           </div>
           
           <div className="relative flex-1 group">
@@ -184,14 +244,11 @@ export default function RealtorsPage() {
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
+              className="block w-full pl-10 pr-3 py-3 border border-gray-300/30 dark:border-gray-700/30 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               placeholder="Filter by location"
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none opacity-0 group-focus-within:opacity-100 transition-opacity duration-200">
-              <Info className="h-4 w-4 text-blue-500" />
-            </div>
           </div>
         </motion.div>
 
@@ -217,21 +274,21 @@ export default function RealtorsPage() {
                   key={realtor.id}
                   variants={itemVariants}
                   whileHover={{ 
-                    scale: 1.02, 
+                    scale: 1.01, 
                     transition: { duration: 0.2 } 
                   }}
-                  className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700"
+                  className="bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200/30 dark:border-gray-700/30"
                 >
                   <div className="p-6">
                     {/* Top section with avatar and name */}
                     <div className="flex items-start space-x-4 mb-4">
                       <div className="relative">
                         {realtor.rating >= 4.8 && (
-                          <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10 transform -rotate-12">
+                          <div className="absolute -top-2 -left-2 bg-red-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-full z-10 transform -rotate-12">
                             Top Rated
                           </div>
                         )}
-                        <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-blue-100 dark:border-blue-900 shadow-inner">
+                        <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-blue-100/20 dark:border-blue-900/20 shadow-inner">
                           {realtor.photo ? (
                             <img 
                               src={realtor.photo} 
@@ -239,7 +296,7 @@ export default function RealtorsPage() {
                               className="h-full w-full object-cover" 
                             />
                           ) : (
-                            <div className="h-full w-full flex items-center justify-center bg-blue-500 text-white text-xl font-bold">
+                            <div className="h-full w-full flex items-center justify-center bg-blue-500/20 text-white text-xl font-bold backdrop-blur-sm">
                               {realtor.name.split(' ').map(n => n[0]).join('')}
                             </div>
                           )}
@@ -254,19 +311,18 @@ export default function RealtorsPage() {
                             onMouseEnter={() => setActiveTooltip(realtor.id)}
                             onMouseLeave={() => setActiveTooltip(null)}
                           >
-                            <div className="bg-blue-500 text-white p-1 rounded-full">
+                            <div className="bg-blue-500/90 backdrop-blur-sm text-white p-1 rounded-full">
                               <Check className="h-4 w-4" />
                             </div>
                             
-                            {/* Tooltip */}
                             {activeTooltip === realtor.id && (
                               <motion.div 
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="absolute z-10 -left-16 -bottom-12 bg-gray-900 text-white text-xs rounded py-1 px-2 w-32 text-center"
+                                className="absolute z-10 -left-16 -bottom-12 bg-gray-900/90 backdrop-blur-sm text-white text-xs rounded-lg py-1 px-2 w-32 text-center"
                               >
                                 Verified Realtor
-                                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rotate-45 bg-gray-900"></div>
+                                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 rotate-45 bg-gray-900/90"></div>
                               </motion.div>
                             )}
                           </div>
@@ -310,7 +366,7 @@ export default function RealtorsPage() {
                     </div>
                     
                     {/* About section with subtle separator */}
-                    <div className="pt-3 mt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div className="pt-3 mt-4 border-t border-gray-200/20 dark:border-gray-700/20">
                       <p className="text-gray-500 dark:text-gray-400 text-sm italic">
                         {realtor.about}
                       </p>
@@ -319,7 +375,11 @@ export default function RealtorsPage() {
                     {/* Contact button */}
                     <div className="mt-5">
                       <button 
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:translate-y-[-2px] flex items-center justify-center group"
+                        onClick={() => {
+                          setSelectedRealtor(realtor);
+                          setShowContactModal(true);
+                        }}
+                        className="w-full bg-blue-600/90 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 transform hover:translate-y-[-2px] flex items-center justify-center group backdrop-blur-sm"
                       >
                         <Mail className="h-5 w-5 mr-2 group-hover:animate-pulse" />
                         Contact Realtor
@@ -331,6 +391,75 @@ export default function RealtorsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Mobile CTA Bar */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200/30 dark:border-gray-700/30 p-4 lg:hidden">
+          <div className="flex gap-4">
+            <Link
+              href="#realtors"
+              className="flex-1 bg-blue-600/90 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 text-center"
+            >
+              Browse Realtors
+            </Link>
+            <Link
+              href="https://www.linkedin.com/hiring/jobs/4231485688"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 bg-gray-800/90 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 text-center"
+            >
+              Apply to Partner
+            </Link>
+          </div>
+        </div>
+
+        {/* Contact Modal */}
+        <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
+          <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border border-gray-200/30 dark:border-gray-700/30">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Contact Information
+              </DialogTitle>
+              <DialogDescription className="text-gray-500 dark:text-gray-400">
+                Get in touch with {selectedRealtor?.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center gap-3 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-xl">
+                <div className="bg-blue-100/50 dark:bg-blue-900/50 p-2 rounded-lg">
+                  <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                  <a 
+                    href={`mailto:${selectedRealtor?.email || 'contact@squareonerentals.com'}`}
+                    className="text-gray-900 dark:text-white font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    {selectedRealtor?.email || 'contact@squareonerentals.com'}
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 bg-gray-50/50 dark:bg-gray-800/50 p-4 rounded-xl">
+                <div className="bg-blue-100/50 dark:bg-blue-900/50 p-2 rounded-lg">
+                  <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {selectedRealtor?.location}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

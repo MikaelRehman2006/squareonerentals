@@ -14,6 +14,7 @@ import {
   useTheme,
   useMediaQuery,
   CircularProgress,
+  Link,
 } from '@mui/material';
 import {
   Work as WorkIcon,
@@ -71,11 +72,11 @@ const jobs = [
 
   {
     id: 5,
-    title: 'TEST',
+    title: 'Real Estate Partner (Realtor)',
     department: 'Business',
-    location: 'On-site',
-    type: 'Full-time',
-    description: 'TESTING',
+    location: 'Remote',
+    type: 'Contract',
+    description: 'Partner with us as a Canadian realtor to grow your listings and reach 107K+ renters—no fees, just commission-based exposure.',
     isNew: true,
     postedDate: new Date('2025-03-25'),
     isOpen: true,
@@ -319,21 +320,45 @@ export default function CareersPage() {
 
                   <Divider sx={{ my: 2 }} />
 
-                  <Button
-                    variant="contained"
-                    color={job.isOpen ? "primary" : "error"}
-                    fullWidth={isMobile}
-                    disabled={!job.isOpen}
-                    sx={{
-                      mt: 'auto',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: job.isOpen ? 'scale(1.02)' : 'none',
-                      },
-                    }}
-                  >
-                    {job.isOpen ? 'Apply Now' : 'Position Filled'}
-                  </Button>
+                  {job.id === 5 ? (
+                    <Link
+                      href="https://www.linkedin.com/hiring/jobs/4231485688"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ textDecoration: 'none' }}
+                    >
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth={isMobile}
+                        sx={{
+                          mt: 'auto',
+                          transition: 'all 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.02)',
+                          },
+                        }}
+                      >
+                        Apply Now
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      color={job.isOpen ? "primary" : "error"}
+                      fullWidth={isMobile}
+                      disabled={!job.isOpen}
+                      sx={{
+                        mt: 'auto',
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          transform: job.isOpen ? 'scale(1.02)' : 'none',
+                        },
+                      }}
+                    >
+                      {job.isOpen ? 'Apply Now' : 'Position Filled'}
+                    </Button>
+                  )}
                 </CardContent>
               </MotionCard>
             </Grid>

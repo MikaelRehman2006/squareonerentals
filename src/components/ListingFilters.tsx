@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { debounce } from 'lodash';
 
 interface FilterState {
   priceRange: { min: number | ''; max: number | '' };
@@ -75,6 +76,21 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     utilities: true
   });
 
+  // Create a debounced version of onFilterChange
+  const debouncedFilterChange = useCallback(
+    debounce((newFilters: FilterState) => {
+      onFilterChange(newFilters);
+    }, 400),
+    [onFilterChange]
+  );
+
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedFilterChange.cancel();
+    };
+  }, [debouncedFilterChange]);
+
   const toggleSection = useCallback((section: keyof typeof openSections) => {
     setOpenSections(prev => ({
       ...prev,
@@ -85,15 +101,22 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
   const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
-      onFilterChange(newFilters);
+      debouncedFilterChange(newFilters);
       return newFilters;
     });
-  }, [onFilterChange]);
+  }, [debouncedFilterChange]);
 
   const handlePriceChange = useCallback((type: 'min' | 'max', value: string) => {
     const numValue = value === '' ? '' : parseInt(value);
-    handleFilterChange('priceRange', { ...filters.priceRange, [type]: numValue });
-  }, [filters.priceRange, handleFilterChange]);
+    setFilters(prev => {
+      const updated = {
+        ...prev,
+        priceRange: { ...prev.priceRange, [type]: numValue }
+      };
+      debouncedFilterChange(updated);
+      return updated;
+    });
+  }, [debouncedFilterChange]);
 
   const handleArrayToggle = useCallback((key: 'amenities' | 'features' | 'utilities', item: string) => {
     setFilters(prev => {
@@ -135,7 +158,7 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           </button>
         </div>
       </CardHeader>
-      <CardContent className="p-4 space-y-6">
+      <CardContent className="p-4 pt-6 space-y-6">
         {/* Price Range */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium text-gray-800">Price Range</h3>
