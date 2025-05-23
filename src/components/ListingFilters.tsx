@@ -130,14 +130,14 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           <h3 className="text-lg font-medium text-[#E0E0E0]">Property Details</h3>
           <div className="grid grid-cols-2 gap-3">
             <Select
-              value={filters.bedrooms?.toString() || ''}
-              onValueChange={(value) => handleFilterChange('bedrooms', value ? parseInt(value) : null)}
+              value={filters.bedrooms?.toString() || 'any'}
+              onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? null : parseInt(value))}
             >
               <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
               <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="any">Any</SelectItem>
                 {[1, 2, 3, 4, 5].map(num => (
                   <SelectItem key={num} value={num.toString()}>{num}+ beds</SelectItem>
                 ))}
@@ -145,14 +145,14 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
             </Select>
 
             <Select
-              value={filters.bathrooms?.toString() || ''}
-              onValueChange={(value) => handleFilterChange('bathrooms', value ? parseInt(value) : null)}
+              value={filters.bathrooms?.toString() || 'any'}
+              onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? null : parseInt(value))}
             >
               <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
                 <SelectValue placeholder="Bathrooms" />
               </SelectTrigger>
               <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="any">Any</SelectItem>
                 {[1, 2, 3, 4].map(num => (
                   <SelectItem key={num} value={num.toString()}>{num}+ baths</SelectItem>
                 ))}
@@ -161,14 +161,14 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
           </div>
 
           <Select
-            value={filters.propertyType || ''}
-            onValueChange={(value) => handleFilterChange('propertyType', value || null)}
+            value={filters.propertyType || 'any'}
+            onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? null : value)}
           >
             <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6]">
               <SelectValue placeholder="Property Type" />
             </SelectTrigger>
             <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-              <SelectItem value="">Any Type</SelectItem>
+              <SelectItem value="any">Any Type</SelectItem>
               {PROPERTY_TYPES.map(type => (
                 <SelectItem key={type} value={type}>{type.replace('_', ' ')}</SelectItem>
               ))}
