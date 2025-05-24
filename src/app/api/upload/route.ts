@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     if (isProd && !isCloudinaryConfigured()) {
       console.error('Cloudinary not configured in production environment');
       return NextResponse.json(
-        { error: 'Image upload service not properly configured' },
+        { error: 'Image upload service not properly configured for production. Please contact support.' },
         { status: 500 }
       );
     }
@@ -157,7 +157,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    if (isCloudinaryConfigured() && !forceLocal) {
+    // Always use Cloudinary in production
+    if (isCloudinaryConfigured() && (!forceLocal || isProd)) {
       try {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
@@ -171,6 +172,7 @@ export async function POST(request: Request) {
             upload_preset: uploadPreset,
           }, (error, result) => {
             if (error) {
+              console.error('Cloudinary upload error:', error);
               reject(new Error(`Cloudinary upload error: ${error.message || JSON.stringify(error)}`));
             } else if (result && result.secure_url) {
               resolve({
@@ -184,15 +186,32 @@ export async function POST(request: Request) {
         });
         return NextResponse.json(uploadResult);
       } catch (cloudinaryError) {
-        // Fallback to local storage below
+        console.error('Cloudinary upload failed:', cloudinaryError);
+        if (isProd) {
+          return NextResponse.json(
+            { error: 'Image upload failed. Please try again later or contact support.' },
+            { status: 500 }
+          );
+        }
+        // In development, allow fallback to local
       }
     }
-    const fileUrl = await saveFileLocally(file);
-    return NextResponse.json({
-      secure_url: fileUrl,
-      public_id: fileUrl
-    });
+    // Only allow local fallback in development
+    if (!isProd) {
+      const fileUrl = await saveFileLocally(file);
+      return NextResponse.json({
+        secure_url: fileUrl,
+        public_id: fileUrl
+      });
+    } else {
+      // Should never reach here in production
+      return NextResponse.json(
+        { error: 'Image upload failed and local storage is not allowed in production.' },
+        { status: 500 }
+      );
+    }
   } catch (error) {
+    console.error('Upload error:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error occurred' },
       { status: 500 }
