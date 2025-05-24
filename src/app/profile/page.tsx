@@ -67,7 +67,8 @@ const USER = {
 };
 
 export default function ProfilePage() {
-  const [name, setName] = useState(USER.name);
+  const { data: session, update } = useSession();
+  const [name, setName] = useState(session?.user?.name || USER.name);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -85,10 +86,24 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/user/update', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update name');
+      }
+      // Update session so name appears everywhere
+      await update();
+      toast.success('Name updated successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update name');
+    } finally {
       setIsSaving(false);
-      toast.success('Profile changes saved (stub).');
-    }, 1200);
+    }
   };
 
   // If user is Google/social login, show a message instead of password change form
