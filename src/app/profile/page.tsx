@@ -94,11 +94,22 @@ export default function ProfilePage() {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (e) {
+          data = { error: 'Invalid JSON response from server.' };
+        }
+      } else {
+        data = { error: 'No JSON response from server.' };
       }
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload image');
+      }
+
       setImageUrl(data.secure_url);
       
       // Update user profile image

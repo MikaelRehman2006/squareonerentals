@@ -299,7 +299,17 @@ export default function SubmitListingPage() {
           body: formData,
         });
 
-        const result = await response.json();
+        let result;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            result = await response.json();
+          } catch (e) {
+            result = { error: 'Invalid JSON response from server.' };
+          }
+        } else {
+          result = { error: 'No JSON response from server.' };
+        }
         
         if (!response.ok) {
           // Handle specific membership error

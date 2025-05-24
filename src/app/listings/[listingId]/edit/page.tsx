@@ -576,15 +576,25 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           body: formData,
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Upload error:', errorData);
-          throw new Error(errorData.error || 'Upload failed');
+        let result;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            result = await response.json();
+          } catch (e) {
+            result = { error: 'Invalid JSON response from server.' };
+          }
+        } else {
+          result = { error: 'No JSON response from server.' };
         }
 
-        const data = await response.json();
-        console.log('Upload success:', data);
-        return data.secure_url;
+        if (!response.ok) {
+          console.error('Upload error:', result);
+          throw new Error(result.error || 'Upload failed');
+        }
+
+        console.log('Upload success:', result);
+        return result.secure_url;
       });
 
       const newImageUrls = await Promise.all(uploadPromises);
