@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -9,6 +9,7 @@ import * as z from 'zod';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import Link from 'next/link';
+import React from 'react';
 
 import { isAdmin } from '@/lib/authHelpers';
 import { Button } from "@/components/ui/button";
@@ -58,21 +59,22 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-// Simulate user data (replace with real session/user data in production)
-const USER = {
-  name: 'Jane Doe',
-  email: 'jane.doe@example.com',
-  provider: 'google', // or 'credentials'
-  avatar: '/default-avatar.png',
-};
-
 export default function ProfilePage() {
   const { data: session, update } = useSession();
-  const [name, setName] = useState(session?.user?.name || USER.name);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Preload name and email from session
+  useEffect(() => {
+    if (session?.user) {
+      setName(session.user.name || '');
+      setEmail(session.user.email || '');
+    }
+  }, [session]);
 
   // Password strength validation
   const passwordStrong =
@@ -107,7 +109,12 @@ export default function ProfilePage() {
   };
 
   // If user is Google/social login, show a message instead of password change form
-  const isGoogleLogin = USER.provider === 'google';
+  // provider is not available on session.user, so always show password change for now
+  const isGoogleLogin = false;
+
+  if (!session) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
 
   return (
     <div className="bg-gradient-to-b from-[#f8fafc] to-[#e2e8f0] min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
@@ -115,7 +122,7 @@ export default function ProfilePage() {
         {/* Profile Picture */}
         <div className="flex flex-col items-center">
           <div className="relative h-24 w-24 rounded-full overflow-hidden mb-3">
-            <Image src={USER.avatar} alt="Profile picture" fill className="object-cover" />
+            <Image src={session.user.image || '/default-avatar.png'} alt="Profile picture" fill className="object-cover" />
           </div>
           <p className="text-xs text-gray-500 mt-1">Profile picture changing coming soon.</p>
         </div>
@@ -129,7 +136,7 @@ export default function ProfilePage() {
         {/* Email (read-only) */}
         <div className="w-full">
           <label className="block text-gray-700 font-medium mb-1">Email</label>
-          <Input value={USER.email} readOnly className="w-full bg-gray-100 cursor-not-allowed" />
+          <Input value={email} readOnly className="w-full bg-gray-100 cursor-not-allowed" />
         </div>
 
         {/* Password Change */}
