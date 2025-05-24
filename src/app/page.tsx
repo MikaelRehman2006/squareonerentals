@@ -68,19 +68,17 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen">
+    <main className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12">
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center text-white">
-        <div className="absolute inset-0 z-0">
-          <Image 
-            src="/images/Skyscraper.jpg" 
-            alt="Square One Area" 
-            fill 
-            className="object-cover brightness-75" 
-            priority 
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
-        </div>
+      <section className="relative w-full h-[600px] flex items-center justify-center text-white overflow-hidden">
+        <Image 
+          src="/images/Skyscraper.jpg" 
+          alt="Square One Area" 
+          fill 
+          className="object-cover brightness-75" 
+          priority 
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
 
         <motion.div 
           className="relative z-10 text-center max-w-4xl mx-auto px-6"
@@ -233,19 +231,16 @@ export default function Home() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="relative py-24 text-white">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/condos-at-square-one-district-12.jpg"
-            alt="Square One District"
-            fill
-            className="object-cover brightness-50"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
-        </div>
-        
+      <section className="relative w-full py-24 text-white overflow-hidden">
+        <Image
+          src="/images/condos-at-square-one-district-12.jpg"
+          alt="Square One District"
+          fill
+          className="object-cover brightness-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40" />
         <motion.div 
-          className="relative z-10 container mx-auto px-4 text-center"
+          className="relative z-10 text-center max-w-4xl mx-auto px-4"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

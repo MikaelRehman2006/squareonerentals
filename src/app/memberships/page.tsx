@@ -53,7 +53,7 @@ export default function MembershipsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-b from-[#f8fafc] to-[#e2e8f0] min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <motion.div 
         className="text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export default function MembershipsPage() {
         transition={{ delay: 0.2, duration: 0.5 }}
       >
         <div 
-          className="relative flex rounded-full p-1.5 bg-[#f0f0f0] shadow-inner border border-gray-200 overflow-hidden w-[280px]"
+          className="relative flex rounded-full p-1.5 bg-[#f0f0f0] shadow-inner border border-gray-200 overflow-hidden w-[280px] transition-all duration-300 ease-in-out"
           role="radiogroup"
           aria-label="Billing frequency toggle"
         >
@@ -104,35 +104,39 @@ export default function MembershipsPage() {
             Monthly
           </button>
           
-          {/* Annual Button */}
-          <button
-            onClick={() => setAnnualBilling(true)}
-            className={cn(
-              "relative z-10 px-7 py-2.5 rounded-full text-sm font-medium transition-colors duration-300 w-[50%] text-center",
-              annualBilling ? "text-gray-900 font-semibold" : "text-gray-500"
-            )}
-            aria-checked={annualBilling}
-            role="radio"
-          >
-            Annual
-          </button>
+          {/* Annual Button with tooltip */}
+          <div className="relative group w-[50%]">
+            <button
+              onClick={() => setAnnualBilling(true)}
+              className={cn(
+                "relative z-10 px-7 py-2.5 rounded-full text-sm font-medium transition-colors duration-300 w-full text-center",
+                annualBilling ? "text-gray-900 font-semibold" : "text-gray-500"
+              )}
+              aria-checked={annualBilling}
+              role="radio"
+              type="button"
+            >
+              Annual
+            </button>
+            <span className="absolute left-1/2 -bottom-8 -translate-x-1/2 opacity-0 group-hover:opacity-100 pointer-events-none bg-gray-900 text-white text-xs rounded px-2 py-1 transition-opacity duration-300 whitespace-nowrap shadow-lg">Coming Soon</span>
+          </div>
         </div>
       </motion.div>
 
-      <div className="mt-16 grid gap-8 md:grid-cols-1 lg:grid-cols-2 lg:gap-12">
+      <div className="mt-16 flex flex-col lg:flex-row justify-center items-stretch gap-8">
         {/* Basic Plan */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 40 }}
           transition={{ delay: 0.3, duration: 0.6 }}
           className="flex h-full" /* Ensure equal height */
-          whileHover={{ y: -5 }}
+          whileHover={{ scale: 1.05 }}
         >
           <Card 
             className={cn(
               "relative flex flex-col p-10 rounded-2xl border border-gray-200/30",
-              "shadow-lg transition-all duration-300 hover:shadow-xl",
-              "bg-gradient-to-b from-[#1E1E1E] to-[#272727] text-white h-full", // Using dark neutral background as requested
+              "shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105",
+              "bg-gradient-to-b from-[#1E1E1E] to-[#272727] text-white h-full",
               selectedPlan === 'Basic' ? 'ring-2 ring-primary ring-opacity-80' : ''
             )}
           >
@@ -221,7 +225,7 @@ export default function MembershipsPage() {
           animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 40 }}
           transition={{ delay: 0.4, duration: 0.6 }}
           className="flex h-full" /* Ensure equal height */
-          whileHover={{ y: -5 }}
+          whileHover={{ scale: 1.05 }}
         >
           <Card 
             className={cn(
@@ -231,8 +235,8 @@ export default function MembershipsPage() {
               selectedPlan === 'Featured' ? 'ring-2 ring-primary ring-opacity-70' : ''
             )}
           >
-            <div className="absolute -top-6 left-0 right-0 mx-auto w-40">
-              <div className="relative">
+            <div className="absolute -top-6 left-0 right-0 mx-auto w-40 flex justify-center lg:justify-end">
+              <div className="relative animate-bounce">
                 <div className="absolute inset-0 bg-primary blur-sm opacity-40 rounded-full"></div>
                 <div className="relative rounded-full bg-gradient-to-r from-primary/90 to-primary py-2 px-4 text-center font-extrabold text-white shadow-lg border border-primary/20">
                   <span className="text-sm tracking-wide uppercase">POPULAR</span>
@@ -344,114 +348,33 @@ export default function MembershipsPage() {
         transition={{ delay: 0.5, duration: 0.6 }}
       >
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
-        <div className="space-y-8">
-          <FaqItem 
-            question="What's included in a basic membership?"
-            answer="Basic membership includes standard listing visibility, up to 8 photos per listing, and basic analytics to track views and inquiries. Your listing will remain active for 30 days."
-          />
-          <FaqItem 
-            question="How does the featured listing work?"
-            answer="Featured listings appear at the top of search results and on the homepage. They also get promoted in our Square One Rentals Facebook group which has over 5,000 members. Featured listings remain active for 45 days and include priority support."
-          />
-          <FaqItem 
-            question="Can I cancel my subscription?"
-            answer="Yes, you can cancel your subscription at any time. For monthly plans, your membership will remain active until the end of the current billing cycle."
-          />
-          <FaqItem 
-            question="Do you offer refunds?"
-            answer="We offer a 7-day money-back guarantee if you're not satisfied with your membership for any reason."
-          />
-          <FaqItem 
-            question="How do I get started?"
-            answer="Simply select the plan that best fits your needs and click the button to subscribe. If you're not already logged in, you'll be prompted to create an account or sign in. Then you can complete the payment process and start creating your listing right away."
-          />
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {[
+            {
+              question: "What's included in a Basic Membership?",
+              answer: "Basic membership includes standard listing visibility, up to 8 photos per listing, Facebook group sharing, a 10 MB storage cap, and basic analytics support. Listings are shown in standard search results.",
+            },
+            {
+              question: "How does the Featured Listing work?",
+              answer: "Featured listings appear at the top of search results and receive priority exposure across our platform. They are also promoted in our Facebook group to increase visibility and engagement.",
+            },
+            {
+              question: "Can I cancel my membership?",
+              answer: "Yes, you're free to cancel your membership at any time by reaching out to our team or using the account settings.",
+            },
+            {
+              question: "Do you offer refunds?",
+              answer: "We currently do not offer refunds, as all memberships are digital access passes.",
+            },
+            {
+              question: "How do I get started?",
+              answer: "Choose the plan that fits your needs and click the subscribe button. You'll be prompted to create an account or log in. Once you're in, you can complete the setup and start posting your listing right away.",
+            },
+          ].map((item, idx) => (
+            <AccordionItem key={item.question} question={item.question} answer={item.answer} defaultOpen={idx === 0} />
+          ))}
         </div>
       </motion.div>
-      {/* Developer Testing Section - only shown in development mode */}
-      {process.env.NODE_ENV === 'development' && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-16 border-t pt-10 pb-8"
-        >
-          <h2 className="text-2xl font-bold text-center mb-6">Developer Testing Tools</h2>
-          <div className="max-w-lg mx-auto bg-gray-100 p-6 rounded-xl border border-gray-200">
-            <h3 className="text-lg font-semibold mb-3">Activate Free Test Membership</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              For development and testing only. This will create a free test membership that lasts for 30 days.
-            </p>
-            <div className="flex justify-center gap-4 mt-4">
-              <Button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/test-membership', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ type: 'BASIC' })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (response.ok) {
-                      alert(`Success: ${result.message}`);
-                      // Reload to reflect membership status
-                      window.location.reload();
-                    } else {
-                      alert(`Error: ${result.error || 'Failed to activate test membership'}`);
-                    }
-                  } catch (error) {
-                    console.error('Test membership error:', error);
-                    alert('Error activating test membership. See console for details.');
-                  }
-                }}
-                variant="outline"
-                className="bg-blue-50 border-blue-200 hover:bg-blue-100"
-                disabled={isCheckoutLoading}
-              >
-                Activate Basic (Free)
-              </Button>
-              
-              <Button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/test-membership', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ type: 'FEATURED' })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (response.ok) {
-                      alert(`Success: ${result.message}`);
-                      // Reload to reflect membership status
-                      window.location.reload();
-                    } else {
-                      alert(`Error: ${result.error || 'Failed to activate test membership'}`);
-                    }
-                  } catch (error) {
-                    console.error('Test membership error:', error);
-                    alert('Error activating test membership. See console for details.');
-                  }
-                }}
-                variant="outline"
-                className="bg-purple-50 border-purple-200 hover:bg-purple-100"
-                disabled={isCheckoutLoading}
-              >
-                Activate Featured (Free)
-              </Button>
-            </div>
-            <p className="text-xs text-gray-500 mt-4 italic">
-              This option is only available in development mode and will not appear in production.
-            </p>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }
@@ -525,63 +448,26 @@ function ListItem({ children, tooltip, light, premium }: { children: React.React
   );
 }
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
-  // On desktop, don't collapse by default
-  useEffect(() => {
-    if (!isMobile) {
-      setIsOpen(true);
-    }
-  }, [isMobile]);
-  
+function AccordionItem({ question, answer, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <motion.div 
-      className={cn(
-        "p-4 rounded-lg transition-all duration-300",
-        "border border-transparent",
-        isOpen ? "bg-white shadow-sm" : "hover:bg-white/50"
-      )}
-      layout
-      initial={{ opacity: 0.9 }}
-      whileHover={{ opacity: 1 }}
-    >
-      <div 
-        className="flex justify-between items-center cursor-pointer"
-        onClick={() => setIsOpen(!isOpen)}
-        role="button"
-        aria-expanded={isOpen}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            setIsOpen(!isOpen);
-          }
-        }}
+    <div className="border border-gray-200 rounded-lg bg-white">
+      <button
+        className="w-full flex items-center justify-between px-4 py-4 text-left focus:outline-none"
+        onClick={() => setOpen((v) => !v)}
       >
-        <h3 className="text-lg font-semibold text-gray-900">{question}</h3>
-        <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-primary md:hidden" // Only show toggle on mobile
+        <span className="font-medium text-gray-900 text-base">{question}</span>
+        <svg
+          className={`w-5 h-5 text-gray-500 transform transition-transform duration-300 ${open ? 'rotate-90' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-        </motion.div>
-      </div>
-      
-      <AnimatePresence initial={false}>
-        {(isOpen || !isMobile) && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ overflow: 'hidden' }}
-          >
-            <p className="mt-3 text-base text-gray-700 leading-relaxed">{answer}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+      <div className={`px-4 pb-4 text-gray-700 text-sm transition-all duration-300 ${open ? 'block' : 'hidden'}`}>{answer}</div>
+    </div>
   );
 }

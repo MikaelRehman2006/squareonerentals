@@ -126,245 +126,247 @@ export default function CareersPage() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Box textAlign="center" mb={6}>
-        <Typography
-          variant="h2"
-          component="h1"
-          fontWeight={700}
-          gutterBottom
+    <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Box textAlign="center" mb={6}>
+          <Typography
+            variant="h2"
+            component="h1"
+            fontWeight={700}
+            gutterBottom
+            sx={{
+              fontSize: { xs: '2.5rem', md: '3.5rem' },
+              backgroundImage: 'linear-gradient(45deg, #2196F3, #1976D2)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+            }}
+          >
+            Join Our Team
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{ mb: 4, maxWidth: '600px', mx: 'auto', color: 'black' }}
+          >
+            We're building the future of rentals. Come be a part of it.
+          </Typography>
+        </Box>
+
+        <Box
           sx={{
-            fontSize: { xs: '2.5rem', md: '3.5rem' },
-            backgroundImage: 'linear-gradient(45deg, #2196F3, #1976D2)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
+            mb: 4,
+            display: 'flex',
+            gap: 1,
+            overflowX: 'auto',
+            pb: 2,
+            '::-webkit-scrollbar': {
+              height: '6px',
+            },
+            '::-webkit-scrollbar-track': {
+              background: '#f1f1f1',
+              borderRadius: '10px',
+            },
+            '::-webkit-scrollbar-thumb': {
+              background: '#888',
+              borderRadius: '10px',
+              '&:hover': {
+                background: '#555',
+              },
+            },
           }}
         >
-          Join Our Team
-        </Typography>
-        <Typography
-          variant="h5"
-          sx={{ mb: 4, maxWidth: '600px', mx: 'auto', color: 'black' }}
-        >
-          We're building the future of rentals. Come be a part of it.
-        </Typography>
-      </Box>
-
-      <Box
-        sx={{
-          mb: 4,
-          display: 'flex',
-          gap: 1,
-          overflowX: 'auto',
-          pb: 2,
-          '::-webkit-scrollbar': {
-            height: '6px',
-          },
-          '::-webkit-scrollbar-track': {
-            background: '#f1f1f1',
-            borderRadius: '10px',
-          },
-          '::-webkit-scrollbar-thumb': {
-            background: '#888',
-            borderRadius: '10px',
-            '&:hover': {
-              background: '#555',
-            },
-          },
-        }}
-      >
-        {departments.map((dept) => (
-          <Chip
-            key={dept}
-            label={dept}
-            onClick={() => handleDepartmentChange(dept)}
-            sx={{
-              px: 2,
-              borderRadius: '16px',
-              transition: 'all 0.2s ease-in-out',
-              cursor: 'pointer',
-              backgroundColor:
-                selectedDepartment === dept
-                  ? 'primary.main'
-                  : 'background.paper',
-              color:
-                selectedDepartment === dept
-                  ? 'primary.contrastText'
-                  : 'text.primary',
-              '&:hover': {
-                transform: 'scale(1.05)',
+          {departments.map((dept) => (
+            <Chip
+              key={dept}
+              label={dept}
+              onClick={() => handleDepartmentChange(dept)}
+              sx={{
+                px: 2,
+                borderRadius: '16px',
+                transition: 'all 0.2s ease-in-out',
+                cursor: 'pointer',
                 backgroundColor:
                   selectedDepartment === dept
-                    ? 'primary.dark'
-                    : 'action.hover',
-              },
-            }}
-          />
-        ))}
-      </Box>
+                    ? 'primary.main'
+                    : 'background.paper',
+                color:
+                  selectedDepartment === dept
+                    ? 'primary.contrastText'
+                    : 'text.primary',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  backgroundColor:
+                    selectedDepartment === dept
+                      ? 'primary.dark'
+                      : 'action.hover',
+                },
+              }}
+            />
+          ))}
+        </Box>
 
-      {isLoading ? (
-        <Box display="flex" justifyContent="center" my={4}>
-          <CircularProgress />
-        </Box>
-      ) : filteredJobs.length === 0 ? (
-        <Box textAlign="center" my={4}>
-          <Typography variant="h6" sx={{ color: 'black' }}>
-            No jobs found in this department
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={() => handleDepartmentChange('All')}
-            sx={{ mt: 2 }}
-          >
-            View all positions
-          </Button>
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {filteredJobs.map((job, index) => (
-            <Grid item xs={12} md={6} lg={4} key={job.id}>
-              <MotionCard
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: (theme) => theme.shadows[4],
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                  <Box display="flex" alignItems="center" mb={2}>
-                    <Typography
-                      variant="h6"
-                      component="h2"
-                      sx={{ fontWeight: 500, color: 'black' }}
-                    >
-                      {job.title}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
-                      {isNewJob(job.postedDate) && (
+        {isLoading ? (
+          <Box display="flex" justifyContent="center" my={4}>
+            <CircularProgress />
+          </Box>
+        ) : filteredJobs.length === 0 ? (
+          <Box textAlign="center" my={4}>
+            <Typography variant="h6" sx={{ color: 'black' }}>
+              No jobs found in this department
+            </Typography>
+            <Button
+              variant="outlined"
+              onClick={() => handleDepartmentChange('All')}
+              sx={{ mt: 2 }}
+            >
+              View all positions
+            </Button>
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredJobs.map((job, index) => (
+              <Grid item xs={12} md={6} lg={4} key={job.id}>
+                <MotionCard
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: (theme) => theme.shadows[4],
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                    <Box display="flex" alignItems="center" mb={2}>
+                      <Typography
+                        variant="h6"
+                        component="h2"
+                        sx={{ fontWeight: 500, color: 'black' }}
+                      >
+                        {job.title}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+                        {isNewJob(job.postedDate) && (
+                          <Chip
+                            label="New"
+                            color="primary"
+                            size="small"
+                          />
+                        )}
                         <Chip
-                          label="New"
-                          color="primary"
+                          label={job.isOpen ? "Accepting Applications" : "Position Filled"}
+                          color={job.isOpen ? "success" : "error"}
                           size="small"
+                          sx={{
+                            '& .MuiChip-label': {
+                              fontWeight: 500
+                            }
+                          }}
                         />
-                      )}
+                      </Box>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 1,
+                        mb: 3,
+                      }}
+                    >
                       <Chip
-                        label={job.isOpen ? "Accepting Applications" : "Position Filled"}
-                        color={job.isOpen ? "success" : "error"}
+                        icon={<WorkIcon />}
+                        label={job.department}
                         size="small"
                         sx={{
-                          '& .MuiChip-label': {
-                            fontWeight: 500
-                          }
+                          '&:hover': { backgroundColor: 'action.hover' },
+                        }}
+                      />
+                      <Chip
+                        icon={<LocationIcon />}
+                        label={job.location}
+                        size="small"
+                        sx={{
+                          '&:hover': { backgroundColor: 'action.hover' },
+                        }}
+                      />
+                      <Chip
+                        icon={<TimeIcon />}
+                        label={job.type}
+                        size="small"
+                        sx={{
+                          '&:hover': { backgroundColor: 'action.hover' },
                         }}
                       />
                     </Box>
-                  </Box>
 
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: 1,
-                      mb: 3,
-                    }}
-                  >
-                    <Chip
-                      icon={<WorkIcon />}
-                      label={job.department}
-                      size="small"
+                    <Typography
+                      variant="body2"
                       sx={{
-                        '&:hover': { backgroundColor: 'action.hover' },
+                        mb: 3,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        color: 'black',
                       }}
-                    />
-                    <Chip
-                      icon={<LocationIcon />}
-                      label={job.location}
-                      size="small"
-                      sx={{
-                        '&:hover': { backgroundColor: 'action.hover' },
-                      }}
-                    />
-                    <Chip
-                      icon={<TimeIcon />}
-                      label={job.type}
-                      size="small"
-                      sx={{
-                        '&:hover': { backgroundColor: 'action.hover' },
-                      }}
-                    />
-                  </Box>
-
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 3,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      color: 'black',
-                    }}
-                  >
-                    {job.description}
-                  </Typography>
-
-                  <Divider sx={{ my: 2 }} />
-
-                  {job.id === 5 ? (
-                    <Link
-                      href="https://www.linkedin.com/hiring/jobs/4231485688"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{ textDecoration: 'none' }}
                     >
+                      {job.description}
+                    </Typography>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    {job.id === 5 ? (
+                      <Link
+                        href="https://www.linkedin.com/hiring/jobs/4231485688"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ textDecoration: 'none' }}
+                      >
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          fullWidth={isMobile}
+                          sx={{
+                            mt: 'auto',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              transform: 'scale(1.02)',
+                            },
+                          }}
+                        >
+                          Apply Now
+                        </Button>
+                      </Link>
+                    ) : (
                       <Button
                         variant="contained"
-                        color="primary"
+                        color={job.isOpen ? "primary" : "error"}
                         fullWidth={isMobile}
+                        disabled={!job.isOpen}
                         sx={{
                           mt: 'auto',
                           transition: 'all 0.2s ease-in-out',
                           '&:hover': {
-                            transform: 'scale(1.02)',
+                            transform: job.isOpen ? 'scale(1.02)' : 'none',
                           },
                         }}
                       >
-                        Apply Now
+                        {job.isOpen ? 'Apply Now' : 'Position Filled'}
                       </Button>
-                    </Link>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      color={job.isOpen ? "primary" : "error"}
-                      fullWidth={isMobile}
-                      disabled={!job.isOpen}
-                      sx={{
-                        mt: 'auto',
-                        transition: 'all 0.2s ease-in-out',
-                        '&:hover': {
-                          transform: job.isOpen ? 'scale(1.02)' : 'none',
-                        },
-                      }}
-                    >
-                      {job.isOpen ? 'Apply Now' : 'Position Filled'}
-                    </Button>
-                  )}
-                </CardContent>
-              </MotionCard>
-            </Grid>
-          ))}
-        </Grid>
-      )}
-    </Container>
+                    )}
+                  </CardContent>
+                </MotionCard>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </div>
   );
 }

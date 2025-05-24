@@ -147,7 +147,7 @@ export default function AboutPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Our Story</h2>
               <div className="prose prose-lg text-gray-600 leading-relaxed">
                 <p>
-                  Founded in 2003, Square One Rentals emerged from a vision to transform the rental experience in Mississauga. We recognized the challenges faced by both tenants searching for their ideal homes and landlords looking to connect with reliable renters in our vibrant city.
+                  Founded in 2020, Square One Rentals emerged from a vision to transform the rental experience in Mississauga. We recognized the challenges faced by both tenants searching for their ideal homes and landlords looking to connect with reliable renters in our vibrant city.
                 </p>
                 <p>
                   What began as a local initiative to simplify property rentals has blossomed into a <strong>trusted platform</strong> that thousands in our community rely on daily. Our deep understanding of Mississauga's unique rental landscape, combined with our commitment to <strong>transparency</strong> and <strong>efficiency</strong>, has made us the go-to destination for rental properties in the region.
@@ -221,7 +221,7 @@ export default function AboutPage() {
             <p className="text-lg text-gray-600 mb-6">
               Join our vibrant Facebook community of over 100,000 members, where we share the latest rental listings, market insights, and neighborhood updates. Our group has become Mississauga's largest and most active rental community, with over 20,000 posts and 3 million views in the past year alone.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-c enter">
               <Button
                 asChild
                 size="lg"

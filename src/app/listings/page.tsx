@@ -183,7 +183,7 @@ export default function ListingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <BackgroundPattern />
       
       <div className="container mx-auto px-4 py-8">

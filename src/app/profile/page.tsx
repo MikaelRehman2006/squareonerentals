@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -58,274 +58,111 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+// Simulate user data (replace with real session/user data in production)
+const USER = {
+  name: 'Jane Doe',
+  email: 'jane.doe@example.com',
+  provider: 'google', // or 'credentials'
+  avatar: '/default-avatar.png',
+};
+
 export default function ProfilePage() {
-  const { data: session, update } = useSession();
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState(session?.user?.image || '');
+  const [name, setName] = useState(USER.name);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: session?.user?.name || '',
-      email: session?.user?.email || '',
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    },
-  });
+  // Password strength validation
+  const passwordStrong =
+    newPassword.length >= 8 &&
+    /[A-Z]/.test(newPassword) &&
+    /[a-z]/.test(newPassword) &&
+    /[0-9]/.test(newPassword) &&
+    /[^A-Za-z0-9]/.test(newPassword);
 
-  useEffect(() => {
-    if (!session) {
-      router.push('/auth/signin');
-    }
-  }, [session, router]);
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      let data;
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          data = await response.json();
-        } catch (e) {
-          data = { error: 'Invalid JSON response from server.' };
-        }
-      } else {
-        data = { error: 'No JSON response from server.' };
-      }
-
-      if (!response.ok) {
-        console.error(`Upload error for file:`, data, 'Status:', response.status, 'Method:', response.type);
-        throw new Error(data.error || 'Failed to upload image');
-      }
-
-      setImageUrl(data.secure_url);
-      
-      // Update user profile image
-      await fetch('/api/user/update', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ image: data.secure_url }),
-      });
-
-      // Update session
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          image: data.secure_url,
-        },
-      });
-
-      toast.success('Profile picture updated successfully!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload image. Please try again.');
-    }
+  // Save handler (pseudo-logic)
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success('Profile changes saved (stub).');
+    }, 1200);
   };
 
-  const onSubmit = async (data: ProfileFormData) => {
-    try {
-      setIsLoading(true);
-
-      const response = await fetch('/api/user/update', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update profile');
-      }
-
-      // Update session with new user data
-      await update({
-        ...session,
-        user: {
-          ...session?.user,
-          name: data.name,
-          email: data.email,
-        },
-      });
-
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      console.error('Update error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  if (!session) {
-    return null;
-  }
+  // If user is Google/social login, show a message instead of password change form
+  const isGoogleLogin = USER.provider === 'google';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-      <div className="container max-w-2xl mx-auto px-4 sm:px-6">
-        <Card className="shadow-md">
-          <CardHeader>
-            <CardTitle className="text-2xl text-gray-900 dark:text-gray-100">Profile Settings</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Update your personal information and password
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative h-24 w-24 rounded-full overflow-hidden">
-                <Image
-                  src={imageUrl || '/default-avatar.png'}
-                  alt="Profile picture"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="profile-image"
-                />
-                <Button
-                  variant="outline"
-                  onClick={() => document.getElementById('profile-image')?.click()}
-                  className="shadow-sm"
-                >
-                  Change Picture
-                </Button>
-              </div>
-            </div>
+    <div className="bg-gradient-to-b from-[#f8fafc] to-[#e2e8f0] min-h-screen py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <form onSubmit={handleSave} className="max-w-md w-full mx-auto bg-white rounded-2xl shadow-xl p-10 flex flex-col items-center space-y-6">
+        {/* Profile Picture */}
+        <div className="flex flex-col items-center">
+          <div className="relative h-24 w-24 rounded-full overflow-hidden mb-3">
+            <Image src={USER.avatar} alt="Profile picture" fill className="object-cover" />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Profile picture changing coming soon.</p>
+        </div>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300">Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} className="shadow-sm" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        {/* Name */}
+        <div className="w-full">
+          <label className="block text-gray-700 font-medium mb-1">Name</label>
+          <Input value={name} onChange={e => setName(e.target.value)} className="w-full" />
+        </div>
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 dark:text-gray-300">Email</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="email" className="shadow-sm" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        {/* Email (read-only) */}
+        <div className="w-full">
+          <label className="block text-gray-700 font-medium mb-1">Email</label>
+          <Input value={USER.email} readOnly className="w-full bg-gray-100 cursor-not-allowed" />
+        </div>
 
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Change Password</h3>
-                  
-                  <FormField
-                    control={form.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700 dark:text-gray-300">Current Password</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="password" className="shadow-sm" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700 dark:text-gray-300">New Password</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="password" className="shadow-sm" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-700 dark:text-gray-300">Confirm New Password</FormLabel>
-                        <FormControl>
-                          <Input {...field} type="password" className="shadow-sm" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-          
-          {/* Admin Panel Card - Only visible to admin users */}
-          {isAdmin(session?.user?.role) && (
-            <CardFooter className="flex flex-col space-y-4 pt-6 border-t">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-3">
-                  <Shield className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Admin Controls</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Manage listings, users, and site settings
-                    </p>
-                  </div>
-                </div>
-                <Link href="/admin">
-                  <Button variant="outline" className="text-blue-600 border-blue-600">
-                    Admin Dashboard
-                  </Button>
-                </Link>
-              </div>
-            </CardFooter>
+        {/* Password Change */}
+        <div className="w-full space-y-2">
+          <label className="block text-gray-700 font-medium mb-1">Change Password</label>
+          {isGoogleLogin ? (
+            <div className="text-sm text-gray-500 py-4">Password changes are not available for Google/social logins.</div>
+          ) : (
+            <>
+              <Input
+                type="password"
+                placeholder="Current Password"
+                value={currentPassword}
+                onChange={e => setCurrentPassword(e.target.value)}
+                className="w-full"
+              />
+              <Input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="w-full"
+              />
+              <Input
+                type="password"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full"
+              />
+              {newPassword && !passwordStrong && (
+                <p className="text-xs text-red-500 mt-1">Password must be 8+ characters, include a number, symbol, and uppercase letter.</p>
+              )}
+              {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-red-500 mt-1">Passwords do not match.</p>
+              )}
+            </>
           )}
-        </Card>
-      </div>
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold mt-4"
+          disabled={isSaving || (!isGoogleLogin && !!newPassword && (!passwordStrong || newPassword !== confirmPassword))}
+        >
+          {isSaving ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </form>
     </div>
   );
 }
