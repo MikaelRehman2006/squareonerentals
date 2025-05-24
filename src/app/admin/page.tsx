@@ -257,19 +257,21 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-8">
               {(stats?.recentActivity.listings || []).map((listing) => (
-                <div key={listing.id} className="flex items-center">
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      {listing.title}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      ${listing.price} - {listing.userId.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(listing.createdAt).toLocaleDateString()}
-                    </p>
+                listing && listing.title ? (
+                  <div key={listing.id} className="flex items-center">
+                    <div className="ml-4 space-y-1">
+                      <p className="text-sm font-medium leading-none text-foreground">
+                        {listing.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        ${listing.price} - {listing.userId?.name || 'Unknown'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {listing.createdAt ? new Date(listing.createdAt).toLocaleDateString() : ''}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : null
               ))}
             </div>
           </CardContent>
@@ -283,19 +285,21 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-8">
               {(stats?.recentActivity.reports || []).map((report) => (
-                <div key={report.id} className="flex items-center">
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      {report.listingId.title}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Reported by: {report.reportedBy.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(report.createdAt).toLocaleDateString()}
-                    </p>
+                report && report.listingId && report.listingId.title ? (
+                  <div key={report.id} className="flex items-center">
+                    <div className="ml-4 space-y-1">
+                      <p className="text-sm font-medium leading-none text-foreground">
+                        {report.listingId.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Reported by: {report.reportedBy?.name || 'Unknown'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {report.createdAt ? new Date(report.createdAt).toLocaleDateString() : ''}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : null
               ))}
             </div>
           </CardContent>
