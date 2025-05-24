@@ -256,7 +256,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-8">
-              {stats?.recentActivity.listings.map((listing) => (
+              {(stats?.recentActivity.listings || []).map((listing) => (
                 <div key={listing.id} className="flex items-center">
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">
