@@ -23,6 +23,8 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Debug log for environment variable
+  console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY);
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
