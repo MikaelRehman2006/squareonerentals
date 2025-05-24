@@ -1,3 +1,6 @@
 {
-  "/submit/page": "app/submit/page.js"
+  "/page": "app/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/listings/route": "app/api/listings/route.js",
+  "/api/users/me/route": "app/api/users/me/route.js"
 }
