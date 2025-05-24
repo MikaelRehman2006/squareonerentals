@@ -236,13 +236,4 @@ export async function PATCH() {
 export async function DELETE() {
   console.log('[UPLOAD API] DELETE method called - 405');
   return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
-}
-
-// Catch-all for unsupported methods
-export default async function handler(request: Request) {
-  const allowed = ['GET', 'POST', 'OPTIONS'];
-  if (!allowed.includes(request.method)) {
-    console.log(`[UPLOAD API] ${request.method} method called - 405`);
-    return NextResponse.json({ error: `Method ${request.method} Not Allowed` }, { status: 405 });
-  }
 } 
