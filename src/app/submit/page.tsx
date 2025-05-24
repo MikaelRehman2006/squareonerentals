@@ -310,15 +310,9 @@ export default function SubmitListingPage() {
         } else {
           result = { error: 'No JSON response from server.' };
         }
-        
+
         if (!response.ok) {
-          // Handle specific membership error
-          if (response.status === 403 && result.error && result.error.includes('membership required')) {
-            console.error('Membership required error:', result.error);
-            throw new Error('Membership required to upload images. Please purchase a membership plan.');
-          }
-          
-          console.error('Upload error for file', file.name, ':', result);
+          console.error(`Upload error for file ${file.name}:`, result, 'Status:', response.status, 'Method:', response.type);
           throw new Error(result.error || `Upload failed for ${file.name}`);
         }
 

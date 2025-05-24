@@ -107,6 +107,7 @@ export default function ProfilePage() {
       }
 
       if (!response.ok) {
+        console.error(`Upload error for file:`, data, 'Status:', response.status, 'Method:', response.type);
         throw new Error(data.error || 'Failed to upload image');
       }
 

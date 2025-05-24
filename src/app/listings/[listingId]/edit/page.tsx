@@ -589,7 +589,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         }
 
         if (!response.ok) {
-          console.error('Upload error:', result);
+          console.error(`Upload error for file ${file.name}:`, result, 'Status:', response.status, 'Method:', response.type);
           throw new Error(result.error || 'Upload failed');
         }
 
