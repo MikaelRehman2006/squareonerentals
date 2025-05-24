@@ -227,4 +227,8 @@ export async function PATCH() {
 }
 export async function DELETE() {
   return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
-} 
+}
+
+// Only export GET, POST, OPTIONS, PUT, PATCH, DELETE handlers
+// All other methods will return a JSON 405 error by default in Next.js App Router
+// No need for a catch-all handler or middleware export 
