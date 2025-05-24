@@ -448,7 +448,10 @@ function ListItem({ children, tooltip, light, premium }: { children: React.React
   );
 }
 
-function AccordionItem({ question, answer, defaultOpen = false }) {
+type AccordionItemProps = { question: string; answer: string; defaultOpen?: boolean };
+
+function AccordionItem(props: AccordionItemProps) {
+  const { question, answer, defaultOpen = false } = props;
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border border-gray-200 rounded-lg bg-white">
