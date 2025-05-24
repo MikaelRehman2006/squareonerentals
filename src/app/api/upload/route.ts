@@ -57,7 +57,16 @@ async function saveFileLocally(file: File) {
   }
 }
 
-export async function OPTIONS() {
+// Log every request method for debugging
+export const dynamic = 'force-dynamic'; // Ensure dynamic route on Vercel
+
+export async function GET(request: Request) {
+  console.log('[UPLOAD API] GET method called');
+  return NextResponse.json({ message: 'Upload API is working. Use POST to upload files.' });
+}
+
+export async function OPTIONS(request: Request) {
+  console.log('[UPLOAD API] OPTIONS method called');
   return new NextResponse(null, {
     status: 200,
     headers: {
@@ -68,11 +77,8 @@ export async function OPTIONS() {
   });
 }
 
-export async function GET() {
-  return NextResponse.json({ message: 'Upload API is working. Use POST to upload files.' });
-}
-
 export async function POST(request: Request) {
+  console.log('[UPLOAD API] POST method called');
   try {
     const isProd = process.env.NODE_ENV === 'production';
     const url = new URL(request.url);
@@ -220,15 +226,23 @@ export async function POST(request: Request) {
 }
 
 export async function PUT() {
+  console.log('[UPLOAD API] PUT method called - 405');
   return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
 export async function PATCH() {
+  console.log('[UPLOAD API] PATCH method called - 405');
   return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
 export async function DELETE() {
+  console.log('[UPLOAD API] DELETE method called - 405');
   return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }
 
-// Only export GET, POST, OPTIONS, PUT, PATCH, DELETE handlers
-// All other methods will return a JSON 405 error by default in Next.js App Router
-// No need for a catch-all handler or middleware export 
+// Catch-all for unsupported methods
+export default async function handler(request: Request) {
+  const allowed = ['GET', 'POST', 'OPTIONS'];
+  if (!allowed.includes(request.method)) {
+    console.log(`[UPLOAD API] ${request.method} method called - 405`);
+    return NextResponse.json({ error: `Method ${request.method} Not Allowed` }, { status: 405 });
+  }
+} 
