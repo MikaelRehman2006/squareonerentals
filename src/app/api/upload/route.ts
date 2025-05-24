@@ -4,113 +4,208 @@ import { authOptions } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import { promises as fs } from 'fs';
+import { writeFile, mkdir } from 'fs/promises';
+import path from 'path';
+import { existsSync } from 'fs';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
-});
+// Storage limits based on membership type (in bytes)
+const STORAGE_LIMITS = {
+  BASIC: 10 * 1024 * 1024,
+  FEATURED: 25 * 1024 * 1024,
+  DEFAULT: 5 * 1024 * 1024
+};
+
+const isCloudinaryConfigured = () => {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  const hasUrl = Boolean(process.env.CLOUDINARY_URL);
+  const hasCredentials = Boolean(cloudName && apiKey && apiSecret);
+  return hasUrl || hasCredentials;
+};
+
+if (isCloudinaryConfigured()) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  cloudinary.config({
+    secure: true,
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret
+  });
+}
+
+async function saveFileLocally(file: File) {
+  try {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 8);
+    const fileExtension = file.name.split('.').pop();
+    const filename = `image-${timestamp}-${randomString}.${fileExtension}`;
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+    const filePath = path.join(uploadDir, filename);
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await writeFile(filePath, new Uint8Array(buffer));
+    return `/uploads/${filename}`;
+  } catch (error) {
+    console.error('Error saving file locally:', error);
+    throw new Error('Failed to save file locally');
+  }
+}
 
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
   });
 }
 
-export async function POST(req: NextRequest) {
+export async function GET() {
+  return NextResponse.json({ message: 'Upload API is working. Use POST to upload files.' });
+}
+
+export async function POST(request: Request) {
   try {
-    // Check authentication
+    const isProd = process.env.NODE_ENV === 'production';
+    const url = new URL(request.url);
+    const forceLocal = url.searchParams.get('forceLocal') === 'true' && !isProd;
+    if (forceLocal) {
+      console.log('Forced local upload requested');
+    }
+    if (isProd && !isCloudinaryConfigured()) {
+      console.error('Cloudinary not configured in production environment');
+      return NextResponse.json(
+        { error: 'Image upload service not properly configured' },
+        { status: 500 }
+      );
+    }
     const session = await getServerSession(authOptions);
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
-
-    // Get user from session
-    const userEmail = session.user?.email;
+    const userEmail = session.user.email;
     if (!userEmail) {
-      return NextResponse.json({ error: 'User email not found in session' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'User email not found in session' },
+        { status: 401 }
+      );
     }
-
-    // Connect to database
     await connectDB();
-
-    // Get user with membership information
     const user = await User.findOne({ email: userEmail });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
     }
-
-    // Check if user has an active membership
     const hasMembership = !!user.membership;
     const isActive = user.membership?.status === 'active';
     if (!hasMembership || !isActive) {
-      return NextResponse.json({ error: 'Active membership required to upload images' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Active membership required to upload images' },
+        { status: 403 }
+      );
     }
-
-    // Parse the incoming form data using formidable
-    const formidable = (await import('formidable')).default;
-    const form = formidable({});
-    // formidable expects a Node.js IncomingMessage, so we need to get the raw request
-    const reqNode = (req as any).req;
-    const [fields, files] = await new Promise<[Record<string, any>, Record<string, any>]>((resolve, reject) => {
-      form.parse(reqNode, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve([fields, files]);
-      });
-    });
-    let file = files.file;
-    if (Array.isArray(file)) {
-      file = file[0];
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch (formError) {
+      return NextResponse.json(
+        { error: 'Invalid form data submitted' },
+        { status: 400 }
+      );
     }
-
+    const file = formData.get('file');
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: 'Invalid file upload' },
+        { status: 400 }
+      );
+    }
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'No file provided' },
+        { status: 400 }
+      );
     }
-
-    // Validate file type
-    if (!file.mimetype?.startsWith('image/')) {
-      return NextResponse.json({ error: 'File must be an image' }, { status: 400 });
+    const membershipType = user.membership?.type || 'DEFAULT';
+    const sizeLimit = STORAGE_LIMITS[membershipType] || STORAGE_LIMITS.DEFAULT;
+    if (file.size > sizeLimit) {
+      return NextResponse.json(
+        { 
+          error: `File size exceeds your membership limit of ${sizeLimit / (1024 * 1024)}MB`, 
+          membershipType: membershipType,
+          currentLimit: sizeLimit / (1024 * 1024)
+        },
+        { status: 400 }
+      );
     }
-
-    // Read the file
-    const fileBuffer = await fs.readFile(file.filepath);
-
-    // Convert buffer to base64 string for Cloudinary upload
-    const base64 = fileBuffer.toString('base64');
-    const fileStr = `data:${file.mimetype};base64,${base64}`;
-
-    // Upload to Cloudinary
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(fileStr, {
-        folder: 'listings',
-        resource_type: 'image',
-      }, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(result);
-        }
-      });
-    });
-
-    // Clean up the temporary file
-    await fs.unlink(file.filepath);
-
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json(
+        { error: 'File must be an image' },
+        { status: 400 }
+      );
+    }
+    if (isCloudinaryConfigured() && !forceLocal) {
+      try {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const base64 = buffer.toString('base64');
+        const fileStr = `data:${file.type};base64,${base64}`;
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rentals_upload';
+        const uploadResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload(fileStr, {
+            folder: 'listings',
+            resource_type: 'image',
+            upload_preset: uploadPreset,
+          }, (error, result) => {
+            if (error) {
+              reject(new Error(`Cloudinary upload error: ${error.message || JSON.stringify(error)}`));
+            } else if (result && result.secure_url) {
+              resolve({
+                secure_url: result.secure_url,
+                public_id: result.public_id
+              });
+            } else {
+              reject(new Error('Missing result data from Cloudinary'));
+            }
+          });
+        });
+        return NextResponse.json(uploadResult);
+      } catch (cloudinaryError) {
+        // Fallback to local storage below
+      }
+    }
+    const fileUrl = await saveFileLocally(file);
     return NextResponse.json({
-      secure_url: (uploadResult as any).secure_url,
-      public_id: (uploadResult as any).public_id
+      secure_url: fileUrl,
+      public_id: fileUrl
     });
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json({
-      error: error instanceof Error ? error.message : 'Failed to upload image'
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Unknown error occurred' },
+      { status: 500 }
+    );
   }
+}
+
+export async function PUT() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+export async function PATCH() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+}
+export async function DELETE() {
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 } 
