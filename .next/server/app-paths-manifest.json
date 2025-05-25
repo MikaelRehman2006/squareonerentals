@@ -1,10 +1,6 @@
 {
+  "/submit/page": "app/submit/page.js",
   "/auth/signin/page": "app/auth/signin/page.js",
-  "/page": "app/page.js",
-  "/api/listings/route": "app/api/listings/route.js",
-  "/listings/page": "app/listings/page.js",
-  "/realtors/page": "app/realtors/page.js",
-  "/memberships/page": "app/memberships/page.js",
-  "/careers/page": "app/careers/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/users/me/route": "app/api/users/me/route.js"
 }

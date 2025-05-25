@@ -114,12 +114,10 @@ export async function POST(request: Request) {
       const buffer = Buffer.from(bytes);
       const base64 = buffer.toString('base64');
       const fileStr = `data:${file.type};base64,${base64}`;
-      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'rentals_upload';
       const uploadResult = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload(fileStr, {
           folder: 'listings',
           resource_type: 'image',
-          upload_preset: uploadPreset,
         }, (error, result) => {
           if (error) {
             reject(new Error(`Cloudinary upload error: ${error.message || JSON.stringify(error)}`));
