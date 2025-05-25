@@ -34,24 +34,41 @@ interface ListingFormProps {
     description: string;
     price: number;
     location: string;
+    address: string;
+    squareFeet: number;
     images: string[];
     bedrooms: number;
     bathrooms: number;
-    squareFeet: number;
     amenities: string[];
     buildingAmenities: string[];
-    features: string[];
-    utilities: string[];
     propertyType: string;
     listingType: string;
     leaseType: string;
     availableDate: string;
+    parking: string;
+    featured: boolean;
     status: string;
-    featured?: boolean;
+    features: {
+      wifi: boolean;
+      airConditioning: boolean;
+      laundry: boolean;
+      heating: boolean;
+      furnished: boolean;
+      smartHomeFeatures: boolean;
+      walkInCloset: boolean;
+    };
+    utilities: {
+      electricity: boolean;
+      gas: boolean;
+      water: boolean;
+      internet: boolean;
+      trashCollection: boolean;
+    };
     phoneNumber?: string;
     facebookUrl?: string;
   };
   onSubmit: (data: any) => void;
+  showStatusToggle?: boolean;
   isSubmitting?: boolean;
 }
 
@@ -87,6 +104,7 @@ function isPlainObject(obj: unknown): obj is Record<string, boolean> {
 export const ListingForm = ({
   initialData,
   onSubmit,
+  showStatusToggle = false,
   isSubmitting = false,
 }: ListingFormProps) => {
   const [loading, setLoading] = useState(false);

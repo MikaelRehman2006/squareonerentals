@@ -24,19 +24,38 @@ interface ListingFormData {
   description: string;
   price: number;
   location: string;
+  address: string;
+  squareFeet: number;
   images: string[];
   bedrooms: number;
   bathrooms: number;
-  squareFeet: number;
   amenities: string[];
   buildingAmenities: string[];
-  features: string[];
-  utilities: string[];
   propertyType: string;
   listingType: string;
   leaseType: string;
   availableDate: string;
+  parking: string;
+  featured: boolean;
   status: string;
+  features: {
+    wifi: boolean;
+    airConditioning: boolean;
+    laundry: boolean;
+    heating: boolean;
+    furnished: boolean;
+    smartHomeFeatures: boolean;
+    walkInCloset: boolean;
+  };
+  utilities: {
+    electricity: boolean;
+    gas: boolean;
+    water: boolean;
+    internet: boolean;
+    trashCollection: boolean;
+  };
+  phoneNumber: string;
+  facebookUrl: string;
 }
 
 export default async function EditListingPage({
@@ -72,19 +91,38 @@ export default async function EditListingPage({
             description: listing.description,
             price: listing.price,
             location: listing.location,
+            address: listing.address,
+            squareFeet: listing.squareFeet,
             images: listing.images || [],
             bedrooms: listing.bedrooms,
             bathrooms: listing.bathrooms,
-            squareFeet: listing.squareFeet,
             amenities: listing.amenities || [],
             buildingAmenities: listing.buildingAmenities || [],
-            features: listing.features || [],
-            utilities: listing.utilities || [],
             propertyType: listing.propertyType,
             listingType: listing.listingType,
             leaseType: listing.leaseType || 'fixed',
             availableDate: new Date(listing.availableDate).toISOString().split('T')[0],
+            parking: listing.parking || 'None',
+            featured: listing.featured || false,
             status: listing.status,
+            features: listing.features || {
+              wifi: false,
+              airConditioning: false,
+              laundry: false,
+              heating: false,
+              furnished: false,
+              smartHomeFeatures: false,
+              walkInCloset: false,
+            },
+            utilities: listing.utilities || {
+              electricity: false,
+              gas: false,
+              water: false,
+              internet: false,
+              trashCollection: false,
+            },
+            phoneNumber: listing.phoneNumber || '',
+            facebookUrl: listing.facebookUrl || '',
           }}
           onSubmit={async (data: ListingFormData) => {
             try {
@@ -108,6 +146,7 @@ export default async function EditListingPage({
               alert('Failed to update listing. Please try again.');
             }
           }}
+          showStatusToggle={true}
         />
       </div>
     );

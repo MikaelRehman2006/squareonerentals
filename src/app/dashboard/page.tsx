@@ -125,26 +125,31 @@ export default function DashboardPage() {
       }
     };
 
-    const fetchAnalytics = async () => {
-      try {
-        const response = await fetch('/api/admin/stats');
-        if (response.ok) {
-          const data = await response.json();
-          setAnalytics(data);
-        } else {
-          // Silently fail for non-admin users
-          console.log('Analytics data unavailable - requires admin access');
-        }
-      } catch (error) {
-        console.error('Error fetching analytics:', error);
-      } finally {
-        setAnalyticsLoading(false);
-      }
-    };
-
     fetchListings();
-    fetchAnalytics();
-  }, [router, status]);
+
+    // Only fetch analytics if user is not admin
+    if (session?.user?.role !== 'ADMIN') {
+      const fetchAnalytics = async () => {
+        try {
+          const response = await fetch('/api/admin/stats');
+          if (response.ok) {
+            const data = await response.json();
+            setAnalytics(data);
+          } else {
+            // Silently fail for non-admin users
+            console.log('Analytics data unavailable - requires admin access');
+          }
+        } catch (error) {
+          console.error('Error fetching analytics:', error);
+        } finally {
+          setAnalyticsLoading(false);
+        }
+      };
+      fetchAnalytics();
+    } else {
+      setAnalyticsLoading(false);
+    }
+  }, [router, status, session]);
 
   const handleEditListing = (id: string) => {
     router.push(`/listings/${id}/edit`);
