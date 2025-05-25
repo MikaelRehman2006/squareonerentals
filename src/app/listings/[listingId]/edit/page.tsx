@@ -1200,6 +1200,51 @@ export default function EditListingPage({ params }: { params: { listingId: strin
               </CardContent>
             </Card>
 
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
+              </CardHeader>
+              <CardContent>
+                {/* Storage Usage Bar */}
+                <StorageUsageBar 
+                  currentUsage={storageUsage} 
+                  uploadedFiles={pendingFiles}
+                />
+                <div className="flex flex-col gap-4 mt-4">
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                  />
+                  <p className="text-sm text-[#A0A0A0]">
+                    You can select multiple images. Supported formats: JPG, PNG, WebP.
+                  </p>
+                </div>
+                {/* Image Preview Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                  {uploadedImages.map((url, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Uploaded image ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="flex gap-4">
               <Button
                 type="button"
