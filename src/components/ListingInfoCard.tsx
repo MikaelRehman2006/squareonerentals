@@ -137,15 +137,13 @@ export function ListingInfoCard({
               <p className="font-semibold text-gray-900">{listingType.replace('_', ' ').toLowerCase()}</p>
             </div>
           </div>
-          {parking && (
-            <div className="flex items-center gap-3">
-              <Car className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm text-gray-500">Parking</p>
-                <p className="font-semibold text-gray-900">{parking}</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <Car className="h-5 w-5 text-blue-500" />
+            <div>
+              <p className="text-sm text-gray-500">Parking</p>
+              <p className="font-semibold text-gray-900">{parking ? parking : 'None'}</p>
             </div>
-          )}
+          </div>
           {featured && (
             <div className="flex items-center gap-3">
               <Star className="h-5 w-5 text-yellow-500" />
