@@ -1039,6 +1039,78 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     )}
                   />
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="leaseType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Lease Type</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                                <SelectValue placeholder="Select lease type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FIXED">Fixed Term</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="MONTH_TO_MONTH">Month-to-Month</SelectItem>
+                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FLEXIBLE">Flexible</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="availableDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-[#CCCCCC]">Available Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field} 
+                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="parking"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#CCCCCC]">Parking</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                              <SelectValue placeholder="Select parking option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
+                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="None">None</SelectItem>
+                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Street">Street Parking</SelectItem>
+                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Garage">Garage</SelectItem>
+                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Driveway">Driveway</SelectItem>
+                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Paid">Paid Parking</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 
@@ -1097,6 +1169,49 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     ))}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#CCCCCC]">Phone Number</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          placeholder="Optional phone number for inquiries"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="facebookUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-[#CCCCCC]">Facebook Profile URL</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                          placeholder="Optional Facebook profile URL"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 
