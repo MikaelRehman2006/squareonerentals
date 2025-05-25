@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 
 import {
   Form,
@@ -256,6 +257,89 @@ export const ListingForm = ({
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+  const FEATURES = [
+    'WiFi Included',
+    'Air Conditioning',
+    'In-unit Laundry',
+    'Heating',
+    'Furnished',
+    'Smart Home Features',
+    'Walk-in Closet',
+  ];
+  const UTILITIES = [
+    'Electricity',
+    'Gas',
+    'Water',
+    'Internet',
+    'Trash Collection',
+  ];
+
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedUtilities, setSelectedUtilities] = useState<string[]>([]);
+
+  const handleFeatureToggle = (feature: string) => {
+    setSelectedFeatures((prev) => {
+      const newFeatures = prev.includes(feature)
+        ? prev.filter((f) => f !== feature)
+        : [...prev, feature];
+
+      const updatedFeatureObj = {
+        wifi: newFeatures.includes('WiFi Included'),
+        airConditioning: newFeatures.includes('Air Conditioning'),
+        laundry: newFeatures.includes('In-unit Laundry'),
+        heating: newFeatures.includes('Heating'),
+        furnished: newFeatures.includes('Furnished'),
+        smartHomeFeatures: newFeatures.includes('Smart Home Features'),
+        walkInCloset: newFeatures.includes('Walk-in Closet'),
+      };
+
+      form.setValue('features', updatedFeatureObj, { shouldValidate: true });
+      return newFeatures;
+    });
+  };
+
+  const handleUtilityToggle = (utility: string) => {
+    setSelectedUtilities((prev) => {
+      const newUtilities = prev.includes(utility)
+        ? prev.filter((u) => u !== utility)
+        : [...prev, utility];
+
+      const updatedUtilityObj = {
+        electricity: newUtilities.includes('Electricity'),
+        gas: newUtilities.includes('Gas'),
+        water: newUtilities.includes('Water'),
+        internet: newUtilities.includes('Internet'),
+        trashCollection: newUtilities.includes('Trash Collection'),
+      };
+
+      form.setValue('utilities', updatedUtilityObj, { shouldValidate: true });
+      return newUtilities;
+    });
+  };
+
+  useEffect(() => {
+    // Features
+    const featureList: string[] = [];
+    const features = form.getValues('features');
+    if (features?.wifi) featureList.push('WiFi Included');
+    if (features?.airConditioning) featureList.push('Air Conditioning');
+    if (features?.laundry) featureList.push('In-unit Laundry');
+    if (features?.heating) featureList.push('Heating');
+    if (features?.furnished) featureList.push('Furnished');
+    if (features?.smartHomeFeatures) featureList.push('Smart Home Features');
+    if (features?.walkInCloset) featureList.push('Walk-in Closet');
+    setSelectedFeatures(featureList);
+    // Utilities
+    const utilityList: string[] = [];
+    const utilities = form.getValues('utilities');
+    if (utilities?.electricity) utilityList.push('Electricity');
+    if (utilities?.gas) utilityList.push('Gas');
+    if (utilities?.water) utilityList.push('Water');
+    if (utilities?.internet) utilityList.push('Internet');
+    if (utilities?.trashCollection) utilityList.push('Trash Collection');
+    setSelectedUtilities(utilityList);
+  }, [form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -359,6 +443,47 @@ export const ListingForm = ({
             ))}
           </div>
         </div>
+
+        {/* Unit Features & Utilities Card */}
+        <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Unit Features & Utilities</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-8">
+            <div>
+              <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Features</h3>
+              <CardDescription className="text-[#A0A0A0] mb-4">What's inside the unit</CardDescription>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {FEATURES.map((feature) => (
+                  <div key={feature} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                    <Checkbox
+                      checked={selectedFeatures.includes(feature)}
+                      onCheckedChange={() => handleFeatureToggle(feature)}
+                      className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                    />
+                    <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{feature}</label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Utilities Included</h3>
+              <CardDescription className="text-[#A0A0A0] mb-4">What's covered in the rent</CardDescription>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {UTILITIES.map((utility) => (
+                  <div key={utility} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                    <Checkbox
+                      checked={selectedUtilities.includes(utility)}
+                      onCheckedChange={() => handleUtilityToggle(utility)}
+                      className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                    />
+                    <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{utility}</label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Property Details Card */}
         <div className="bg-[#18181B] border border-[#232329] rounded-xl shadow-md p-6 space-y-6">
