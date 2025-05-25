@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Image from 'next/image';
+import StorageUsageBar from '@/components/StorageUsageBar';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,6 +125,8 @@ export default function EditListingPage({ params }: { params: { listingId: strin
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const [selectedUtilities, setSelectedUtilities] = useState<string[]>([]);
+  const [storageUsage, setStorageUsage] = useState<number>(0);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ListingFormData>({
@@ -329,163 +332,125 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           }
         }
         
-        // Set features - handle both array and object formats
-        const featuresList = [];
-        let featuresObj = {
-          wifi: false,
-          airConditioning: false,
-          laundry: false,
-          heating: false,
-          furnished: false,
-          smartHomeFeatures: false,
-          walkInCloset: false,
-        };
-
+        // Set features - handle both array and object formats using the same pattern as building amenities
         if (data.features) {
           try {
             console.log('Loading features:', data.features, typeof data.features);
+            let parsedFeatures;
+            
             // If features is a string (JSON), parse it
             if (typeof data.features === 'string') {
-              const parsedFeatures = JSON.parse(data.features);
+              parsedFeatures = JSON.parse(data.features);
               console.log('Parsed features from string:', parsedFeatures);
-              
-              // If it's an array (old format)
-              if (Array.isArray(parsedFeatures)) {
-                // Map feature names to object properties
-                parsedFeatures.forEach(feature => {
-                  const featureName = String(feature).toLowerCase().replace(/\s+/g, '');
-                  if (featureName === 'wifiincluded') featuresObj.wifi = true;
-                  if (featureName === 'airconditioning') featuresObj.airConditioning = true;
-                  if (featureName === 'in-unitlaundry' || featureName === 'inunitlaundry') featuresObj.laundry = true;
-                  if (featureName === 'heating') featuresObj.heating = true;
-                  if (featureName === 'furnished') featuresObj.furnished = true;
-                  if (featureName === 'smarthomefeatures') featuresObj.smartHomeFeatures = true;
-                  if (featureName === 'walk-incloset' || featureName === 'walkincloset') featuresObj.walkInCloset = true;
-                });
-              } 
-              // If it's an object
-              else if (typeof parsedFeatures === 'object') {
-                featuresObj = { ...featuresObj, ...parsedFeatures };
-              }
-            } 
-            // If features is already an object
-            else if (typeof data.features === 'object') {
-              if (Array.isArray(data.features)) {
-                // Map feature names to object properties
-                data.features.forEach((feature: any) => {
-                  const featureName = String(feature).toLowerCase().replace(/\s+/g, '');
-                  if (featureName === 'wifiincluded') featuresObj.wifi = true;
-                  if (featureName === 'airconditioning') featuresObj.airConditioning = true;
-                  if (featureName === 'in-unitlaundry' || featureName === 'inunitlaundry') featuresObj.laundry = true;
-                  if (featureName === 'heating') featuresObj.heating = true;
-                  if (featureName === 'furnished') featuresObj.furnished = true;
-                  if (featureName === 'smarthomefeatures') featuresObj.smartHomeFeatures = true;
-                  if (featureName === 'walk-incloset' || featureName === 'walkincloset') featuresObj.walkInCloset = true;
-                });
-              } else {
-                featuresObj = { ...featuresObj, ...data.features };
-              }
+            } else if (Array.isArray(data.features)) {
+              // If already an array, use it directly
+              parsedFeatures = data.features;
+              console.log('Features already array:', parsedFeatures);
+            } else if (typeof data.features === 'object') {
+              // If it's an object with boolean properties, convert to array of feature names
+              parsedFeatures = [];
+              if (data.features.wifi) parsedFeatures.push('WiFi Included');
+              if (data.features.airConditioning) parsedFeatures.push('Air Conditioning');
+              if (data.features.laundry) parsedFeatures.push('In-unit Laundry');
+              if (data.features.heating) parsedFeatures.push('Heating');
+              if (data.features.furnished) parsedFeatures.push('Furnished');
+              if (data.features.smartHomeFeatures) parsedFeatures.push('Smart Home Features');
+              if (data.features.walkInCloset) parsedFeatures.push('Walk-in Closet');
+              console.log('Converted features object to array:', parsedFeatures);
+            } else {
+              // Default to empty array if no valid format
+              parsedFeatures = [];
+              console.log('Features unknown format, using empty array');
             }
             
-            // Update form with the features object
+            // Make sure it's definitely an array
+            const featuresArray = Array.isArray(parsedFeatures) ? parsedFeatures : [];
+            setSelectedFeatures(featuresArray);
+            console.log('Final features set to:', featuresArray);
+            
+            // Also update the form features object
+            const featuresObj = {
+              wifi: featuresArray.includes('WiFi Included'),
+              airConditioning: featuresArray.includes('Air Conditioning'),
+              laundry: featuresArray.includes('In-unit Laundry'),
+              heating: featuresArray.includes('Heating'),
+              furnished: featuresArray.includes('Furnished'),
+              smartHomeFeatures: featuresArray.includes('Smart Home Features'),
+              walkInCloset: featuresArray.includes('Walk-in Closet')
+            };
             form.setValue('features', featuresObj);
             console.log('Set features form value to:', featuresObj);
-            
-            // Create list of feature names for the checkboxes
-            if (featuresObj.wifi) featuresList.push('WiFi Included');
-            if (featuresObj.airConditioning) featuresList.push('Air Conditioning');
-            if (featuresObj.laundry) featuresList.push('In-unit Laundry');
-            if (featuresObj.heating) featuresList.push('Heating');
-            if (featuresObj.furnished) featuresList.push('Furnished');
-            if (featuresObj.smartHomeFeatures) featuresList.push('Smart Home Features');
-            if (featuresObj.walkInCloset) featuresList.push('Walk-in Closet');
           } catch (e) {
             console.error('Error parsing features:', e, data.features);
-            // Default fallback
-            if (data.features.wifi) featuresList.push('WiFi Included');
-            if (data.features.airConditioning) featuresList.push('Air Conditioning');
-            if (data.features.laundry) featuresList.push('In-unit Laundry');
-            if (data.features.heating) featuresList.push('Heating');
-            if (data.features.furnished) featuresList.push('Furnished');
-            if (data.features.smartHomeFeatures) featuresList.push('Smart Home Features');
-            if (data.features.walkInCloset) featuresList.push('Walk-in Closet');
+            setSelectedFeatures([]);
+            form.setValue('features', {
+              wifi: false,
+              airConditioning: false,
+              laundry: false,
+              heating: false,
+              furnished: false,
+              smartHomeFeatures: false,
+              walkInCloset: false
+            });
           }
         }
-        setSelectedFeatures(featuresList);
         
-        // Set utilities - handle both array and object formats
-        const utilitiesList = [];
-        let utilitiesObj = {
-          electricity: false,
-          gas: false,
-          water: false,
-          internet: false,
-          trashCollection: false,
-        };
-
+        // Set utilities - handle both array and object formats using the same pattern as building amenities
         if (data.utilities) {
           try {
             console.log('Loading utilities:', data.utilities, typeof data.utilities);
+            let parsedUtilities;
+            
             // If utilities is a string (JSON), parse it
             if (typeof data.utilities === 'string') {
-              const parsedUtilities = JSON.parse(data.utilities);
+              parsedUtilities = JSON.parse(data.utilities);
               console.log('Parsed utilities from string:', parsedUtilities);
-              
-              // If it's an array (old format)
-              if (Array.isArray(parsedUtilities)) {
-                // Map utility names to object properties
-                parsedUtilities.forEach((utility: string) => {
-                  const utilityName = String(utility).toLowerCase().replace(/\s+/g, '');
-                  if (utilityName === 'electricity') utilitiesObj.electricity = true;
-                  if (utilityName === 'gas') utilitiesObj.gas = true;
-                  if (utilityName === 'water') utilitiesObj.water = true;
-                  if (utilityName === 'internet') utilitiesObj.internet = true;
-                  if (utilityName === 'trashcollection') utilitiesObj.trashCollection = true;
-                });
-              } 
-              // If it's an object
-              else if (typeof parsedUtilities === 'object') {
-                utilitiesObj = { ...utilitiesObj, ...parsedUtilities };
-              }
-            } 
-            // If utilities is already an object
-            else if (typeof data.utilities === 'object') {
-              if (Array.isArray(data.utilities)) {
-                // Map utility names to object properties
-                data.utilities.forEach((utility: string) => {
-                  const utilityName = String(utility).toLowerCase().replace(/\s+/g, '');
-                  if (utilityName === 'electricity') utilitiesObj.electricity = true;
-                  if (utilityName === 'gas') utilitiesObj.gas = true;
-                  if (utilityName === 'water') utilitiesObj.water = true;
-                  if (utilityName === 'internet') utilitiesObj.internet = true;
-                  if (utilityName === 'trashcollection') utilitiesObj.trashCollection = true;
-                });
-              } else {
-                utilitiesObj = { ...utilitiesObj, ...data.utilities };
-              }
+            } else if (Array.isArray(data.utilities)) {
+              // If already an array, use it directly
+              parsedUtilities = data.utilities;
+              console.log('Utilities already array:', parsedUtilities);
+            } else if (typeof data.utilities === 'object') {
+              // If it's an object with boolean properties, convert to array of utility names
+              parsedUtilities = [];
+              if (data.utilities.electricity) parsedUtilities.push('Electricity');
+              if (data.utilities.gas) parsedUtilities.push('Gas');
+              if (data.utilities.water) parsedUtilities.push('Water');
+              if (data.utilities.internet) parsedUtilities.push('Internet');
+              if (data.utilities.trashCollection) parsedUtilities.push('Trash Collection');
+              console.log('Converted utilities object to array:', parsedUtilities);
+            } else {
+              // Default to empty array if no valid format
+              parsedUtilities = [];
+              console.log('Utilities unknown format, using empty array');
             }
             
-            // Update form with the utilities object
+            // Make sure it's definitely an array
+            const utilitiesArray = Array.isArray(parsedUtilities) ? parsedUtilities : [];
+            setSelectedUtilities(utilitiesArray);
+            console.log('Final utilities set to:', utilitiesArray);
+            
+            // Also update the form utilities object
+            const utilitiesObj = {
+              electricity: utilitiesArray.includes('Electricity'),
+              gas: utilitiesArray.includes('Gas'),
+              water: utilitiesArray.includes('Water'),
+              internet: utilitiesArray.includes('Internet'),
+              trashCollection: utilitiesArray.includes('Trash Collection')
+            };
             form.setValue('utilities', utilitiesObj);
             console.log('Set utilities form value to:', utilitiesObj);
-            
-            // Create list of utility names for the checkboxes
-            if (utilitiesObj.electricity) utilitiesList.push('Electricity');
-            if (utilitiesObj.gas) utilitiesList.push('Gas');
-            if (utilitiesObj.water) utilitiesList.push('Water');
-            if (utilitiesObj.internet) utilitiesList.push('Internet');
-            if (utilitiesObj.trashCollection) utilitiesList.push('Trash Collection');
           } catch (e) {
             console.error('Error parsing utilities:', e, data.utilities);
-            // Default fallback
-            if (data.utilities.electricity) utilitiesList.push('Electricity');
-            if (data.utilities.gas) utilitiesList.push('Gas');
-            if (data.utilities.water) utilitiesList.push('Water');
-            if (data.utilities.internet) utilitiesList.push('Internet');
-            if (data.utilities.trashCollection) utilitiesList.push('Trash Collection');
+            setSelectedUtilities([]);
+            form.setValue('utilities', {
+              electricity: false,
+              gas: false,
+              water: false,
+              internet: false,
+              trashCollection: false
+            });
           }
         }
-        setSelectedUtilities(utilitiesList);
         
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch listing');
@@ -514,22 +479,20 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         ? prev.filter(a => a !== feature)
         : [...prev, feature];
       
-      // Convert feature names to object keys
+      // Direct mapping of feature names to object properties
       const featureObj = {
-        wifi: false,
-        airConditioning: false,
-        laundry: false,
-        heating: false,
-        furnished: false,
-        smartHomeFeatures: false,
-        walkInCloset: false,
-        ...newFeatures.reduce((acc, curr) => ({
-          ...acc,
-          [curr.toLowerCase().replace(/\s+/g, '')]: true
-        }), {})
+        wifi: newFeatures.includes('WiFi Included'),
+        airConditioning: newFeatures.includes('Air Conditioning'),
+        laundry: newFeatures.includes('In-unit Laundry'),
+        heating: newFeatures.includes('Heating'),
+        furnished: newFeatures.includes('Furnished'),
+        smartHomeFeatures: newFeatures.includes('Smart Home Features'),
+        walkInCloset: newFeatures.includes('Walk-in Closet')
       };
       
-      form.setValue('features', featureObj);
+      console.log('Toggled feature:', feature, 'New features:', newFeatures);
+      console.log('Setting features object:', featureObj);
+      form.setValue('features', featureObj, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
       return newFeatures;
     });
   };
@@ -540,46 +503,66 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         ? prev.filter(a => a !== utility)
         : [...prev, utility];
       
-      // Convert utility names to object keys
+      // Direct mapping of utility names to object properties
       const utilityObj = {
-        electricity: false,
-        gas: false,
-        water: false,
-        internet: false,
-        trashCollection: false,
-        ...newUtilities.reduce((acc, curr) => ({
-          ...acc,
-          [curr.toLowerCase().replace(/\s+/g, '')]: true
-        }), {})
+        electricity: newUtilities.includes('Electricity'),
+        gas: newUtilities.includes('Gas'),
+        water: newUtilities.includes('Water'),
+        internet: newUtilities.includes('Internet'),
+        trashCollection: newUtilities.includes('Trash Collection')
       };
       
-      form.setValue('utilities', utilityObj);
+      console.log('Toggled utility:', utility, 'New utilities:', newUtilities);
+      console.log('Setting utilities object:', utilityObj);
+      form.setValue('utilities', utilityObj, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
       return newUtilities;
     });
   };
+
+  // Fetch user storage usage on component mount
+  useEffect(() => {
+    const fetchStorageUsage = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch('/api/storage/usage');
+          if (response.ok) {
+            const data = await response.json();
+            setStorageUsage(data.usage || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching storage usage:', error);
+        }
+      }
+    };
+
+    fetchStorageUsage();
+  }, [session]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
     try {
-      toast.loading('Uploading images...');
+      const loadingToast = toast.loading('Uploading images...');
       
       // Check file size before upload (5MB limit)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       for (let i = 0; i < files.length; i++) {
         if (files[i].size > MAX_FILE_SIZE) {
-          toast.dismiss();
+          toast.dismiss(loadingToast);
           toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
           return;
         }
         
         if (!files[i].type.startsWith('image/')) {
-          toast.dismiss();
+          toast.dismiss(loadingToast);
           toast.error(`File ${files[i].name} is not an image`);
           return;
         }
       }
+
+      // Store the files for the storage usage bar
+      setPendingFiles(Array.from(files));
 
       const uploadPromises = Array.from(files).map(async (file) => {
         const formData = new FormData();
@@ -604,27 +587,112 @@ export default function EditListingPage({ params }: { params: { listingId: strin
 
         if (!response.ok) {
           console.error(`Upload error for file ${file.name}:`, result, 'Status:', response.status, 'Method:', response.type);
-          throw new Error(result.error || 'Upload failed');
+          throw new Error(result.error || `Upload failed for ${file.name}`);
         }
 
-        console.log('Upload success:', result);
+        console.log('Upload success for file', file.name, ':', result);
         return result.secure_url;
       });
 
-      const newImageUrls = await Promise.all(uploadPromises);
+      // Check user membership status first - if they don't have one, redirect early
+      try {
+        const membershipResponse = await fetch('/api/users/me');
+        const userData = await membershipResponse.json();
+        
+        // If no active membership, direct to membership page immediately
+        if (!userData.membership || userData.membership.status !== 'active') {
+          toast.dismiss(loadingToast);
+          toast.error('Membership required', {
+            description: 'You need an active membership to upload images and create listings. Please purchase a plan to continue.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+          setPendingFiles([]);
+          return;
+        }
+      } catch (membershipError) {
+        console.error('Error checking membership status:', membershipError);
+        // Continue to image upload attempt - the upload API will also check membership status
+      }
       
-      setUploadedImages(prev => {
-        const updatedImages = [...prev, ...newImageUrls];
-        form.setValue('images', updatedImages, { shouldValidate: true });
-        return updatedImages;
-      });
+      // Now try the actual upload
+      let newImageUrls;
+      try {
+        newImageUrls = await Promise.all(uploadPromises);
+        console.log('All uploads complete, new image URLs:', newImageUrls);
+      } catch (error: any) {
+        toast.dismiss(loadingToast);
+        
+        // Special handling for different error types
+        if (error.message && error.message.includes('membership required')) {
+          // Membership issue
+          toast.error('Membership required', {
+            description: 'You need an active membership to upload images. Please purchase a plan.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+        } else {
+          // Generic error
+          toast.error(`Upload error`, {
+            description: error.message || 'Failed to upload images. Please try again or consider purchasing a membership if you have not yet purchased one.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+          console.error('Upload error details:', error);
+        }
+        
+        // Clear pending files to reset the storage bar
+        setPendingFiles([]);
+        return;
+      }
+      
+      // If we get here and don't have newImageUrls, return early
+      if (!newImageUrls || newImageUrls.length === 0) {
+        toast.dismiss(loadingToast);
+        setPendingFiles([]);
+        return;
+      }
+      
+      // Get the current images from the form 
+      const currentFormImages = form.getValues('images') || [];
+      console.log('Current form images:', currentFormImages);
+      
+      // Combine existing with new images
+      const updatedImages = [...currentFormImages, ...newImageUrls];
+      console.log('Updated image array:', updatedImages);
+      
+      // Update state
+      setUploadedImages(updatedImages);
+      
+      // Explicitly set form value with the combined images
+      form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
 
-      toast.dismiss();
-      toast.success('Images uploaded successfully!');
+      toast.dismiss(loadingToast);
+      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
       
-      // Reset file input
+      // Reset file input but keep the images in state
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+      
+      // Clear pending files
+      setPendingFiles([]);
+      
+      // Refresh storage usage
+      try {
+        const response = await fetch('/api/storage/usage');
+        if (response.ok) {
+          const data = await response.json();
+          setStorageUsage(data.usage || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching updated storage usage:', error);
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -635,6 +703,9 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      
+      // Clear pending files
+      setPendingFiles([]);
     }
   };
 
@@ -662,23 +733,46 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       setIsSubmitting(true);
       const loadingToast = toast.loading('Updating your listing...');
 
+      // Log what we're submitting
+      console.log('Form data before submission:', data);
+      console.log('Selected features before submission:', selectedFeatures);
+      console.log('Selected utilities before submission:', selectedUtilities);
+      
       // Convert features object to array
-      const featureArray = Object.entries(data.features || {})
-        .filter(([_, value]) => value === true)
-        .map(([key, _]) => {
-          // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
-          return key.replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase());
-        });
+      let featureArray;
+      if (selectedFeatures.length > 0) {
+        // Use the selectedFeatures directly if available
+        featureArray = selectedFeatures;
+        console.log('Using selectedFeatures array:', featureArray);
+      } else {
+        // Fall back to converting from object if needed
+        featureArray = Object.entries(data.features || {})
+          .filter(([_, value]) => value === true)
+          .map(([key, _]) => {
+            // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
+            return key.replace(/([A-Z])/g, ' $1')
+              .replace(/^./, str => str.toUpperCase());
+          });
+        console.log('Converted features from object:', featureArray);
+      }
 
       // Convert utilities object to array
-      const utilitiesArray = Object.entries(data.utilities || {})
-        .filter(([_, value]) => value === true)
-        .map(([key, _]) => {
-          // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
-          return key.replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase());
-        });
+      let utilitiesArray;
+      if (selectedUtilities.length > 0) {
+        // Use the selectedUtilities directly if available
+        utilitiesArray = selectedUtilities;
+        console.log('Using selectedUtilities array:', utilitiesArray);
+      } else {
+        // Fall back to converting from object if needed
+        utilitiesArray = Object.entries(data.utilities || {})
+          .filter(([_, value]) => value === true)
+          .map(([key, _]) => {
+            // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
+            return key.replace(/([A-Z])/g, ' $1')
+              .replace(/^./, str => str.toUpperCase());
+          });
+        console.log('Converted utilities from object:', utilitiesArray);
+      }
       
       // Make sure building amenities is properly formatted as an array
       let buildingAmenitiesArray = selectedAmenities;
@@ -941,7 +1035,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                 <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Property Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="bedrooms"
