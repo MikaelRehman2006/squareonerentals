@@ -135,160 +135,140 @@ function SignInContent() {
   }
 
   return (
-    <div className="min-h-screen w-full flex">
-      {/* Left Panel - Logo and Design */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-primary/90 to-primary flex-col items-center justify-center text-white p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10" />
+    <div className="min-h-screen w-full flex flex-col lg:flex-row font-sans bg-gradient-to-br from-blue-500 via-cyan-400 to-purple-400 animate-gradient">
+      {/* Left Panel - Branding */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-10 relative overflow-hidden min-h-[320px]">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="z-10 text-center"
+          className="flex flex-col items-center w-full"
         >
-          <Building2 className="w-20 h-20 mx-auto mb-8" />
-          <h1 className="text-4xl font-bold mb-4">Square One Rentals</h1>
-          <p className="text-lg text-white/80 max-w-md">
-            Your gateway to premium rental properties in the heart of Square One, Mississauga.
-          </p>
+            <Image src="/images/logo.png" alt="Square One Rentals Logo" width={100} height={100} className="mx-auto mb-4 drop-shadow-lg" priority />
+          <h1 className="text-4xl font-bold mb-2 text-white drop-shadow-lg">Square One Rentals</h1>
+          <p className="text-lg text-white/90 max-w-md text-center mb-4">Your gateway to premium rental properties in the heart of Square One, Mississauga.</p>
+          {/* Optional: Lottie animation placeholder */}
+          {/* <div className="w-40 h-40 mt-4"><Lottie ... /></div> */}
         </motion.div>
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-primary to-transparent" />
+        <div className="absolute inset-0 pointer-events-none" style={{background: 'radial-gradient(ellipse at 60% 40%, rgba(255,255,255,0.08) 0%, transparent 70%)'}} />
       </div>
 
       {/* Right Panel - Sign In/Sign Up Forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 min-h-[480px]">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          className="w-full max-w-[400px]"
         >
           <AnimatePresence mode="wait">
             <motion.div
               key={isSignUp ? 'signup' : 'signin'}
-              initial={{ x: 300, opacity: 0 }}
+              initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-              className="bg-card p-8 rounded-lg shadow-lg"
+              exit={{ x: -100, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+              className="bg-card/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/10"
             >
-              <h2 className="text-2xl font-bold text-center mb-6">
-                {isSignUp ? 'Create Account' : 'Welcome Back'}
-              </h2>
+              <h2 className="text-2xl font-semibold text-center mb-6 tracking-tight text-white">{isSignUp ? 'Create Account' : 'Welcome Back'}</h2>
 
               {/* Google Sign In Button */}
               <Button
                 type="button"
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2 mb-6"
+                variant="ghost"
+                className="w-full flex items-center justify-center gap-2 mb-6 bg-white text-gray-900 font-medium border border-gray-200 hover:shadow-lg hover:ring-2 hover:ring-blue-400 transition-all duration-150 py-2 rounded-lg"
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                 </svg>
                 Continue with Google
               </Button>
 
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-muted" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with email
-                  </span>
-                </div>
+              {/* Divider */}
+              <div className="flex items-center my-6">
+                <div className="flex-grow border-t border-gray-300/30" />
+                <span className="mx-4 text-xs text-gray-400 font-semibold tracking-widest">OR CONTINUE WITH EMAIL</span>
+                <div className="flex-grow border-t border-gray-300/30" />
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <AnimatePresence>
-                  {isSignUp && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="space-y-2"
-                    >
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="John Doe"
-                        required={isSignUp}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+              {/* Email/Password Form */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {isSignUp && (
+                  <div>
+                    <Label htmlFor="name" className="text-gray-200">Name</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
-                      className="pl-10"
+                      id="name"
+                      type="text"
+                      autoComplete="name"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      className="mt-1 bg-white/10 text-white border border-gray-400/20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 rounded-lg transition-all"
                       required
                     />
                   </div>
+                )}
+                <div>
+                  <Label htmlFor="email" className="text-gray-200">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="mt-1 bg-white/10 text-white border border-gray-400/20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 rounded-lg transition-all"
+                    required
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="password" className="text-gray-200">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="mt-1 bg-white/10 text-white border border-gray-400/20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 rounded-lg transition-all"
+                    required
+                  />
                 </div>
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <>
-                      {isSignUp ? 'Create Account' : 'Sign In'} <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
+                <Button
+                  type="submit"
+                  className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow-md transition-all duration-150 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                  disabled={isLoading}
+                >
+                  {isSignUp ? 'Sign Up' : 'Sign In'}
+                  {isLoading && <LoadingSpinner />}
                 </Button>
               </form>
 
-              <div className="mt-6 text-center text-sm">
-                <span className="text-muted-foreground">
-                  {isSignUp ? 'Already have an account?' : "Don't have an account?"}
-                </span>{' '}
-                <button
-                  onClick={toggleSignUp}
-                  className="text-primary hover:underline font-medium"
-                >
-                  {isSignUp ? 'Sign In' : 'Sign Up'}
-                </button>
+              {/* Sign Up/Sign In Toggle */}
+              <div className="mt-6 text-center">
+                {isSignUp ? (
+                  <span className="text-gray-300">Already have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={toggleSignUp}
+                      className="text-blue-500 font-semibold hover:underline transition-colors"
+                    >
+                      Sign In
+                    </button>
+                  </span>
+                ) : (
+                  <span className="text-gray-300">Don&apos;t have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={toggleSignUp}
+                      className="text-blue-500 font-semibold hover:underline transition-colors"
+                    >
+                      Sign Up
+                    </button>
+                  </span>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
