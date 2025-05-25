@@ -165,28 +165,14 @@ export const ListingForm = ({
       if (!session?.user?.email) {
         throw new Error('Unauthorized');
       }
-      // Convert features object to array
-      const featuresArray: string[] = [];
-      if (data.features?.wifi) featuresArray.push('WiFi Included');
-      if (data.features?.airConditioning) featuresArray.push('Air Conditioning');
-      if (data.features?.laundry) featuresArray.push('In-unit Laundry');
-      if (data.features?.heating) featuresArray.push('Heating');
-      if (data.features?.furnished) featuresArray.push('Furnished');
-      if (data.features?.smartHomeFeatures) featuresArray.push('Smart Home Features');
-      if (data.features?.walkInCloset) featuresArray.push('Walk-in Closet');
-      // Convert utilities object to array
-      const utilitiesArray: string[] = [];
-      if (data.utilities?.electricity) utilitiesArray.push('Electricity');
-      if (data.utilities?.gas) utilitiesArray.push('Gas');
-      if (data.utilities?.water) utilitiesArray.push('Water');
-      if (data.utilities?.internet) utilitiesArray.push('Internet');
-      if (data.utilities?.trashCollection) utilitiesArray.push('Trash Collection');
+
       const formattedData = {
         ...data,
         buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities : [],
-        features: featuresArray,
-        utilities: utilitiesArray,
+        features: selectedFeatures,
+        utilities: selectedUtilities,
       };
+
       await onSubmit(formattedData);
       toast.success('Listing updated successfully!');
     } catch (error) {

@@ -39,6 +39,8 @@ const listingSchema = z.object({
   bathrooms: z.number().min(0, 'Number of bathrooms must be positive'),
   amenities: z.array(z.string()).default([]),
   buildingAmenities: z.array(z.string()).default([]),
+  features: z.array(z.string()).default([]),
+  utilities: z.array(z.string()).default([]),
   propertyType: z.string().min(1, 'Property type is required'),
   listingType: z.string().min(1, 'Listing type is required'),
   leaseType: z.string().min(1, 'Lease type is required'),
@@ -46,38 +48,8 @@ const listingSchema = z.object({
   parking: z.string().default('None'),
   featured: z.boolean().default(false),
   status: z.string().default('ACTIVE'),
-  features: z.object({
-    wifi: z.boolean().default(false),
-    airConditioning: z.boolean().default(false),
-    laundry: z.boolean().default(false),
-    heating: z.boolean().default(false),
-    furnished: z.boolean().default(false),
-    smartHomeFeatures: z.boolean().default(false),
-    walkInCloset: z.boolean().default(false),
-  }).default({
-    wifi: false,
-    airConditioning: false,
-    laundry: false,
-    heating: false,
-    furnished: false,
-    smartHomeFeatures: false,
-    walkInCloset: false,
-  }),
-  utilities: z.object({
-    electricity: z.boolean().default(false),
-    gas: z.boolean().default(false),
-    water: z.boolean().default(false),
-    internet: z.boolean().default(false),
-    trashCollection: z.boolean().default(false),
-  }).default({
-    electricity: false,
-    gas: false,
-    water: false,
-    internet: false,
-    trashCollection: false,
-  }),
   phoneNumber: z.string().optional(),
-  facebookUrl: z.union([z.string().url("Please enter a valid Facebook URL"), z.string().max(0)]).optional(),
+  facebookUrl: z.string().optional(),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
@@ -143,6 +115,8 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       bathrooms: 0,
       amenities: [],
       buildingAmenities: [],
+      features: [],
+      utilities: [],
       propertyType: 'APARTMENT',
       listingType: 'LONG_TERM',
       leaseType: '',
@@ -150,22 +124,8 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       parking: 'None',
       featured: false,
       status: 'ACTIVE',
-      features: {
-        wifi: false,
-        airConditioning: false,
-        laundry: false,
-        heating: false,
-        furnished: false,
-        smartHomeFeatures: false,
-        walkInCloset: false,
-      },
-      utilities: {
-        electricity: false,
-        gas: false,
-        water: false,
-        internet: false,
-        trashCollection: false,
-      },
+      phoneNumber: '',
+      facebookUrl: '',
     },
   });
 
@@ -219,22 +179,8 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           status: data.status || 'ACTIVE',
           phoneNumber: data.phoneNumber || '',
           facebookUrl: data.facebookUrl || '',
-          features: {
-            wifi: data.features?.wifi || false,
-            airConditioning: data.features?.airConditioning || false,
-            laundry: data.features?.laundry || false,
-            heating: data.features?.heating || false,
-            furnished: data.features?.furnished || false,
-            smartHomeFeatures: data.features?.smartHomeFeatures || false,
-            walkInCloset: data.features?.walkInCloset || false,
-          },
-          utilities: {
-            electricity: data.utilities?.electricity || false,
-            gas: data.utilities?.gas || false,
-            water: data.utilities?.water || false,
-            internet: data.utilities?.internet || false,
-            trashCollection: data.utilities?.trashCollection || false,
-          },
+          features: Array.isArray(data.features) ? data.features : [],
+          utilities: Array.isArray(data.utilities) ? data.utilities : [],
         });
         
         console.log('Loaded listing data:', data);
@@ -332,123 +278,55 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           }
         }
         
-        // Set features - handle both array and object formats using the same pattern as building amenities
+        // Parse features carefully
         if (data.features) {
           try {
-            console.log('Loading features:', data.features, typeof data.features);
             let parsedFeatures;
-            
-            // If features is a string (JSON), parse it
             if (typeof data.features === 'string') {
               parsedFeatures = JSON.parse(data.features);
               console.log('Parsed features from string:', parsedFeatures);
             } else if (Array.isArray(data.features)) {
-              // If already an array, use it directly
               parsedFeatures = data.features;
               console.log('Features already array:', parsedFeatures);
-            } else if (typeof data.features === 'object') {
-              // If it's an object with boolean properties, convert to array of feature names
-              parsedFeatures = [];
-              if (data.features.wifi) parsedFeatures.push('WiFi Included');
-              if (data.features.airConditioning) parsedFeatures.push('Air Conditioning');
-              if (data.features.laundry) parsedFeatures.push('In-unit Laundry');
-              if (data.features.heating) parsedFeatures.push('Heating');
-              if (data.features.furnished) parsedFeatures.push('Furnished');
-              if (data.features.smartHomeFeatures) parsedFeatures.push('Smart Home Features');
-              if (data.features.walkInCloset) parsedFeatures.push('Walk-in Closet');
-              console.log('Converted features object to array:', parsedFeatures);
             } else {
-              // Default to empty array if no valid format
               parsedFeatures = [];
               console.log('Features unknown format, using empty array');
             }
             
-            // Make sure it's definitely an array
             const featuresArray = Array.isArray(parsedFeatures) ? parsedFeatures : [];
+            form.setValue('features', featuresArray);
             setSelectedFeatures(featuresArray);
             console.log('Final features set to:', featuresArray);
-            
-            // Also update the form features object
-            const featuresObj = {
-              wifi: featuresArray.includes('WiFi Included'),
-              airConditioning: featuresArray.includes('Air Conditioning'),
-              laundry: featuresArray.includes('In-unit Laundry'),
-              heating: featuresArray.includes('Heating'),
-              furnished: featuresArray.includes('Furnished'),
-              smartHomeFeatures: featuresArray.includes('Smart Home Features'),
-              walkInCloset: featuresArray.includes('Walk-in Closet')
-            };
-            form.setValue('features', featuresObj);
-            console.log('Set features form value to:', featuresObj);
           } catch (e) {
-            console.error('Error parsing features:', e, data.features);
+            console.error('Error parsing features:', e);
+            form.setValue('features', []);
             setSelectedFeatures([]);
-            form.setValue('features', {
-              wifi: false,
-              airConditioning: false,
-              laundry: false,
-              heating: false,
-              furnished: false,
-              smartHomeFeatures: false,
-              walkInCloset: false
-            });
           }
         }
         
-        // Set utilities - handle both array and object formats using the same pattern as building amenities
+        // Parse utilities carefully
         if (data.utilities) {
           try {
-            console.log('Loading utilities:', data.utilities, typeof data.utilities);
             let parsedUtilities;
-            
-            // If utilities is a string (JSON), parse it
             if (typeof data.utilities === 'string') {
               parsedUtilities = JSON.parse(data.utilities);
               console.log('Parsed utilities from string:', parsedUtilities);
             } else if (Array.isArray(data.utilities)) {
-              // If already an array, use it directly
               parsedUtilities = data.utilities;
               console.log('Utilities already array:', parsedUtilities);
-            } else if (typeof data.utilities === 'object') {
-              // If it's an object with boolean properties, convert to array of utility names
-              parsedUtilities = [];
-              if (data.utilities.electricity) parsedUtilities.push('Electricity');
-              if (data.utilities.gas) parsedUtilities.push('Gas');
-              if (data.utilities.water) parsedUtilities.push('Water');
-              if (data.utilities.internet) parsedUtilities.push('Internet');
-              if (data.utilities.trashCollection) parsedUtilities.push('Trash Collection');
-              console.log('Converted utilities object to array:', parsedUtilities);
             } else {
-              // Default to empty array if no valid format
               parsedUtilities = [];
               console.log('Utilities unknown format, using empty array');
             }
             
-            // Make sure it's definitely an array
             const utilitiesArray = Array.isArray(parsedUtilities) ? parsedUtilities : [];
+            form.setValue('utilities', utilitiesArray);
             setSelectedUtilities(utilitiesArray);
             console.log('Final utilities set to:', utilitiesArray);
-            
-            // Also update the form utilities object
-            const utilitiesObj = {
-              electricity: utilitiesArray.includes('Electricity'),
-              gas: utilitiesArray.includes('Gas'),
-              water: utilitiesArray.includes('Water'),
-              internet: utilitiesArray.includes('Internet'),
-              trashCollection: utilitiesArray.includes('Trash Collection')
-            };
-            form.setValue('utilities', utilitiesObj);
-            console.log('Set utilities form value to:', utilitiesObj);
           } catch (e) {
-            console.error('Error parsing utilities:', e, data.utilities);
+            console.error('Error parsing utilities:', e);
+            form.setValue('utilities', []);
             setSelectedUtilities([]);
-            form.setValue('utilities', {
-              electricity: false,
-              gas: false,
-              water: false,
-              internet: false,
-              trashCollection: false
-            });
           }
         }
         
@@ -479,20 +357,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         ? prev.filter(a => a !== feature)
         : [...prev, feature];
       
-      // Direct mapping of feature names to object properties
-      const featureObj = {
-        wifi: newFeatures.includes('WiFi Included'),
-        airConditioning: newFeatures.includes('Air Conditioning'),
-        laundry: newFeatures.includes('In-unit Laundry'),
-        heating: newFeatures.includes('Heating'),
-        furnished: newFeatures.includes('Furnished'),
-        smartHomeFeatures: newFeatures.includes('Smart Home Features'),
-        walkInCloset: newFeatures.includes('Walk-in Closet')
-      };
-      
-      console.log('Toggled feature:', feature, 'New features:', newFeatures);
-      console.log('Setting features object:', featureObj);
-      form.setValue('features', featureObj, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+      form.setValue('features', newFeatures, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
       return newFeatures;
     });
   };
@@ -503,18 +368,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         ? prev.filter(a => a !== utility)
         : [...prev, utility];
       
-      // Direct mapping of utility names to object properties
-      const utilityObj = {
-        electricity: newUtilities.includes('Electricity'),
-        gas: newUtilities.includes('Gas'),
-        water: newUtilities.includes('Water'),
-        internet: newUtilities.includes('Internet'),
-        trashCollection: newUtilities.includes('Trash Collection')
-      };
-      
-      console.log('Toggled utility:', utility, 'New utilities:', newUtilities);
-      console.log('Setting utilities object:', utilityObj);
-      form.setValue('utilities', utilityObj, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
+      form.setValue('utilities', newUtilities, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
       return newUtilities;
     });
   };
@@ -1231,15 +1085,16 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                 <div>
                   <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Features</h3>
                   <CardDescription className="text-[#A0A0A0] mb-4">What's included in the unit</CardDescription>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {FEATURES.map((feature) => (
-                      <div key={feature} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                      <div key={feature} className="flex items-center space-x-2">
                         <Checkbox
+                          id={`feature-${feature}`}
                           checked={selectedFeatures.includes(feature)}
                           onCheckedChange={() => handleFeatureToggle(feature)}
-                          className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                         />
-                        <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{feature}</label>
+                        <label htmlFor={`feature-${feature}`} className="text-sm font-normal text-[#CCCCCC]">{feature}</label>
                       </div>
                     ))}
                   </div>
@@ -1265,15 +1120,16 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                 <div>
                   <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Utilities Included</h3>
                   <CardDescription className="text-[#A0A0A0] mb-4">What's covered in the rent</CardDescription>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {UTILITIES.map((utility) => (
-                      <div key={utility} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
+                      <div key={utility} className="flex items-center space-x-2">
                         <Checkbox
+                          id={`utility-${utility}`}
                           checked={selectedUtilities.includes(utility)}
                           onCheckedChange={() => handleUtilityToggle(utility)}
-                          className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
                         />
-                        <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{utility}</label>
+                        <label htmlFor={`utility-${utility}`} className="text-sm font-normal text-[#CCCCCC]">{utility}</label>
                       </div>
                     ))}
                   </div>
