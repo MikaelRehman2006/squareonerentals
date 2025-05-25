@@ -83,12 +83,27 @@ const formSchema = z.object({
   squareFeet: z.coerce.number().min(0, "Square feet must be a positive number"),
   amenities: z.array(z.string()).default([]),
   buildingAmenities: z.array(z.string()).default([]),
-  features: z.array(z.string()).default([]),
-  utilities: z.array(z.string()).default([]),
+  features: z.object({
+    wifi: z.boolean().default(false),
+    airConditioning: z.boolean().default(false),
+    laundry: z.boolean().default(false),
+    heating: z.boolean().default(false),
+    furnished: z.boolean().default(false),
+    smartHomeFeatures: z.boolean().default(false),
+    walkInCloset: z.boolean().default(false),
+  }).default({}),
+  utilities: z.object({
+    electricity: z.boolean().default(false),
+    gas: z.boolean().default(false),
+    water: z.boolean().default(false),
+    internet: z.boolean().default(false),
+    trashCollection: z.boolean().default(false),
+  }).default({}),
   propertyType: z.string().min(1, "Property type is required"),
   listingType: z.string().min(1, "Listing type is required"),
   leaseType: z.string().min(1, "Lease type is required"),
   availableDate: z.string().min(1, "Available date is required"),
+  parking: z.string().default("None"),
   status: z.string().min(1, "Status is required"),
   featured: z.boolean().default(false),
   phoneNumber: z.string().optional(),
@@ -115,12 +130,27 @@ export const ListingForm = ({
   // Convert initialData to match the form schema if needed
   const formattedInitialData: FormValues = {
     ...initialData,
-    features: Array.isArray(initialData.features) ? initialData.features : [],
-    utilities: Array.isArray(initialData.utilities) ? initialData.utilities : [],
+    features: isPlainObject(initialData.features) ? initialData.features : {
+      wifi: false,
+      airConditioning: false,
+      laundry: false,
+      heating: false,
+      furnished: false,
+      smartHomeFeatures: false,
+      walkInCloset: false,
+    },
+    utilities: isPlainObject(initialData.utilities) ? initialData.utilities : {
+      electricity: false,
+      gas: false,
+      water: false,
+      internet: false,
+      trashCollection: false,
+    },
     buildingAmenities: Array.isArray(initialData.buildingAmenities) ? initialData.buildingAmenities : [],
     amenities: Array.isArray(initialData.amenities) ? initialData.amenities : [],
     images: Array.isArray(initialData.images) ? initialData.images : [],
-    featured: initialData.featured || false
+    featured: initialData.featured || false,
+    parking: initialData.parking || 'None'
   };
 
   const form = useForm<FormValues>({
@@ -188,7 +218,7 @@ export const ListingForm = ({
     'Student Lease (e.g., 8 months)', 'Sublet', 'Flexible Lease'
   ];
   const LISTING_TYPES = [
-    'Long Term', 'Short Term', 'Vacation Rental', 'Sublet', 'Rent-to-Own', 'Other'
+    'Long Term', 'Short Term', 'Vacation Rental', 'Sublet', 'Rent-to-Own', 'Room for Rent', 'Other'
   ];
 
   // Add state for 'Other' fields
@@ -196,12 +226,35 @@ export const ListingForm = ({
   const [parkingOther, setParkingOther] = useState('');
   const [leaseTypeOther, setLeaseTypeOther] = useState('');
   const [listingTypeOther, setListingTypeOther] = useState('');
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   // Add state for 'Available Immediately'
   const [availableImmediately, setAvailableImmediately] = useState(false);
 
   const handlePreview = () => { /* TODO: Implement preview logic */ };
   const handleSaveDraft = () => { /* TODO: Implement save draft logic */ };
+
+  const validateOtherField = (value: string, fieldName: string) => {
+    if (value === 'Other' && !propertyTypeOther && fieldName === 'propertyType') {
+      form.setError('propertyType', { message: 'Please specify the property type' });
+      return false;
+    }
+    if (value === 'Other' && !parkingOther && fieldName === 'parking') {
+      form.setError('parking', { message: 'Please specify the parking type' });
+      return false;
+    }
+    if (value === 'Other' && !leaseTypeOther && fieldName === 'leaseType') {
+      form.setError('leaseType', { message: 'Please specify the lease type' });
+      return false;
+    }
+    if (value === 'Other' && !listingTypeOther && fieldName === 'listingType') {
+      form.setError('listingType', { message: 'Please specify the listing type' });
+      return false;
+    }
+    return true;
+  };
+
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   return (
     <Form {...form}>
@@ -304,84 +357,306 @@ export const ListingForm = ({
           )}
         />
 
+        {/* Image Upload Section */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <FormLabel>Upload Images (optional)</FormLabel>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-help text-muted-foreground">ℹ️</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Upload up to 10 images. Max size: 5MB each.</p>
+                  <p>Supported formats: JPG, PNG, WebP</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex flex-col gap-4">
+            <Input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={uploadingImages}
+              onChange={async (e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+
+                // Check file sizes
+                const oversizedFiles = Array.from(files).filter(file => file.size > MAX_FILE_SIZE);
+                if (oversizedFiles.length > 0) {
+                  toast.error(`Some files exceed the 5MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
+                  return;
+                }
+
+                // Check total number of images
+                const currentImages = form.getValues('images') || [];
+                if (currentImages.length + files.length > 10) {
+                  toast.error('Maximum 10 images allowed');
+                  return;
+                }
+
+                try {
+                  setUploadingImages(true);
+                  const formData = new FormData();
+                  for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                  }
+
+                  const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Failed to upload images');
+                  }
+
+                  const data = await response.json();
+                  form.setValue('images', [...currentImages, ...data.urls]);
+                  toast.success('Images uploaded successfully');
+                } catch (error) {
+                  console.error('Error uploading images:', error);
+                  toast.error('Failed to upload images');
+                } finally {
+                  setUploadingImages(false);
+                }
+              }}
+            />
+            {uploadingImages && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                Uploading images...
+              </div>
+            )}
+          </div>
+
+          {/* Image Preview Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+            {form.watch('images')?.map((url, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={url}
+                  alt={`Uploaded image ${index + 1}`}
+                  className="w-full h-32 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentImages = form.getValues('images') || [];
+                    form.setValue(
+                      'images',
+                      currentImages.filter((_, i) => i !== index)
+                    );
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <h2 className="text-lg font-semibold mb-2">Property Details</h2>
-        <FormField
-          control={form.control}
-          name="propertyType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Property Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="propertyType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Property Type</FormLabel>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    validateOtherField(value, 'propertyType');
+                  }} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {PROPERTY_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {/* Show 'Other' input if selected */}
+                {form.watch('propertyType') === 'Other' && (
+                  <Input 
+                    value={propertyTypeOther} 
+                    onChange={e => {
+                      setPropertyTypeOther(e.target.value);
+                      if (e.target.value) {
+                        form.clearErrors('propertyType');
+                      }
+                    }} 
+                    placeholder="Please specify" 
+                    className="mt-2" 
+                  />
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="listingType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Listing Type</FormLabel>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    validateOtherField(value, 'listingType');
+                  }} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select listing type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {LISTING_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {/* Show 'Other' input if selected */}
+                {form.watch('listingType') === 'Other' && (
+                  <Input 
+                    value={listingTypeOther} 
+                    onChange={e => {
+                      setListingTypeOther(e.target.value);
+                      if (e.target.value) {
+                        form.clearErrors('listingType');
+                      }
+                    }} 
+                    placeholder="Please specify" 
+                    className="mt-2" 
+                  />
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="leaseType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lease Type</FormLabel>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    validateOtherField(value, 'leaseType');
+                  }} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select lease type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {LEASE_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {/* Show 'Other' input if selected */}
+                {form.watch('leaseType') === 'Other' && (
+                  <Input 
+                    value={leaseTypeOther} 
+                    onChange={e => {
+                      setLeaseTypeOther(e.target.value);
+                      if (e.target.value) {
+                        form.clearErrors('leaseType');
+                      }
+                    }} 
+                    placeholder="Please specify" 
+                    className="mt-2" 
+                  />
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="parking"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Parking</FormLabel>
+                <Select 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    validateOtherField(value, 'parking');
+                  }} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select parking type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {PARKING_OPTIONS.map(option => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {/* Show 'Other' input if selected */}
+                {form.watch('parking') === 'Other' && (
+                  <Input 
+                    value={parkingOther} 
+                    onChange={e => {
+                      setParkingOther(e.target.value);
+                      if (e.target.value) {
+                        form.clearErrors('parking');
+                      }
+                    }} 
+                    placeholder="Please specify" 
+                    className="mt-2" 
+                  />
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="availableDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Available Date</FormLabel>
                 <FormControl>
-                  <SelectTrigger className="bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-blue-500">
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
+                  <Input type="date" {...field} />
                 </FormControl>
-                <SelectContent className="bg-gray-900 text-white border border-gray-700 shadow-lg max-h-60 overflow-y-auto">
-                  {PROPERTY_TYPES.map(type => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {/* Show 'Other' input if selected */}
-              {form.watch('propertyType') === 'Other' && (
-                <Input value={propertyTypeOther} onChange={e => setPropertyTypeOther(e.target.value)} placeholder="Please specify" className="mt-2" />
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="listingType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Listing Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select listing type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="short_term">Short Term</SelectItem>
-                  <SelectItem value="long_term">Long Term</SelectItem>
-                  <SelectItem value="flexible">Flexible</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="phoneNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number (Optional)</FormLabel>
-              <FormControl>
-                <Input type="tel" placeholder="e.g., (123) 456-7890" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="facebookUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Facebook Profile URL (Optional)</FormLabel>
-              <FormControl>
-                <Input type="url" placeholder="e.g., https://facebook.com/username" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <div className="flex items-center gap-2 mt-8">
+            <Checkbox checked={availableImmediately} onCheckedChange={checked => {
+              setAvailableImmediately(!!checked);
+              if (checked) form.setValue('availableDate', new Date().toISOString().split('T')[0]);
+            }} />
+            <span>Available Immediately</span>
+          </div>
+        </div>
 
         {/* Contact Information */}
         <h2 className="text-lg font-semibold mb-2 mt-6">Contact Information</h2>
@@ -393,127 +668,78 @@ export const ListingForm = ({
             </p>
           </div>
           
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#CCCCCC] flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3B82F6]"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    Phone Number (Optional)
+                  </FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="tel" 
+                      placeholder="e.g., (123) 456-7890" 
+                      {...field} 
+                      className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                    />
+                  </FormControl>
+                  <p className="text-sm text-[#A0A0A0]">Add your phone number if you'd like potential renters to call or text you.</p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="facebookUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[#CCCCCC] flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3B82F6]"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    Facebook Profile URL (Optional)
+                  </FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="url" 
+                      placeholder="e.g., https://facebook.com/username" 
+                      {...field} 
+                      className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
+                    />
+                  </FormControl>
+                  <p className="text-sm text-[#A0A0A0]">Link to your Facebook profile or a relevant Facebook group.</p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        {showStatusToggle && (
           <FormField
             control={form.control}
-            name="phoneNumber"
+            name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[#CCCCCC] flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3B82F6]"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                  Phone Number (Optional)
-                </FormLabel>
-                <FormControl>
-                  <Input 
-                    type="tel" 
-                    placeholder="e.g., (123) 456-7890" 
-                    {...field} 
-                    className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
-                  />
-                </FormControl>
-                <p className="text-sm text-[#A0A0A0]">Add your phone number if you'd like potential renters to call or text you.</p>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Active</SelectItem>
+                    <SelectItem value="ARCHIVED">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="facebookUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[#CCCCCC] flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#3B82F6]"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                  Facebook Profile URL (Optional)
-                </FormLabel>
-                <FormControl>
-                  <Input 
-                    type="url" 
-                    placeholder="e.g., https://facebook.com/username" 
-                    {...field} 
-                    className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
-                  />
-                </FormControl>
-                <p className="text-sm text-[#A0A0A0]">Link to your Facebook profile or a relevant Facebook group.</p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="leaseType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lease Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select lease type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="fixed">Fixed Term (6 months/1 year)</SelectItem>
-                  <SelectItem value="month_to_month">Month to Month</SelectItem>
-                  <SelectItem value="short_term">Short Term (less than 6 months)</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="availableDate"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Available Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="ARCHIVED">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex items-center gap-2 mt-2">
-          <Checkbox checked={availableImmediately} onCheckedChange={checked => {
-            setAvailableImmediately(!!checked);
-            if (checked) form.setValue('availableDate', new Date().toISOString().split('T')[0]);
-          }} />
-          <span>Available Immediately</span>
-        </div>
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="ml-2 cursor-pointer text-gray-400">ℹ️</span>
-            </TooltipTrigger>
-            <TooltipContent>Upload up to 10 images. Max size: 5MB each.</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        )}
 
         <div className="flex gap-2 mt-4">
           <Button type="button" variant="secondary" onClick={handlePreview}>Preview Listing</Button>

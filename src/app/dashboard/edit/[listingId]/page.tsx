@@ -58,6 +58,32 @@ interface ListingFormData {
   facebookUrl: string;
 }
 
+// Define all possible features and utilities (move outside component)
+const allFeatures = [
+  'wifi',
+  'airConditioning',
+  'laundry',
+  'heating',
+  'furnished',
+  'smartHomeFeatures',
+  'walkInCloset',
+] as const;
+type FeaturesObj = { [K in typeof allFeatures[number]]: boolean };
+
+const allUtilities = [
+  'electricity',
+  'gas',
+  'water',
+  'internet',
+  'trashCollection',
+] as const;
+type UtilitiesObj = { [K in typeof allUtilities[number]]: boolean };
+
+function arrayToFeatureObj(arr: string[] | undefined, all: readonly string[]): Record<string, boolean> {
+  const set = new Set(arr || []);
+  return Object.fromEntries(all.map(key => [key, set.has(key)]));
+}
+
 export default async function EditListingPage({
   params,
 }: {
@@ -105,22 +131,8 @@ export default async function EditListingPage({
             parking: listing.parking || 'None',
             featured: listing.featured || false,
             status: listing.status,
-            features: listing.features || {
-              wifi: false,
-              airConditioning: false,
-              laundry: false,
-              heating: false,
-              furnished: false,
-              smartHomeFeatures: false,
-              walkInCloset: false,
-            },
-            utilities: listing.utilities || {
-              electricity: false,
-              gas: false,
-              water: false,
-              internet: false,
-              trashCollection: false,
-            },
+            features: arrayToFeatureObj(listing.features, allFeatures) as FeaturesObj,
+            utilities: arrayToFeatureObj(listing.utilities, allUtilities) as UtilitiesObj,
             phoneNumber: listing.phoneNumber || '',
             facebookUrl: listing.facebookUrl || '',
           }}
@@ -147,6 +159,7 @@ export default async function EditListingPage({
             }
           }}
           showStatusToggle={true}
+          isSubmitting={false}
         />
       </div>
     );
