@@ -258,107 +258,9 @@ export const ListingForm = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="price"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="bedrooms"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bedrooms</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="bathrooms"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bathrooms</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="squareFeet"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Square Footage</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         {/* Image Upload Section */}
-        <div className="space-y-4">
+        <div className="bg-[#18181B] border border-[#232329] rounded-xl shadow-md p-6 space-y-4">
           <div className="flex items-center gap-2">
             <FormLabel>Upload Images (optional)</FormLabel>
             <TooltipProvider>
@@ -431,7 +333,6 @@ export const ListingForm = ({
               </div>
             )}
           </div>
-
           {/* Image Preview Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {form.watch('images')?.map((url, index) => (
@@ -459,215 +360,210 @@ export const ListingForm = ({
           </div>
         </div>
 
-        <h2 className="text-lg font-semibold mb-2">Property Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="propertyType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Property Type</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    validateOtherField(value, 'propertyType');
-                  }} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select property type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PROPERTY_TYPES.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {/* Show 'Other' input if selected */}
-                {form.watch('propertyType') === 'Other' && (
-                  <Input 
-                    value={propertyTypeOther} 
-                    onChange={e => {
-                      setPropertyTypeOther(e.target.value);
-                      if (e.target.value) {
-                        form.clearErrors('propertyType');
-                      }
+        {/* Property Details Card */}
+        <div className="bg-[#18181B] border border-[#232329] rounded-xl shadow-md p-6 space-y-6">
+          <h2 className="text-lg font-semibold mb-2">Property Details</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="propertyType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Property Type</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      validateOtherField(value, 'propertyType');
                     }} 
-                    placeholder="Please specify" 
-                    className="mt-2" 
-                  />
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="listingType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Listing Type</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    validateOtherField(value, 'listingType');
-                  }} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select listing type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {LISTING_TYPES.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {/* Show 'Other' input if selected */}
-                {form.watch('listingType') === 'Other' && (
-                  <Input 
-                    value={listingTypeOther} 
-                    onChange={e => {
-                      setListingTypeOther(e.target.value);
-                      if (e.target.value) {
-                        form.clearErrors('listingType');
-                      }
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select property type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PROPERTY_TYPES.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* Show 'Other' input if selected */}
+                  {form.watch('propertyType') === 'Other' && (
+                    <Input 
+                      value={propertyTypeOther} 
+                      onChange={e => {
+                        setPropertyTypeOther(e.target.value);
+                        if (e.target.value) {
+                          form.clearErrors('propertyType');
+                        }
+                      }} 
+                      placeholder="Please specify" 
+                      className="mt-2" 
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="listingType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Listing Type</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      validateOtherField(value, 'listingType');
                     }} 
-                    placeholder="Please specify" 
-                    className="mt-2" 
-                  />
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="leaseType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Lease Type</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    validateOtherField(value, 'leaseType');
-                  }} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select lease type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {LEASE_TYPES.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {/* Show 'Other' input if selected */}
-                {form.watch('leaseType') === 'Other' && (
-                  <Input 
-                    value={leaseTypeOther} 
-                    onChange={e => {
-                      setLeaseTypeOther(e.target.value);
-                      if (e.target.value) {
-                        form.clearErrors('leaseType');
-                      }
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select listing type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {LISTING_TYPES.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* Show 'Other' input if selected */}
+                  {form.watch('listingType') === 'Other' && (
+                    <Input 
+                      value={listingTypeOther} 
+                      onChange={e => {
+                        setListingTypeOther(e.target.value);
+                        if (e.target.value) {
+                          form.clearErrors('listingType');
+                        }
+                      }} 
+                      placeholder="Please specify" 
+                      className="mt-2" 
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="leaseType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Lease Type</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      validateOtherField(value, 'leaseType');
                     }} 
-                    placeholder="Please specify" 
-                    className="mt-2" 
-                  />
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="parking"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Parking</FormLabel>
-                <Select 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    validateOtherField(value, 'parking');
-                  }} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select parking type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PARKING_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {/* Show 'Other' input if selected */}
-                {form.watch('parking') === 'Other' && (
-                  <Input 
-                    value={parkingOther} 
-                    onChange={e => {
-                      setParkingOther(e.target.value);
-                      if (e.target.value) {
-                        form.clearErrors('parking');
-                      }
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select lease type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {LEASE_TYPES.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* Show 'Other' input if selected */}
+                  {form.watch('leaseType') === 'Other' && (
+                    <Input 
+                      value={leaseTypeOther} 
+                      onChange={e => {
+                        setLeaseTypeOther(e.target.value);
+                        if (e.target.value) {
+                          form.clearErrors('leaseType');
+                        }
+                      }} 
+                      placeholder="Please specify" 
+                      className="mt-2" 
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="parking"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Parking</FormLabel>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      validateOtherField(value, 'parking');
                     }} 
-                    placeholder="Please specify" 
-                    className="mt-2" 
-                  />
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="availableDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Available Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex items-center gap-2 mt-8">
-            <Checkbox checked={availableImmediately} onCheckedChange={checked => {
-              setAvailableImmediately(!!checked);
-              if (checked) form.setValue('availableDate', new Date().toISOString().split('T')[0]);
-            }} />
-            <span>Available Immediately</span>
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select parking type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PARKING_OPTIONS.map(option => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* Show 'Other' input if selected */}
+                  {form.watch('parking') === 'Other' && (
+                    <Input 
+                      value={parkingOther} 
+                      onChange={e => {
+                        setParkingOther(e.target.value);
+                        if (e.target.value) {
+                          form.clearErrors('parking');
+                        }
+                      }} 
+                      placeholder="Please specify" 
+                      className="mt-2" 
+                    />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="availableDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Available Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex items-center gap-2 mt-8">
+              <Checkbox checked={availableImmediately} onCheckedChange={checked => {
+                setAvailableImmediately(!!checked);
+                if (checked) form.setValue('availableDate', new Date().toISOString().split('T')[0]);
+              }} />
+              <span>Available Immediately</span>
+            </div>
           </div>
         </div>
 
-        {/* Contact Information */}
-        <h2 className="text-lg font-semibold mb-2 mt-6">Contact Information</h2>
-        <div className="bg-[#1F1F1F] border border-[#333333] rounded-xl shadow-md p-6 space-y-4 hover:shadow-lg transition-shadow">
+        {/* Contact Information Card */}
+        <div className="bg-[#18181B] border border-[#232329] rounded-xl shadow-md p-6 space-y-4">
+          <h2 className="text-lg font-semibold mb-2">Contact Information</h2>
           <div className="space-y-2">
             <p className="text-[#A0A0A0] text-sm">
               Add your contact details below (optional). This information will be displayed on your listing 
               so potential renters can reach out to you directly about the property.
             </p>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
@@ -691,7 +587,6 @@ export const ListingForm = ({
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="facebookUrl"

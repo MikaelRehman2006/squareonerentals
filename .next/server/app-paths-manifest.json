@@ -1,9 +1,9 @@
 {
-  "/listings/[listingId]/edit/page": "app/listings/[listingId]/edit/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/api/listings/me/route": "app/api/listings/me/route.js",
-  "/submit/page": "app/submit/page.js",
   "/api/users/me/route": "app/api/users/me/route.js",
-  "/api/listings/[listingId]/route": "app/api/listings/[listingId]/route.js"
+  "/submit/page": "app/submit/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/listings/[listingId]/edit/page": "app/listings/[listingId]/edit/page.js",
+  "/api/listings/[listingId]/route": "app/api/listings/[listingId]/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/api/listings/me/route": "app/api/listings/me/route.js"
 }
