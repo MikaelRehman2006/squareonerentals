@@ -165,26 +165,22 @@ export const ListingForm = ({
       if (!session?.user?.email) {
         throw new Error('Unauthorized');
       }
-      let featuresArray: string[] = [];
-      if (isPlainObject(data.features)) {
-        const featuresObj = data.features as Record<string, boolean>;
-        featuresArray = Object.keys(featuresObj).filter((key: string) => {
-          const val: boolean = featuresObj[key];
-          return typeof val === 'boolean' && val;
-        });
-      } else if (Array.isArray(data.features)) {
-        featuresArray = data.features;
-      }
-      let utilitiesArray: string[] = [];
-      if (isPlainObject(data.utilities)) {
-        const utilitiesObj = data.utilities as Record<string, boolean>;
-        utilitiesArray = Object.keys(utilitiesObj).filter((key: string) => {
-          const val: boolean = utilitiesObj[key];
-          return typeof val === 'boolean' && val;
-        });
-      } else if (Array.isArray(data.utilities)) {
-        utilitiesArray = data.utilities;
-      }
+      // Convert features object to array
+      const featuresArray: string[] = [];
+      if (data.features?.wifi) featuresArray.push('WiFi Included');
+      if (data.features?.airConditioning) featuresArray.push('Air Conditioning');
+      if (data.features?.laundry) featuresArray.push('In-unit Laundry');
+      if (data.features?.heating) featuresArray.push('Heating');
+      if (data.features?.furnished) featuresArray.push('Furnished');
+      if (data.features?.smartHomeFeatures) featuresArray.push('Smart Home Features');
+      if (data.features?.walkInCloset) featuresArray.push('Walk-in Closet');
+      // Convert utilities object to array
+      const utilitiesArray: string[] = [];
+      if (data.utilities?.electricity) utilitiesArray.push('Electricity');
+      if (data.utilities?.gas) utilitiesArray.push('Gas');
+      if (data.utilities?.water) utilitiesArray.push('Water');
+      if (data.utilities?.internet) utilitiesArray.push('Internet');
+      if (data.utilities?.trashCollection) utilitiesArray.push('Trash Collection');
       const formattedData = {
         ...data,
         buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities : [],
@@ -318,7 +314,7 @@ export const ListingForm = ({
   };
 
   useEffect(() => {
-    // Features
+    // Preload features
     const featureList: string[] = [];
     const features = form.getValues('features');
     if (features?.wifi) featureList.push('WiFi Included');
@@ -329,7 +325,7 @@ export const ListingForm = ({
     if (features?.smartHomeFeatures) featureList.push('Smart Home Features');
     if (features?.walkInCloset) featureList.push('Walk-in Closet');
     setSelectedFeatures(featureList);
-    // Utilities
+    // Preload utilities
     const utilityList: string[] = [];
     const utilities = form.getValues('utilities');
     if (utilities?.electricity) utilityList.push('Electricity');
