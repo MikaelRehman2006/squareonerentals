@@ -599,15 +599,9 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         featureArray = selectedFeatures;
         console.log('Using selectedFeatures array:', featureArray);
       } else {
-        // Fall back to converting from object if needed
-        featureArray = Object.entries(data.features || {})
-          .filter(([_, value]) => value === true)
-          .map(([key, _]) => {
-            // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
-            return key.replace(/([A-Z])/g, ' $1')
-              .replace(/^./, str => str.toUpperCase());
-          });
-        console.log('Converted features from object:', featureArray);
+        // Always treat as array
+        featureArray = Array.isArray(data.features) ? data.features : [];
+        console.log('Using features as array:', featureArray);
       }
 
       // Convert utilities object to array
@@ -617,15 +611,9 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         utilitiesArray = selectedUtilities;
         console.log('Using selectedUtilities array:', utilitiesArray);
       } else {
-        // Fall back to converting from object if needed
-        utilitiesArray = Object.entries(data.utilities || {})
-          .filter(([_, value]) => value === true)
-          .map(([key, _]) => {
-            // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
-            return key.replace(/([A-Z])/g, ' $1')
-              .replace(/^./, str => str.toUpperCase());
-          });
-        console.log('Converted utilities from object:', utilitiesArray);
+        // Always treat as array
+        utilitiesArray = Array.isArray(data.utilities) ? data.utilities : [];
+        console.log('Using utilities as array:', utilitiesArray);
       }
       
       // Make sure building amenities is properly formatted as an array

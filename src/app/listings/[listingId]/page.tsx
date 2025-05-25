@@ -56,80 +56,38 @@ function convertBuildingAmenitiesToArray(amenities: any): string[] {
 // Helper function to convert features object to array
 function convertFeaturesToArray(features: any): string[] {
   if (!features) return [];
-  
-  // If already an array, format each item properly
   if (Array.isArray(features)) {
-    return features.map(feature => {
-      if (typeof feature === 'string') {
-        // If it's already a string, ensure proper formatting
-        return feature.charAt(0).toUpperCase() + feature.slice(1);
-      }
-      return String(feature);
-    });
+    return features.map(feature =>
+      typeof feature === 'string' ? feature.charAt(0).toUpperCase() + feature.slice(1) : String(feature)
+    );
   }
-  
-  // If features is an object with boolean values, extract keys where value is true
-  if (typeof features === 'object') {
-    return Object.entries(features)
-      .filter(([_, value]) => value === true)
-      .map(([key, _]) => {
-        // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
-        return key.replace(/([A-Z])/g, ' $1')
-          .replace(/^./, str => str.toUpperCase());
-      });
-  }
-  
-  // If it's a string, try to parse it as JSON
   if (typeof features === 'string') {
     try {
       const parsed = JSON.parse(features);
-      return convertFeaturesToArray(parsed); // Recursively process the parsed result
+      return convertFeaturesToArray(parsed);
     } catch (e) {
-      // If parsing fails, it might be a comma-separated string
       return features.split(',').map(item => item.trim());
     }
   }
-  
   return [];
 }
 
 // Helper function to convert utilities object to array
 function convertUtilitiesToArray(utilities: any): string[] {
   if (!utilities) return [];
-  
-  // If already an array, format each item properly
   if (Array.isArray(utilities)) {
-    return utilities.map(utility => {
-      if (typeof utility === 'string') {
-        // If it's already a string, ensure proper formatting
-        return utility.charAt(0).toUpperCase() + utility.slice(1);
-      }
-      return String(utility);
-    });
+    return utilities.map(utility =>
+      typeof utility === 'string' ? utility.charAt(0).toUpperCase() + utility.slice(1) : String(utility)
+    );
   }
-  
-  // If utilities is an object with boolean values, extract keys where value is true
-  if (typeof utilities === 'object') {
-    return Object.entries(utilities)
-      .filter(([_, value]) => value === true)
-      .map(([key, _]) => {
-        // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
-        return key.replace(/([A-Z])/g, ' $1')
-          .replace(/^./, str => str.toUpperCase());
-      });
-  }
-  
-  // If it's a string, try to parse it as JSON
   if (typeof utilities === 'string') {
     try {
       const parsed = JSON.parse(utilities);
-      return convertUtilitiesToArray(parsed); // Recursively process the parsed result
+      return convertUtilitiesToArray(parsed);
     } catch (e) {
-      // If parsing fails, it might be a comma-separated string
       return utilities.split(',').map(item => item.trim());
     }
   }
-  
   return [];
 }
 
