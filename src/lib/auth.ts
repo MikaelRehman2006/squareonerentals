@@ -86,10 +86,21 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       try {
-        if (session.user) {
-          session.user.id = token.id as string;
-          session.user.email = token.email as string;
-          session.user.role = ((token.role as string) || 'USER') as 'USER' | 'ADMIN';
+        if (session.user && token.email) {
+          await connectDB();
+          const dbUser = await User.findOne({ email: token.email });
+          if (dbUser) {
+            session.user.id = dbUser._id.toString();
+            session.user.email = dbUser.email;
+            session.user.name = dbUser.name;
+            session.user.image = dbUser.image;
+            session.user.role = dbUser.role || 'USER';
+          } else {
+            // fallback to token if user not found
+            session.user.id = token.id as string;
+            session.user.email = token.email as string;
+            session.user.role = ((token.role as string) || 'USER') as 'USER' | 'ADMIN';
+          }
         }
         return session;
       } catch (error) {
