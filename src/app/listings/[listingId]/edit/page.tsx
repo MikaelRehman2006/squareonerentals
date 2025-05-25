@@ -191,6 +191,12 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         const data = await response.json();
         setListing(data);
         
+        // Log the full listing data for debugging
+        console.log('Full listing data from API:', data);
+        
+        // Explicitly log the address
+        console.log('Address from API before form reset:', data.address);
+        
         // Initialize form with listing data
         form.reset({
           title: data.title || '',
@@ -238,6 +244,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           // Use a stronger approach for address - log what we're trying to set
           if (data.address) {
             console.log('Setting address to:', data.address);
+            // First try using setValue with all flags
             form.setValue('address', data.address, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
             
             // Force update the address field (needed for some form libraries)
@@ -245,7 +252,14 @@ export default function EditListingPage({ params }: { params: { listingId: strin
             if (addressField) {
               addressField.value = data.address;
               console.log('Manually updated address input element');
+              
+              // Dispatch input event to trigger any form listeners
+              const event = new Event('input', { bubbles: true });
+              addressField.dispatchEvent(event);
             }
+            
+            // Also try using the register method
+            form.register('address', { value: data.address });
           }
           
           if (data.phoneNumber) form.setValue('phoneNumber', data.phoneNumber, { shouldValidate: true });
@@ -901,6 +915,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                         <FormControl>
                           <Input 
                             {...field} 
+                            id="address-field"
                             value={field.value || ''}
                             onChange={(e) => {
                               field.onChange(e.target.value);
