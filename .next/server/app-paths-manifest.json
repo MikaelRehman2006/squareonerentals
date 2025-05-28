@@ -1,6 +1,4 @@
 {
-  "/submit/page": "app/submit/page.js",
-  "/auth/signin/page": "app/auth/signin/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/users/me/route": "app/api/users/me/route.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/realtors/page": "app/realtors/page.js"
 }

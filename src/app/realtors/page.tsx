@@ -18,34 +18,33 @@ interface Realtor {
   description: string;
   about: string;
   email: string;
+  phone?: string;
+  officePhone?: string;
+  officeAddress?: string;
+  tagline?: string;
+  badge?: string;
+  background?: string;
 }
 
 const realtors: Realtor[] = [
   {
-    id: '1',
-    name: 'Sarah Johnson',
-    photo: '/avatars/realtor1.jpg',
-    location: 'Downtown Toronto',
-    rating: 4.8,
-    reviews: 156,
-    specialties: ['Luxury Rentals', 'Student Housing'],
-    experience: '8',
-    description: 'Highly experienced realtor with a passion for helping clients find their dream home.',
-    about: 'Sarah has been in the real estate industry for over 8 years and has a proven track record of success.',
-    email: 'sarah.johnson@squareonerentals.com'
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    photo: '/avatars/realtor2.jpg',
-    location: 'North York',
-    rating: 4.9,
-    reviews: 203,
-    specialties: ['Condos', 'Family Homes'],
-    experience: '12',
-    description: 'Dedicated and knowledgeable realtor with a focus on providing exceptional client service.',
-    about: 'Michael has been a realtor for over 12 years and has a deep understanding of the local market.',
-    email: 'michael.chen@squareonerentals.com'
+    id: '3',
+    name: 'Gulrez Khan',
+    photo: '/avatars/gulrez.jpg',
+    location: 'Mississauga, ON',
+    rating: 5.0,
+    reviews: 0,
+    specialties: ['Residential & Commercial Real Estate', 'Investment Properties', 'Greater Toronto Area (GTA)'],
+    experience: '',
+    description: 'Strategic | Reliable | Experienced',
+    about: 'With over 21 years of leadership in digital transformation and client success in the banking and tech industries, Gulrez brings a results-driven mindset to every real estate transaction. Whether you\'re buying your first home or investing in commercial property, Gulrez is committed to delivering clarity, trust, and professionalism every step of the way.',
+    email: 'https://www.rightathomerealty.com/gulrez-khan',
+    phone: '(647) 961-1791',
+    officePhone: '(905) 565-9200',
+    officeAddress: '480 Eglinton Ave W, Mississauga, ON',
+    tagline: 'Strategic | Reliable | Experienced',
+    badge: 'Sales Representative – Right At Home Realty Inc.',
+    background: 'With over 21 years of leadership in digital transformation and client success in the banking and tech industries, Gulrez brings a results-driven mindset to every real estate transaction. Whether you\'re buying your first home or investing in commercial property, Gulrez is committed to delivering clarity, trust, and professionalism every step of the way.'
   },
   // Add more realtors as needed
 ];
@@ -331,12 +330,6 @@ export default function RealtorsPage() {
                         
                         <div className="flex items-center mt-2">
                           <StarRating rating={realtor.rating} />
-                          <span className="ml-2 text-sm font-medium text-gray-800">
-                            {realtor.rating.toFixed(1)}/5.0
-                          </span>
-                          <span className="ml-1 text-xs text-gray-600">
-                            ({realtor.reviews} reviews)
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -425,12 +418,14 @@ export default function RealtorsPage() {
                   <Mail className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="text-sm text-gray-500">You can contact him at Right at Home Realty</p>
                   <a 
-                    href={`mailto:${selectedRealtor?.email || 'contact@squareonerentals.com'}`}
-                    className="text-gray-900 font-medium hover:text-blue-600 transition-colors"
+                    href={selectedRealtor?.email}
+                    className="text-blue-600 font-medium hover:underline transition-colors"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    {selectedRealtor?.email || 'contact@squareonerentals.com'}
+                    rightathomerealty.com/gulrez-khan
                   </a>
                 </div>
               </div>
