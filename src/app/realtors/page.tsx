@@ -30,7 +30,7 @@ const realtors: Realtor[] = [
   {
     id: '3',
     name: 'Gulrez Khan',
-    photo: '/avatars/gulrez.jpg',
+    photo: '/images/gulrez.jpg',
     location: 'Mississauga, ON',
     rating: 5.0,
     reviews: 0,
