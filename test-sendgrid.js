@@ -1,9 +1,9 @@
-require('dotenv').config({ path: './test.env' });
+require('dotenv').config(); // Use default .env file
 const sgMail = require('@sendgrid/mail');
 
 // Initialize SendGrid with API key from .env
 if (!process.env.SENDGRID_API_KEY) {
-  console.error('ERROR: SENDGRID_API_KEY is not defined in test.env file');
+  console.error('ERROR: SENDGRID_API_KEY is not defined in .env file');
   process.exit(1);
 }
 
