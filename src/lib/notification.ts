@@ -1,6 +1,8 @@
 import { Notification, INotification } from '@/models/Notification';
 import { connectDB } from './mongodb';
 import mongoose from 'mongoose';
+import { sendNotificationEmail } from '@/utils/sendgrid';
+import { User } from '@/models/User';
 
 /**
  * Create a notification for a user
@@ -23,6 +25,47 @@ export async function createNotification({
       relatedUserId,
       read: false,
     });
+    
+    // Also send an email notification
+    try {
+      // Get the user's email and name
+      const user = await User.findById(userId).select('name email').lean();
+      
+      if (user && user.email) {
+        // Set a subject based on the notification type
+        let subject = 'New Notification';
+        
+        switch (type) {
+          case 'PAYMENT':
+            subject = 'Payment Notification';
+            break;
+          case 'LISTING_UPDATE':
+            subject = 'Listing Update';
+            break;
+          case 'SYSTEM':
+            subject = 'System Notification';
+            break;
+          case 'MARKETING':
+            subject = 'Special Offer';
+            break;
+          case 'NEWSLETTER':
+            subject = 'Newsletter';
+            break;
+        }
+        
+        // Send the email notification
+        await sendNotificationEmail({
+          userEmail: user.email,
+          userName: user.name || 'User',
+          subject,
+          message,
+          notificationType: type,
+        });
+      }
+    } catch (emailError) {
+      // Log the error but don't fail the function
+      console.error('Error sending notification email:', emailError);
+    }
     
     return notification;
   } catch (error) {
