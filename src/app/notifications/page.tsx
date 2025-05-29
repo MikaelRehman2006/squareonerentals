@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Switch } from '@/components/ui/switch';
 
 // Sample notification data
 const sampleNotifications = [
@@ -50,11 +49,13 @@ export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState('all');
   
   const unreadCount = notifications.filter(n => !n.read).length;
+  const readCount = notifications.filter(n => n.read).length;
   
   const filteredNotifications = notifications.filter(notification => {
     if (activeTab === 'all') return true;
     if (activeTab === 'unread') return !notification.read;
-    return notification.type === activeTab;
+    if (activeTab === 'read') return notification.read;
+    return true;
   });
 
   const markAsRead = (id: string) => {
@@ -124,9 +125,10 @@ export default function NotificationsPage() {
                 Unread
                 {unreadCount > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 rounded-full">{unreadCount}</span>}
               </TabsTrigger>
-              <TabsTrigger value="message" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">Messages</TabsTrigger>
-              <TabsTrigger value="listing" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">Listings</TabsTrigger>
-              <TabsTrigger value="system" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">System</TabsTrigger>
+              <TabsTrigger value="read" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+                Read
+                {readCount > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 rounded-full">{readCount}</span>}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </motion.div>
@@ -156,18 +158,32 @@ export default function NotificationsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500">{notification.time}</span>
                         
+                        {!notification.read && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-blue-600 border-blue-200 hover:bg-blue-50"
+                            onClick={() => markAsRead(notification.id)}
+                          >
+                            <MailOpen className="h-3.5 w-3.5 mr-1" />
+                            Mark as read
+                          </Button>
+                        )}
+                        
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
+                              <span className="sr-only">Options</span>
                               <Filter className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => markAsRead(notification.id)}>
-                              <MailOpen className="mr-2 h-4 w-4" />
-                              <span>Mark as read</span>
-                            </DropdownMenuItem>
+                            {!notification.read && (
+                              <DropdownMenuItem onClick={() => markAsRead(notification.id)}>
+                                <MailOpen className="mr-2 h-4 w-4" />
+                                <span>Mark as read</span>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem onClick={() => {
                               setNotifications(notifications.filter(n => n.id !== notification.id));
                             }}>

@@ -366,7 +366,25 @@ function getBedroomFilterLabel(filter: string) {
 }
 
 // Components for different view modes
-function GridViewItem({ favorite, onRemove }) {
+interface FavoriteItemProps {
+  favorite: {
+    id: string;
+    title: string;
+    price: number;
+    location: string;
+    bedrooms: number;
+    bathrooms: number;
+    squareFeet: number;
+    parkingSpots: number;
+    imageUrl: string;
+    dateAdded: string;
+    new: boolean;
+    priceDropped: boolean;
+  };
+  onRemove: (id: string) => void;
+}
+
+function GridViewItem({ favorite, onRemove }: FavoriteItemProps) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow border border-gray-200">
       <div className="relative h-48 bg-gray-200">
@@ -429,7 +447,7 @@ function GridViewItem({ favorite, onRemove }) {
   );
 }
 
-function ListViewItem({ favorite, onRemove }) {
+function ListViewItem({ favorite, onRemove }: FavoriteItemProps) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow border border-gray-200">
       <div className="flex flex-col sm:flex-row">
