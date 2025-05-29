@@ -331,7 +331,7 @@ export default function DashboardPage() {
                             <span>Storage Used</span>
                             <span>45%</span>
                           </div>
-                          <Progress value={45} className="h-2 bg-blue-200" indicatorClassName="bg-blue-600" />
+                          <Progress value={45} className="h-2 w-full overflow-hidden rounded-full bg-blue-200 [&>div]:bg-blue-600" />
                         </div>
                       </div>
                       
@@ -585,7 +585,17 @@ export default function DashboardPage() {
 }
 
 // Component for quick stat cards
-function QuickStatCard({ title, value, change, changeText, icon, iconBg, link }) {
+interface QuickStatCardProps {
+  title: string;
+  value: string;
+  change?: string;
+  changeText: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  link: string;
+}
+
+function QuickStatCard({ title, value, change, changeText, icon, iconBg, link }: QuickStatCardProps) {
   return (
     <Link href={link}>
       <Card className="border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200">
@@ -614,7 +624,15 @@ function QuickStatCard({ title, value, change, changeText, icon, iconBg, link })
 }
 
 // Component for listing performance items
-function ListingPerformanceItem({ title, views, saves, trend, image }) {
+interface ListingPerformanceItemProps {
+  title: string;
+  views: number;
+  saves: number;
+  trend: 'up' | 'down';
+  image: string;
+}
+
+function ListingPerformanceItem({ title, views, saves, trend, image }: ListingPerformanceItemProps) {
   return (
     <div className="flex items-center space-x-3 p-3 bg-white border border-gray-100 rounded-lg">
       <div className="h-12 w-12 rounded bg-gray-200 overflow-hidden flex-shrink-0">
@@ -643,7 +661,14 @@ function ListingPerformanceItem({ title, views, saves, trend, image }) {
 }
 
 // Component for interaction items
-function InteractionItem({ name, message, time, image }) {
+interface InteractionItemProps {
+  name: string;
+  message: string;
+  time: string;
+  image: string;
+}
+
+function InteractionItem({ name, message, time, image }: InteractionItemProps) {
   return (
     <div className="flex items-start space-x-3 p-3 bg-white border border-gray-100 rounded-lg">
       <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
@@ -661,7 +686,15 @@ function InteractionItem({ name, message, time, image }) {
 }
 
 // Component for activity items
-function ActivityItem({ title, description, time, icon, iconColor }) {
+interface ActivityItemProps {
+  title: string;
+  description: string;
+  time: string;
+  icon: React.ReactNode;
+  iconColor: string;
+}
+
+function ActivityItem({ title, description, time, icon, iconColor }: ActivityItemProps) {
   return (
     <div className="flex space-x-3">
       <div className={`mt-0.5 rounded-full p-1.5 ${iconColor}`}>
@@ -679,7 +712,15 @@ function ActivityItem({ title, description, time, icon, iconColor }) {
 }
 
 // Component for quick link items
-function QuickLinkItem({ title, description, icon, iconColor, href }) {
+interface QuickLinkItemProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  iconColor: string;
+  href: string;
+}
+
+function QuickLinkItem({ title, description, icon, iconColor, href }: QuickLinkItemProps) {
   return (
     <Link href={href} className="block">
       <div className="flex items-center space-x-3 p-3 bg-white hover:bg-gray-50 border border-gray-100 rounded-lg transition-colors">
@@ -696,7 +737,12 @@ function QuickLinkItem({ title, description, icon, iconColor, href }) {
 }
 
 // Badge component for status indicators
-function Badge({ children, color }) {
+interface BadgeProps {
+  children: React.ReactNode;
+  color: 'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'gray';
+}
+
+function Badge({ children, color }: BadgeProps) {
   const colorClasses = {
     blue: "bg-blue-100 text-blue-800",
     green: "bg-green-100 text-green-800",
