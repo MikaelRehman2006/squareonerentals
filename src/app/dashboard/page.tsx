@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Listing {
-  _id: string;
+  id: string;
   title: string;
   price: number;
   location: string;
@@ -131,7 +131,7 @@ export default function DashboardPage() {
           }
         }
 
-        setListings(listings.filter(listing => listing._id !== id));
+        setListings(listings.filter(listing => listing.id !== id));
         toast.success('Listing deleted successfully');
       } catch (error) {
         if (error instanceof Error) {
@@ -262,7 +262,7 @@ export default function DashboardPage() {
                       </TableHeader>
                       <TableBody>
                         {listings.slice(0, 5).map((listing) => (
-                          <TableRow key={listing._id} className="hover:bg-gray-50">
+                          <TableRow key={listing.id} className="hover:bg-gray-50">
                             <TableCell className="font-medium">
                               <div className="flex items-center">
                                 {listing.title}
@@ -290,16 +290,16 @@ export default function DashboardPage() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleViewListing(listing._id)}>
+                                  <DropdownMenuItem onClick={() => handleViewListing(listing.id)}>
                                     <Eye className="mr-2 h-4 w-4" />
                                     <span>View</span>
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleEditListing(listing._id)}>
+                                  <DropdownMenuItem onClick={() => handleEditListing(listing.id)}>
                                     <Edit className="mr-2 h-4 w-4" />
                                     <span>Edit</span>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
-                                    onClick={() => handleDeleteListing(listing._id)}
+                                    onClick={() => handleDeleteListing(listing.id)}
                                     className="text-red-600 hover:text-red-700 focus:text-red-700"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
