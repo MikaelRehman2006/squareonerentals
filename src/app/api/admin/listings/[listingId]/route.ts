@@ -6,6 +6,7 @@ import { Listing } from '@/models/Listing'
 import { User } from '@/models/User'
 import { Report } from '@/models/Report'
 import mongoose from 'mongoose'
+import { notifyAdminStatusChange } from '@/lib/notification'
 
 type Props = {
   params: {
@@ -184,10 +185,34 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       { new: true }
     ).populate('userId', 'name email').lean() as any
 
+    // Get the session to identify the admin
+    const session = await getServerSession(authOptions)
+    
+    // Send notification to the listing owner about status change
+    try {
+      console.log(`Sending notification to listing owner about status change to: ${status}`)
+      
+      // Get previous status from the original listing
+      const previousStatus = listing.status
+      
+      // Send notification to the listing owner
+      await notifyAdminStatusChange(
+        params.listingId,
+        previousStatus,
+        status,
+        listing.userId._id.toString(),
+        session?.user?.id || 'admin'
+      )
+      
+      console.log(`Notification sent to listing owner (${listing.userId.email}) about status change`)
+    } catch (notificationError) {
+      console.error('Error sending status change notification:', notificationError)
+      // Continue anyway - don't fail the status update if notification fails
+    }
+
     // If listing is being flagged, create an admin report
     if (status === 'FLAGGED') {
       console.log('Creating admin report for flagged listing')
-      const session = await getServerSession(authOptions)
       
       try {
         // Create a report from admin

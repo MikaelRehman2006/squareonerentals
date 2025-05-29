@@ -171,13 +171,32 @@ export async function notifyAdminStatusChange(
       'PENDING': 'pending review',
       'ARCHIVED': 'archived',
       'FEATURED': 'featured',
-      'REJECTED': 'rejected'
+      'REJECTED': 'rejected',
+      'FLAGGED': 'flagged for review'
     };
     
     const prevStatusDisplay = statusMap[previousStatus] || previousStatus.toLowerCase();
     const currStatusDisplay = statusMap[currentStatus] || currentStatus.toLowerCase();
     
-    const message = `An administrator has changed your listing status from ${prevStatusDisplay} to ${currStatusDisplay}.`;
+    let message = '';
+    
+    // Create more specific messages for common admin actions
+    if (currentStatus === 'FLAGGED') {
+      message = `Your listing has been flagged for review by an administrator. This typically happens when content requires verification or has potential policy violations.`;
+    } else if (currentStatus === 'ARCHIVED' && previousStatus !== 'ARCHIVED') {
+      message = `Your listing has been archived by an administrator. It is no longer visible to other users.`;
+    } else if (currentStatus === 'ACTIVE' && previousStatus === 'ARCHIVED') {
+      message = `Good news! Your listing has been reactivated by an administrator and is now visible to other users.`;
+    } else if (currentStatus === 'ACTIVE' && previousStatus === 'FLAGGED') {
+      message = `Good news! Your listing has passed admin review and has been reactivated.`;
+    } else if (currentStatus === 'FEATURED') {
+      message = `Congratulations! Your listing has been featured by an administrator and will receive more visibility.`;
+    } else if (currentStatus === 'REJECTED') {
+      message = `Your listing has been rejected by an administrator and is no longer visible to other users. This typically happens due to policy violations.`;
+    } else {
+      // Generic message for other status changes
+      message = `An administrator has changed your listing status from ${prevStatusDisplay} to ${currStatusDisplay}.`;
+    }
     
     const notification = await createNotification({
       userId: ownerId,

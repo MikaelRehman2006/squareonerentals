@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
 import { getAdminRole } from '@/lib/admin';
+import { notifyAdminStatusChange } from '@/lib/notification';
 
 // GET all listings (admin access)
 export async function GET(request: NextRequest) {
@@ -82,13 +83,36 @@ export async function PATCH(request: NextRequest) {
 
     await connectDB();
 
-    const listing = await Listing.findById(id);
+    // Find listing with previous status
+    const listing = await Listing.findById(id).populate('userId', 'name email');
     if (!listing) {
       return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
     }
 
+    // Store previous status before updating
+    const previousStatus = listing.status;
+    
+    // Update the listing status
     listing.status = status;
     await listing.save();
+
+    // Send notification to the listing owner about status change
+    try {
+      console.log(`Sending notification to listing owner about status change to: ${status}`);
+      
+      await notifyAdminStatusChange(
+        id,
+        previousStatus,
+        status,
+        listing.userId.toString(),
+        session?.user?.id || 'admin'
+      );
+      
+      console.log(`Notification sent to listing owner about status change from ${previousStatus} to ${status}`);
+    } catch (notificationError) {
+      console.error('Error sending status change notification:', notificationError);
+      // Continue anyway - don't fail the status update if notification fails
+    }
 
     return NextResponse.json({
       message: 'Listing updated successfully',

@@ -335,7 +335,7 @@ export default function NotificationsPage() {
                     {notification.type === 'LISTING_UPDATE' && notification.listingId && (
                       <div className="mt-3">
                         <Link 
-                          href={`/listings/${notification.listingId}`}
+                          href={`/listings/${typeof notification.listingId === 'string' ? notification.listingId : notification.listingId._id}`}
                           className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                         >
                           <span>Go to Listing</span>

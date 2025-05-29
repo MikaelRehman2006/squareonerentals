@@ -226,7 +226,9 @@ export function NotificationsDropdown() {
                       notification.type === 'LISTING_UPDATE' ? (
                         <div className="mt-2">
                           <Link
-                            href={`/listings/${notification.listingId._id}`}
+                            href={`/listings/${typeof notification.listingId === 'string' 
+                              ? notification.listingId 
+                              : notification.listingId._id}`}
                             className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                           >
                             <span>Go to Listing</span>
@@ -235,7 +237,9 @@ export function NotificationsDropdown() {
                         </div>
                       ) : (
                         <Link
-                          href={`/listings/${notification.listingId._id}`}
+                          href={`/listings/${typeof notification.listingId === 'string'
+                            ? notification.listingId
+                            : notification.listingId._id}`}
                           className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
                         >
                           <span>View listing</span>
