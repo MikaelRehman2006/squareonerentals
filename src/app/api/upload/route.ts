@@ -24,18 +24,6 @@ const isCloudinaryConfigured = () => {
   return hasUrl || hasCredentials;
 };
 
-if (isCloudinaryConfigured()) {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  cloudinary.config({
-    secure: true,
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret
-  });
-}
-
 async function saveFileLocally(file: File) {
   try {
     const timestamp = Date.now();
@@ -65,6 +53,21 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // Cloudinary config at runtime
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  });
+
+  // Debug env vars
+  console.log("Cloudinary ENV Check", {
+    CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    API_KEY: process.env.CLOUDINARY_API_KEY,
+    API_SECRET_EXISTS: !!process.env.CLOUDINARY_API_SECRET
+  });
+
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
