@@ -470,7 +470,7 @@ export default function AdminNotificationsPage() {
                             <div className="flex-1">
                               <div className="flex justify-between items-start">
                                 <div>
-                                  <h3 className="font-medium">{notification.title}</h3>
+                                  <h3 className="font-medium text-gray-900">{notification.title}</h3>
                                   <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                                 </div>
                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500 hover:text-red-700">
@@ -478,7 +478,7 @@ export default function AdminNotificationsPage() {
                                 </Button>
                               </div>
                               
-                              <div className="flex flex-wrap gap-x-4 mt-3 text-xs text-gray-500">
+                              <div className="flex flex-wrap gap-x-4 mt-3 text-xs text-gray-900">
                                 <span>Sent: {formatDate(notification.sentAt)}</span>
                                 <span>By: {notification.sentBy}</span>
                                 <span>Recipients: {notification.sentToCount} users</span>

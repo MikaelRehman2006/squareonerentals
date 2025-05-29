@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
-import { createNotification } from '@/lib/notification';
+import { 
+  createNotification, 
+  createSystemNotification, 
+  createNewsletterNotification, 
+  createMarketingNotification,
+  createPaymentNotification
+} from '@/lib/notification';
 import { getAdminRole } from '@/lib/admin';
 import { User } from '@/models/User';
 
@@ -52,21 +58,13 @@ export async function POST(request: NextRequest) {
     // Connect to database
     await connectDB();
 
-    // Convert notification type to match the model schema
-    const notificationType = mapNotificationType(type);
-    console.log('Mapped notification type:', notificationType);
-
-    // Get target user IDs
+    // Get target user IDs if needed
     let targetUserIds: string[] = [];
     
-    if (sendToAll) {
-      const users = await User.find({}).select('_id');
-      targetUserIds = users.map(user => user._id.toString());
-      console.log(`Found ${targetUserIds.length} users to send notifications to`);
-    } else if (specificUserIds && specificUserIds.length > 0) {
+    if (!sendToAll && specificUserIds && specificUserIds.length > 0) {
       targetUserIds = specificUserIds;
       console.log(`Sending to ${targetUserIds.length} specific users`);
-    } else {
+    } else if (!sendToAll) {
       console.log('No recipients specified');
       return NextResponse.json(
         { error: 'No recipients specified' },
@@ -82,33 +80,70 @@ export async function POST(request: NextRequest) {
       console.log(`Notification scheduled for ${scheduledDate}`);
     }
 
-    // Format the complete message
-    const completeMessage = `${title}: ${message}`;
-    console.log('Creating notifications with message:', completeMessage);
+    // Use the appropriate notification function based on type
+    let results = [];
+    let recipientCount = 0;
 
-    // Create notifications for each user
-    const results = [];
-    for (const userId of targetUserIds) {
-      try {
-        const notification = await createNotification({
-          userId,
-          message: completeMessage,
-          type: notificationType,
-          // You can add more fields if needed
-        });
-        results.push(notification);
-        console.log(`Created notification for user ${userId}`);
-      } catch (error) {
-        console.error(`Failed to create notification for user ${userId}:`, error);
+    try {
+      switch (type) {
+        case 'system':
+          results = await createSystemNotification(
+            `${title}: ${message}`,
+            sendToAll ? undefined : targetUserIds
+          );
+          recipientCount = results.length;
+          break;
+          
+        case 'newsletter':
+          results = await createNewsletterNotification(
+            title,
+            message,
+            sendToAll ? undefined : targetUserIds
+          );
+          recipientCount = results.length;
+          break;
+          
+        case 'marketing':
+          results = await createMarketingNotification(
+            title,
+            message,
+            sendToAll ? undefined : targetUserIds
+          );
+          recipientCount = results.length;
+          break;
+          
+        default:
+          // For other types, create individual notifications manually
+          if (sendToAll) {
+            const users = await User.find({}).select('_id');
+            targetUserIds = users.map(user => user._id.toString());
+          }
+          
+          for (const userId of targetUserIds) {
+            try {
+              const notification = await createNotification({
+                userId,
+                message: `${title}: ${message}`,
+                type: mapNotificationType(type),
+              });
+              results.push(notification);
+            } catch (error) {
+              console.error(`Failed to create notification for user ${userId}:`, error);
+            }
+          }
+          recipientCount = results.length;
       }
+
+      console.log(`Successfully created ${recipientCount} notifications`);
+
+      return NextResponse.json({
+        success: true,
+        recipientCount
+      });
+    } catch (error) {
+      console.error('Error creating notifications:', error);
+      throw error;
     }
-
-    console.log(`Successfully created ${results.length} notifications`);
-
-    return NextResponse.json({
-      success: true,
-      recipientCount: results.length
-    });
   } catch (error) {
     console.error('Error sending admin notification:', error);
     return NextResponse.json(
@@ -119,7 +154,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to map front-end notification types to database model types
-function mapNotificationType(type: string): 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' {
+function mapNotificationType(type: string): 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT' {
   switch (type) {
     case 'system':
       return 'SYSTEM';
@@ -130,8 +165,11 @@ function mapNotificationType(type: string): 'MESSAGE' | 'LISTING_UPDATE' | 'FAVO
     case 'message':
       return 'MESSAGE';
     case 'newsletter':
+      return 'NEWSLETTER';
     case 'marketing':
+      return 'MARKETING';
     case 'payment':
+      return 'PAYMENT';
     default:
       return 'SYSTEM';
   }

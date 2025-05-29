@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, ArrowLeft, CheckCircle, Trash2, Filter, MailOpen, Clock, User } from 'lucide-react';
+import { Bell, ArrowLeft, CheckCircle, Trash2, Filter, MailOpen, Clock, User, Edit, Star, AlertCircle, Newspaper, Gift, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { NotificationType } from '@/lib/notifications';
 
 // Sample notification data for fallback
 const sampleNotifications = [
@@ -192,16 +193,22 @@ export default function NotificationsPage() {
   };
 
   // Get notification type based on the database type
-  const mapNotificationType = (type: string): string => {
+  const mapNotificationType = (type: string): NotificationType | string => {
     switch (type) {
       case 'MESSAGE':
         return 'message';
       case 'LISTING_UPDATE':
-        return 'listing';
+        return 'listing_update';
       case 'SYSTEM':
         return 'system';
       case 'FAVORITE':
-        return 'listing';
+        return 'favorite_update';
+      case 'NEWSLETTER':
+        return 'newsletter';
+      case 'MARKETING':
+        return 'marketing';
+      case 'PAYMENT':
+        return 'payment';
       default:
         return 'system';
     }
@@ -371,10 +378,18 @@ function getNotificationIcon(type: string) {
   switch (type) {
     case 'message':
       return <MailOpen className="h-5 w-5 text-blue-600" />;
-    case 'listing':
-      return <CheckCircle className="h-5 w-5 text-green-600" />;
+    case 'listing_update':
+      return <Edit className="h-5 w-5 text-indigo-600" />;
+    case 'favorite_update':
+      return <Star className="h-5 w-5 text-amber-600" />;
     case 'system':
-      return <Bell className="h-5 w-5 text-purple-600" />;
+      return <AlertCircle className="h-5 w-5 text-red-600" />;
+    case 'newsletter':
+      return <Newspaper className="h-5 w-5 text-blue-600" />;
+    case 'marketing':
+      return <Gift className="h-5 w-5 text-pink-600" />;
+    case 'payment':
+      return <CreditCard className="h-5 w-5 text-green-600" />;
     default:
       return <Bell className="h-5 w-5 text-gray-600" />;
   }
@@ -384,10 +399,18 @@ function getNotificationIconBg(type: string) {
   switch (type) {
     case 'message':
       return 'bg-blue-50';
-    case 'listing':
-      return 'bg-green-50';
+    case 'listing_update':
+      return 'bg-indigo-50';
+    case 'favorite_update':
+      return 'bg-amber-50';
     case 'system':
-      return 'bg-purple-50';
+      return 'bg-red-50';
+    case 'newsletter':
+      return 'bg-blue-50';
+    case 'marketing':
+      return 'bg-pink-50';
+    case 'payment':
+      return 'bg-green-50';
     default:
       return 'bg-gray-100';
   }
