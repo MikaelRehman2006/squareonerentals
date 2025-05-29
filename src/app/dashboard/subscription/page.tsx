@@ -35,6 +35,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 
+// Direct Stripe portal URL
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/test_28E7sN74A8oWciA6mpebu00';
+
 interface Membership {
   type: string;
   isAnnual: boolean;
@@ -83,30 +86,18 @@ export default function SubscriptionPage() {
     }
   };
 
-  const cancelSubscription = async () => {
+  const cancelSubscription = () => {
     try {
       setCancelingSubscription(true);
-      setErrorMessage('');
       
-      const response = await fetch('/api/user/membership/cancel', {
-        method: 'POST',
-      });
+      // Redirect to the Stripe Customer Portal instead of calling our API
+      toast.info('Redirecting to Stripe Customer Portal to manage your subscription...');
+      window.location.href = STRIPE_PORTAL_URL;
       
-      const data = await response.json();
-      
-      if (response.ok) {
-        setSuccessMessage('Your subscription has been canceled successfully. You will continue to have access until the end of your current billing period.');
-        toast.success('Subscription canceled successfully');
-        // Refresh membership data
-        fetchMembership();
-      } else {
-        throw new Error(data.error || 'Failed to cancel subscription');
-      }
     } catch (error) {
-      console.error('Error canceling subscription:', error);
-      setErrorMessage('Failed to cancel your subscription. Please try again or contact support.');
-      toast.error('Failed to cancel subscription');
-    } finally {
+      console.error('Error redirecting to Stripe portal:', error);
+      setErrorMessage('Failed to access subscription management portal. Please try again later.');
+      toast.error('Failed to access subscription management portal');
       setCancelingSubscription(false);
     }
   };
@@ -229,25 +220,16 @@ export default function SubscriptionPage() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will cancel your subscription. You'll continue to have access until the end of your current billing period 
-                        ({membership.endDate ? new Date(membership.endDate).toLocaleDateString() : 'N/A'}), 
-                        but you won't be charged again.
+                        You'll be redirected to Stripe's Customer Portal where you can cancel your subscription.
+                        After cancellation, you'll continue to have access until the end of your current billing period.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>Stay Subscribed</AlertDialogCancel>
                       <AlertDialogAction 
                         onClick={cancelSubscription}
-                        disabled={cancelingSubscription}
                       >
-                        {cancelingSubscription ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            <span>Processing...</span>
-                          </>
-                        ) : (
-                          'Yes, cancel subscription'
-                        )}
+                        Continue to Stripe Portal
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

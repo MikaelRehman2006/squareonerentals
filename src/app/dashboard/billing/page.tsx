@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Direct Stripe portal URL
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/test_28E7sN74A8oWciA6mpebu00';
+
 export default function BillingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -23,21 +26,10 @@ export default function BillingPage() {
   }, [status, router]);
 
   // Redirect to Stripe Customer Portal
-  const redirectToStripePortal = async () => {
+  const redirectToStripePortal = () => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/user/billing', {
-        method: 'POST',
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.url) {
-        // Redirect to Stripe Billing Portal
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || 'Failed to create billing portal session');
-      }
+      // Direct redirect to the Stripe portal URL
+      window.location.href = STRIPE_PORTAL_URL;
     } catch (error) {
       console.error('Error redirecting to billing portal:', error);
       toast.error('Failed to access billing portal. Please try again later.');
