@@ -250,8 +250,8 @@ export default function DashboardPage() {
                 <>
                   <div className="overflow-hidden rounded-md border border-gray-200">
                     <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50">
+                      <TableHeader className="bg-gray-50">
+                        <TableRow>
                           <TableHead className="font-medium">Title</TableHead>
                           <TableHead className="font-medium">Price</TableHead>
                           <TableHead className="font-medium hidden md:table-cell">Location</TableHead>

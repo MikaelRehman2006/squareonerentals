@@ -31,6 +31,39 @@ interface FilterState {
   sortBy: 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc';
 }
 
+const PROPERTY_TYPES = ['APARTMENT', 'CONDO', 'HOUSE', 'TOWNHOUSE'];
+const AMENITIES = [
+  'Parking',
+  'Pet-friendly',
+  'WiFi Available',
+  'On-site Laundry',
+  'Furnished',
+  'Air Conditioning',
+  'Gym',
+  'Pool',
+  'Security',
+  'Balcony',
+  'Elevator'
+];
+
+const FEATURES = [
+  'WiFi Included',
+  'Air Conditioning',
+  'In-unit Laundry',
+  'Heating',
+  'Furnished',
+  'Smart Home Features',
+  'Walk-in Closet'
+];
+
+const UTILITIES = [
+  'Electricity',
+  'Gas',
+  'Water',
+  'Internet',
+  'Trash Collection'
+];
+
 export default function ListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
@@ -177,9 +210,55 @@ export default function ListingsPage() {
   const removeFilter = (filter: string) => {
     const newFilters = appliedFilters.filter(f => f !== filter);
     setAppliedFilters(newFilters);
-    // Re-apply remaining filters
-    // You'll need to implement the logic to reconstruct the filter state
-    // from the remaining filter tags
+    
+    // Create updated filter state based on remaining filters
+    const updatedFilterState: FilterState = {
+      priceRange: { min: '', max: '' },
+      bedrooms: '',
+      bathrooms: '',
+      propertyType: '',
+      amenities: [],
+      features: [],
+      utilities: [],
+      sortBy: sortBy as 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc'
+    };
+    
+    // Reconstruct filter state from remaining filters
+    newFilters.forEach(f => {
+      // Handle price filters
+      if (f.startsWith('Min $')) {
+        const min = parseInt(f.replace('Min $', '').replace(/,/g, ''));
+        updatedFilterState.priceRange.min = min;
+      } 
+      else if (f.startsWith('Max $')) {
+        const max = parseInt(f.replace('Max $', '').replace(/,/g, ''));
+        updatedFilterState.priceRange.max = max;
+      }
+      // Handle bedroom/bathroom filters
+      else if (f.includes('+ beds')) {
+        updatedFilterState.bedrooms = parseInt(f.replace('+ beds', ''));
+      }
+      else if (f.includes('+ baths')) {
+        updatedFilterState.bathrooms = parseInt(f.replace('+ baths', ''));
+      }
+      // Handle property type
+      else if (PROPERTY_TYPES.includes(f)) {
+        updatedFilterState.propertyType = f;
+      }
+      // Handle amenities, features, utilities
+      else if (AMENITIES.includes(f)) {
+        updatedFilterState.amenities.push(f);
+      }
+      else if (FEATURES.includes(f)) {
+        updatedFilterState.features.push(f);
+      }
+      else if (UTILITIES.includes(f)) {
+        updatedFilterState.utilities.push(f);
+      }
+    });
+    
+    // Apply the reconstructed filters
+    handleFilterChange(updatedFilterState);
   };
 
   return (
