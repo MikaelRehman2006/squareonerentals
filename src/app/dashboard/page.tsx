@@ -388,7 +388,7 @@ export default function DashboardPage() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Link href="/favourites" className="w-full">
+                <Link href="/favorites" className="w-full">
                   <Button variant="outline" className="w-full">
                     <Heart className="h-4 w-4 mr-2" />
                     View Favorites
