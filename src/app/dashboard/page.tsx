@@ -530,7 +530,7 @@ export default function DashboardPage() {
                   description="Manage your property listings" 
                   icon={<Home className="h-5 w-5" />}
                   iconColor="bg-blue-100 text-blue-600"
-                  href="/listings"
+                  href="/listings/manage"
                 />
                 <QuickLinkItem 
                   title="Saved Properties" 
