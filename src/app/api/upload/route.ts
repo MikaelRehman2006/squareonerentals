@@ -53,89 +53,73 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  // Cloudinary config at runtime
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true
-  });
-
-  // Debug env vars
-  console.log("Cloudinary ENV Check", {
-    CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
-    API_KEY: process.env.CLOUDINARY_API_KEY,
-    API_SECRET_EXISTS: !!process.env.CLOUDINARY_API_SECRET
-  });
-
   try {
-    // Check authentication
+    // Cloudinary config at runtime
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+      secure: true,
+    });
+
+    console.log("Cloudinary ENV Check", {
+      API_KEY: process.env.CLOUDINARY_API_KEY,
+      API_SECRET_EXISTS: !!process.env.CLOUDINARY_API_SECRET
+    });
+
+    // Auth check
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const userEmail = session.user?.email;
-    if (!userEmail) {
-      return NextResponse.json({ error: 'User email not found in session' }, { status: 401 });
-    }
+
     await connectDB();
-    const user = await User.findOne({ email: userEmail });
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await User.findOne({ email: session.user.email });
+    if (!user?.membership || user.membership.status !== 'active') {
+      return NextResponse.json({ error: 'Active membership required' }, { status: 403 });
     }
-    const hasMembership = !!user.membership;
-    const isActive = user.membership?.status === 'active';
-    if (!hasMembership || !isActive) {
-      return NextResponse.json({ error: 'Active membership required to upload images' }, { status: 403 });
-    }
-    let formData;
-    try {
-      formData = await request.formData();
-    } catch (formError) {
-      return NextResponse.json({ error: 'Invalid form data submitted' }, { status: 400 });
-    }
+
+    const formData = await request.formData();
     const file = formData.get('file');
+
     if (!(file instanceof File)) {
-      return NextResponse.json({ error: 'Invalid file upload' }, { status: 400 });
-    }
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'File must be an image' }, { status: 400 });
+      return NextResponse.json({ error: 'Only image uploads are allowed' }, { status: 400 });
     }
-    // Upload to Cloudinary
-    try {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const uploadResult = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: 'listings',
-            resource_type: 'image',
-          },
-          (error, result) => {
-            if (error) {
-              console.error("Cloudinary Upload Error", error);
-              reject(new Error(`Cloudinary upload failed: ${error.message || error}`));
-            } else if (result && result.secure_url && result.public_id) {
-              resolve({
-                secure_url: result.secure_url,
-                public_id: result.public_id
-              });
-            } else {
-              reject(new Error('Missing result data from Cloudinary'));
-            }
+
+    // Convert file to buffer
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Upload using stream
+    const uploadResult = await new Promise<{ secure_url: string, public_id: string }>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'listings',
+          resource_type: 'image'
+        },
+        (error, result) => {
+          if (error) {
+            console.error("Cloudinary Upload Error", error);
+            reject(error);
+          } else if (result?.secure_url) {
+            resolve({
+              secure_url: result.secure_url,
+              public_id: result.public_id
+            });
+          } else {
+            reject(new Error("Unexpected Cloudinary result"));
           }
-        );
-        uploadStream.end(buffer);
-      });
-      return NextResponse.json(uploadResult);
-    } catch (cloudinaryError) {
-      return NextResponse.json({ error: 'Image upload failed. Please try again later or contact support.' }, { status: 500 });
-    }
+        }
+      );
+      stream.end(buffer); // Send buffer into the stream
+    });
+
+    return NextResponse.json(uploadResult);
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error occurred' }, { status: 500 });
+    console.error("Upload Failed:", error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }
 
