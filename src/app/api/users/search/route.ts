@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 
+// Specify runtime configuration to fix deployment errors
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     await connectDB();

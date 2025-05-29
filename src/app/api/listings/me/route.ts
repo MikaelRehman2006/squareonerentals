@@ -6,6 +6,9 @@ import { User } from '@/models/User';
 import { connectDB, disconnectDB } from '@/lib/mongodb';
 import mongoose from 'mongoose';
 
+// Specify runtime configuration to fix deployment errors
+export const dynamic = 'force-dynamic';
+
 interface IListing {
   _id: mongoose.Types.ObjectId;
   title: string;

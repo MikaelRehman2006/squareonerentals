@@ -6,6 +6,9 @@ import { User, IUser } from '@/models/User';
 import { Listing, IListing } from '@/models/Listing';
 import mongoose from 'mongoose';
 
+// Specify runtime configuration to fix deployment errors
+export const dynamic = 'force-dynamic';
+
 interface FavoriteResponse {
   id: string;
   title: string;

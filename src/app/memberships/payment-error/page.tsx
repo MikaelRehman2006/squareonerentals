@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
-export default function PaymentErrorPage() {
+function PaymentErrorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -92,5 +92,22 @@ export default function PaymentErrorPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+// Loading fallback component
+function PaymentErrorLoading() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+  );
+}
+
+export default function PaymentErrorPage() {
+  return (
+    <Suspense fallback={<PaymentErrorLoading />}>
+      <PaymentErrorContent />
+    </Suspense>
   );
 } 

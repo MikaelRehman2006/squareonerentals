@@ -6,6 +6,9 @@ import { Report } from '@/models/Report';
 import { User } from '@/models/User';
 import mongoose from 'mongoose';
 
+// Specify runtime configuration to fix deployment errors
+export const dynamic = 'force-dynamic';
+
 // GET all reports for admin
 export async function GET(request: NextRequest) {
   try {

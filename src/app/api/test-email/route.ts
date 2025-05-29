@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { sendTestEmail } from '@/utils/test-email';
 
+// Specify runtime configuration to fix deployment errors
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const success = await sendTestEmail();
