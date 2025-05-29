@@ -157,20 +157,24 @@ export default function AdminNotificationsPage() {
     setIsLoading(true);
     
     try {
-      // In a real app, this would be an API call
-      // await fetch('/api/admin/notifications/send', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     ...form,
-      //     specificUserIds: form.sendToAll ? [] : selectedUsers
-      //   })
-      // });
+      // Call the API endpoint
+      const response = await fetch('/api/admin/notifications/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...form,
+          specificUserIds: form.sendToAll ? [] : selectedUsers
+        })
+      });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send notification');
+      }
       
-      // Add to notification history (in a real app, this would come from the API)
+      const result = await response.json();
+      
+      // Add to notification history
       const newNotification = {
         id: Date.now().toString(),
         type: form.type,
@@ -178,7 +182,7 @@ export default function AdminNotificationsPage() {
         message: form.message,
         sentBy: session?.user?.name || 'admin',
         sentAt: new Date(),
-        sentToCount: form.sendToAll ? sampleUsers.length : selectedUsers.length
+        sentToCount: result.recipientCount || (form.sendToAll ? sampleUsers.length : selectedUsers.length)
       };
       
       setNotificationHistory([newNotification, ...notificationHistory]);
@@ -197,10 +201,10 @@ export default function AdminNotificationsPage() {
       setConfirmSendDialog(false);
       setActiveTab('history');
       
-      toast.success('Notification sent successfully');
+      toast.success(`Notification sent successfully to ${result.recipientCount} users`);
     } catch (error) {
       console.error('Error sending notification:', error);
-      toast.error('Failed to send notification');
+      toast.error(error instanceof Error ? error.message : 'Failed to send notification');
     } finally {
       setIsLoading(false);
     }

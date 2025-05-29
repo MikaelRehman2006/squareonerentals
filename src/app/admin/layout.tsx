@@ -12,12 +12,14 @@ import {
   Flag,
   BarChart3,
   Settings,
+  Bell,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Listings', href: '/admin/listings', icon: Building2 },
+  { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Reports', href: '/admin/reports', icon: Flag },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

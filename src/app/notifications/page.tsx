@@ -16,7 +16,7 @@ const sampleNotifications = [
     description: 'John Smith has sent you a message about your inquiry.',
     time: '2 hours ago',
     read: false,
-    type: 'listing'
+    type: 'message'
   },
   {
     id: '2',
@@ -72,6 +72,48 @@ export default function NotificationsPage() {
     setNotifications([]);
   };
 
+  // Format relative time (e.g., "2 hours ago", "3 days ago")
+  const formatRelativeTime = (timeString: string) => {
+    try {
+      // For sample data that uses strings like "2 hours ago", just return as is
+      if (timeString.includes('ago')) {
+        return timeString;
+      }
+
+      const date = new Date(timeString);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+      
+      // Less than a minute
+      if (diffInSeconds < 60) {
+        return 'just now';
+      }
+      
+      // Less than an hour
+      if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+      }
+      
+      // Less than a day
+      if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+      }
+      
+      // Less than a week
+      if (diffInSeconds < 604800) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+      }
+      
+      // Format date as MM/DD/YYYY
+      return date.toLocaleDateString();
+    } catch (error) {
+      return timeString;
+    }
+  };
+
   return (
     <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -99,11 +141,11 @@ export default function NotificationsPage() {
               variant="outline" 
               size="sm"
               className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={clearAll}
+              onClick={markAllAsRead}
               disabled={notifications.length === 0}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Clear all
+              Mark all as read
             </Button>
           </div>
         </div>
@@ -117,17 +159,17 @@ export default function NotificationsPage() {
         >
           <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
             <TabsList className="bg-white w-full flex justify-start overflow-x-auto p-1 border border-gray-200 rounded-xl">
-              <TabsTrigger value="all" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+              <TabsTrigger value="all" className="flex-1 text-gray-900 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
                 All
-                {notifications.length > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 rounded-full">{notifications.length}</span>}
+                {notifications.length > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-900 rounded-full">{notifications.length}</span>}
               </TabsTrigger>
-              <TabsTrigger value="unread" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+              <TabsTrigger value="unread" className="flex-1 text-gray-900 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
                 Unread
-                {unreadCount > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 rounded-full">{unreadCount}</span>}
+                {unreadCount > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-gray-900 rounded-full">{unreadCount}</span>}
               </TabsTrigger>
-              <TabsTrigger value="read" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+              <TabsTrigger value="read" className="flex-1 text-gray-900 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
                 Read
-                {readCount > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 rounded-full">{readCount}</span>}
+                {readCount > 0 && <span className="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-900 rounded-full">{readCount}</span>}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -156,7 +198,7 @@ export default function NotificationsPage() {
                         {!notification.read && <span className="ml-2 inline-block w-2 h-2 bg-blue-500 rounded-full"></span>}
                       </h3>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">{notification.time}</span>
+                        <span className="text-xs text-gray-500">{formatRelativeTime(notification.time)}</span>
                         
                         {!notification.read && (
                           <Button 
