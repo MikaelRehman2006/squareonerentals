@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { connectDB } from '@/lib/mongodb';
+import { motion } from 'framer-motion';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -31,8 +33,16 @@ import {
   DollarSign,
   Calendar,
   ArrowUpRight,
+  Heart,
+  Bell,
+  MessageSquare,
+  Building,
+  Eye,
+  Clock,
 } from 'lucide-react';
 import { GrowthChart } from '@/components/GrowthChart';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Listing {
   id: string;
@@ -87,6 +97,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<Error | null>(null);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -230,237 +241,474 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Analytics Section - Only shown if user has admin access */}
-      {analytics && session?.user?.role === 'ADMIN' && (
-        <div className="mb-10">
-          <div className="mb-4">
-            <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
-            <p className="text-muted-foreground">
-              Platform performance and growth metrics.
-            </p>
-          </div>
+    <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-2">Welcome back, Michael</p>
+        </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+        {/* Quick Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+        >
+          <QuickStatCard 
+            title="Active Listings" 
+            value={analytics?.currentStats.activeListings.toString() || ''} 
+            change={analytics?.currentStats.listingGrowthPercent}
+            changeText="from last month"
+            icon={<Building className="h-5 w-5 text-blue-600" />}
+            iconBg="bg-blue-100"
+            link="/listings"
+          />
+          <QuickStatCard 
+            title="Saved Properties" 
+            value={analytics?.currentStats.totalListings.toString() || ''} 
+            change={analytics?.currentStats.listingGrowthPercent}
+            changeText="from last month"
+            icon={<Heart className="h-5 w-5 text-red-600" />}
+            iconBg="bg-red-100"
+            link="/favourites"
+          />
+          <QuickStatCard 
+            title="Unread Messages" 
+            value={analytics?.currentStats.totalReports.toString() || ''} 
+            change=""
+            changeText="2 new today"
+            icon={<MessageSquare className="h-5 w-5 text-green-600" />}
+            iconBg="bg-green-100"
+            link="/messages"
+          />
+          <QuickStatCard 
+            title="Profile Views" 
+            value={analytics?.currentStats.totalUsers.toString() || ''} 
+            change={analytics?.currentStats.userGrowthPercent}
+            changeText="from last month"
+            icon={<Eye className="h-5 w-5 text-purple-600" />}
+            iconBg="bg-purple-100"
+            link="/profile"
+          />
+        </motion.div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="lg:col-span-2 space-y-8"
+          >
+            {/* Tabs Section */}
+            <Card className="border border-gray-200">
+              <CardHeader className="pb-2">
+                <CardTitle>Activity Overview</CardTitle>
+                <CardDescription>Monitor your activity and engagement</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{analytics.currentStats.totalUsers}</div>
-                <p className="text-xs text-muted-foreground">
-                  +{analytics.currentStats.userGrowthPercent}% from last month
-                </p>
+                <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
+                  <TabsList className="grid grid-cols-3 mb-4">
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">Overview</TabsTrigger>
+                    <TabsTrigger value="listings" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">Listings</TabsTrigger>
+                    <TabsTrigger value="interactions" className="data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">Interactions</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="overview" className="mt-0">
+                    <div className="space-y-4">
+                      <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-medium text-blue-900">Subscription Status</h3>
+                            <p className="text-blue-700 text-sm">Featured Plan</p>
+                          </div>
+                          <Badge color="blue">Active</Badge>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-sm text-blue-800 mb-1">
+                            <span>Storage Used</span>
+                            <span>45%</span>
+                          </div>
+                          <Progress value={45} className="h-2 bg-blue-200" indicatorClassName="bg-blue-600" />
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm text-gray-500">Total Views</p>
+                              <p className="text-2xl font-semibold">1,245</p>
+                            </div>
+                            <div className="bg-green-100 p-2 rounded-full">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                            </div>
+                          </div>
+                          <div className="mt-2 text-sm text-green-600">+18% from last month</div>
+                        </div>
+                        
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm text-gray-500">Contact Rate</p>
+                              <p className="text-2xl font-semibold">5.2%</p>
+                            </div>
+                            <div className="bg-yellow-100 p-2 rounded-full">
+                              <MessageSquare className="h-4 w-4 text-yellow-600" />
+                            </div>
+                          </div>
+                          <div className="mt-2 text-sm text-yellow-600">About average</div>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="listings" className="mt-0">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium">Your Listings Performance</h3>
+                        <Link href="/listings" className="text-sm text-blue-600 hover:underline flex items-center">
+                          View all listings <ArrowUpRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <ListingPerformanceItem 
+                          title="2BR Apartment in Downtown" 
+                          views={34} 
+                          saves={12} 
+                          trend="up" 
+                          image="/images/listing1.jpg"
+                        />
+                        <ListingPerformanceItem 
+                          title="Studio near University" 
+                          views={27} 
+                          saves={8} 
+                          trend="up" 
+                          image="/images/listing2.jpg"
+                        />
+                        <ListingPerformanceItem 
+                          title="Luxury Penthouse with View" 
+                          views={18} 
+                          saves={4} 
+                          trend="down" 
+                          image="/images/listing3.jpg"
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="interactions" className="mt-0">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium">Recent Interactions</h3>
+                        <Link href="/messages" className="text-sm text-blue-600 hover:underline flex items-center">
+                          View all messages <ArrowUpRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <InteractionItem 
+                          name="John Smith" 
+                          message="Is the apartment still available?" 
+                          time="2 hours ago" 
+                          image="/images/avatar1.jpg"
+                        />
+                        <InteractionItem 
+                          name="Sarah Johnson" 
+                          message="I'd like to schedule a viewing on Saturday." 
+                          time="1 day ago" 
+                          image="/images/avatar2.jpg"
+                        />
+                        <InteractionItem 
+                          name="Michael Chen" 
+                          message="Can you provide more details about parking?" 
+                          time="2 days ago" 
+                          image="/images/avatar3.jpg"
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Listings</CardTitle>
-                <Home className="h-4 w-4 text-muted-foreground" />
+            {/* Recent Activity */}
+            <Card className="border border-gray-200">
+              <CardHeader className="pb-2">
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Your latest actions and updates</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{analytics.currentStats.totalListings}</div>
-                <p className="text-xs text-muted-foreground">
-                  {analytics.currentStats.activeListings} active
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Average Price</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${Number(analytics.currentStats.averagePrice).toLocaleString()}
+                <div className="space-y-4">
+                  <ActivityItem 
+                    title="Listing Updated" 
+                    description="You updated photos for 2BR Apartment in Downtown." 
+                    time="2 hours ago"
+                    icon={<Building className="h-4 w-4" />}
+                    iconColor="bg-blue-100 text-blue-600"
+                  />
+                  <ActivityItem 
+                    title="New Message" 
+                    description="You received a new message from John Smith." 
+                    time="Yesterday"
+                    icon={<MessageSquare className="h-4 w-4" />}
+                    iconColor="bg-green-100 text-green-600"
+                  />
+                  <ActivityItem 
+                    title="Favorite Added" 
+                    description="You saved a new property to your favorites." 
+                    time="3 days ago"
+                    icon={<Heart className="h-4 w-4" />}
+                    iconColor="bg-red-100 text-red-600"
+                  />
+                  <ActivityItem 
+                    title="Profile Updated" 
+                    description="You updated your profile information." 
+                    time="Last week"
+                    icon={<Eye className="h-4 w-4" />}
+                    iconColor="bg-purple-100 text-purple-600"
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground">Per month</p>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <Button variant="ghost" className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                  View All Activity
+                </Button>
+              </CardFooter>
+            </Card>
+          </motion.div>
+
+          {/* Right Column - Quick Links & Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="space-y-8"
+          >
+            {/* Profile Card */}
+            <Card className="border border-gray-200">
+              <CardHeader className="pb-2">
+                <CardTitle>Your Profile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 h-16 w-16 rounded-full flex items-center justify-center">
+                    <Users className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Michael Johnson</h3>
+                    <p className="text-sm text-gray-600">michael@example.com</p>
+                    <p className="text-sm text-blue-600">Featured Plan</p>
+                  </div>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Link href="/profile">
+                    <Button variant="outline" className="w-full border-blue-200 hover:bg-blue-50 text-blue-600">
+                      Edit Profile
+                    </Button>
+                  </Link>
+                  <Link href="/settings">
+                    <Button variant="outline" className="w-full border-gray-200 hover:bg-gray-50">
+                      Settings
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Monthly Growth</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            {/* Quick Links */}
+            <Card className="border border-gray-200">
+              <CardHeader className="pb-2">
+                <CardTitle>Quick Links</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  +{analytics.currentStats.listingGrowthPercent}%
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  New listings this month
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Growth Chart */}
-          {analytics.monthlyStats && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg font-medium">Growth Trends</CardTitle>
-                <CardDescription>User and listing growth over the past 6 months</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <GrowthChart 
-                  usersData={analytics.monthlyStats.users} 
-                  listingsData={analytics.monthlyStats.listings} 
+              <CardContent className="space-y-4">
+                <QuickLinkItem 
+                  title="My Listings" 
+                  description="Manage your property listings" 
+                  icon={<Home className="h-5 w-5" />}
+                  iconColor="bg-blue-100 text-blue-600"
+                  href="/listings"
+                />
+                <QuickLinkItem 
+                  title="Saved Properties" 
+                  description="View your favorited listings" 
+                  icon={<Heart className="h-5 w-5" />}
+                  iconColor="bg-red-100 text-red-600"
+                  href="/favourites"
+                />
+                <QuickLinkItem 
+                  title="Messages" 
+                  description="Check your inbox" 
+                  icon={<MessageSquare className="h-5 w-5" />}
+                  iconColor="bg-green-100 text-green-600"
+                  href="/messages"
+                />
+                <QuickLinkItem 
+                  title="Notifications" 
+                  description="View your alerts and updates" 
+                  icon={<Bell className="h-5 w-5" />}
+                  iconColor="bg-purple-100 text-purple-600"
+                  href="/notifications"
+                />
+                <QuickLinkItem 
+                  title="Membership" 
+                  description="Manage your subscription" 
+                  icon={<DollarSign className="h-5 w-5" />}
+                  iconColor="bg-yellow-100 text-yellow-600"
+                  href="/membership"
                 />
               </CardContent>
             </Card>
-          )}
-          
-          {/* Recent Activity Section */}
-          {analytics.recentActivity && (
-            <div className="grid gap-6 md:grid-cols-2 mt-6">
-              {/* Recent Listings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-medium">Recent Listings</CardTitle>
-                  <CardDescription>Latest properties added to the platform</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {analytics.recentActivity.listings.length > 0 ? (
-                      analytics.recentActivity.listings.map((listing: any) => (
-                        <div key={listing.id} className="flex items-center justify-between border-b pb-2">
-                          <div>
-                            <div className="font-medium truncate max-w-[200px]">{listing.title}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(listing.createdAt).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="flex items-center">
-                            <span className="font-medium">${listing.price}</span>
-                            <Link 
-                              href={`/listings/${listing.id}`}
-                              className="ml-2 p-2 text-blue-600 hover:text-blue-800"
-                            >
-                              <ArrowUpRight className="h-4 w-4" />
-                            </Link>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground">No recent listings</div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Recent Users */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-medium">New Users</CardTitle>
-                  <CardDescription>Recently joined members</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {analytics.recentActivity.users.length > 0 ? (
-                      analytics.recentActivity.users.map((user: any) => (
-                        <div key={user.id} className="flex items-center justify-between border-b pb-2">
-                          <div>
-                            <div className="font-medium">{user.name || 'Anonymous User'}</div>
-                            <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {user.email}
-                            </div>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {new Date(user.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground">No recent users</div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-      )}
 
-      {/* My Listings Section */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">My Listings</h1>
-          <p className="text-gray-600 mt-2">Manage your rental listings</p>
+            {/* Help Card */}
+            <Card className="border border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+              <CardHeader className="pb-2">
+                <CardTitle>Need Help?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-700 mb-4">
+                  Have questions or need assistance with your account or listings?
+                </p>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  Contact Support
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
-        <Button
-          onClick={() => router.push('/submit')}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          Add New Listing
-        </Button>
       </div>
-
-      {listings.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-600 mb-4">You haven't created any listings yet.</p>
-            <Button
-              onClick={() => router.push('/submit')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Create Your First Listing
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {listings.map((listing) => (
-                <TableRow key={listing.id}>
-                  <TableCell>{listing.title}</TableCell>
-                  <TableCell>${listing.price.toLocaleString()}</TableCell>
-                  <TableCell>{listing.location}</TableCell>
-                  <TableCell>{new Date(listing.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${listing.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                    >
-                      {listing.status === 'ACTIVE' ? 'Active' : 'Archived'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditListing(listing.id)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteListing(listing.id)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
-      )}
     </div>
+  );
+}
+
+// Component for quick stat cards
+function QuickStatCard({ title, value, change, changeText, icon, iconBg, link }) {
+  return (
+    <Link href={link}>
+      <Card className="border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+        <CardContent className="pt-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm font-medium text-gray-500">{title}</p>
+              <p className="text-2xl font-bold mt-1">{value}</p>
+              <div className="flex items-center mt-1">
+                {change && (
+                  <span className={`text-xs font-medium ${change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                    {change}
+                  </span>
+                )}
+                <span className="text-xs text-gray-500 ml-1">{changeText}</span>
+              </div>
+            </div>
+            <div className={`p-2 rounded-md ${iconBg}`}>
+              {icon}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+// Component for listing performance items
+function ListingPerformanceItem({ title, views, saves, trend, image }) {
+  return (
+    <div className="flex items-center space-x-3 p-3 bg-white border border-gray-100 rounded-lg">
+      <div className="h-12 w-12 rounded bg-gray-200 overflow-hidden flex-shrink-0">
+        {/* Image would go here */}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-sm truncate">{title}</p>
+        <div className="flex items-center space-x-3 mt-1">
+          <span className="text-xs text-gray-500 flex items-center">
+            <Eye className="h-3 w-3 mr-1" /> {views} views
+          </span>
+          <span className="text-xs text-gray-500 flex items-center">
+            <Heart className="h-3 w-3 mr-1" /> {saves} saves
+          </span>
+        </div>
+      </div>
+      <div className={`p-1 rounded-full ${trend === 'up' ? 'bg-green-100' : 'bg-red-100'}`}>
+        {trend === 'up' ? (
+          <TrendingUp className="h-4 w-4 text-green-600" />
+        ) : (
+          <TrendingUp className="h-4 w-4 text-red-600 transform rotate-180" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Component for interaction items
+function InteractionItem({ name, message, time, image }) {
+  return (
+    <div className="flex items-start space-x-3 p-3 bg-white border border-gray-100 rounded-lg">
+      <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+        {/* Avatar would go here */}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center">
+          <p className="font-medium text-sm">{name}</p>
+          <span className="text-xs text-gray-500">{time}</span>
+        </div>
+        <p className="text-sm text-gray-600 truncate mt-1">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+// Component for activity items
+function ActivityItem({ title, description, time, icon, iconColor }) {
+  return (
+    <div className="flex space-x-3">
+      <div className={`mt-0.5 rounded-full p-1.5 ${iconColor}`}>
+        {icon}
+      </div>
+      <div className="flex-1">
+        <div className="flex justify-between">
+          <p className="font-medium text-sm">{title}</p>
+          <span className="text-xs text-gray-500">{time}</span>
+        </div>
+        <p className="text-sm text-gray-600 mt-0.5">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+// Component for quick link items
+function QuickLinkItem({ title, description, icon, iconColor, href }) {
+  return (
+    <Link href={href} className="block">
+      <div className="flex items-center space-x-3 p-3 bg-white hover:bg-gray-50 border border-gray-100 rounded-lg transition-colors">
+        <div className={`p-2 rounded-md ${iconColor}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="font-medium text-sm">{title}</p>
+          <p className="text-xs text-gray-600">{description}</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// Badge component for status indicators
+function Badge({ children, color }) {
+  const colorClasses = {
+    blue: "bg-blue-100 text-blue-800",
+    green: "bg-green-100 text-green-800",
+    red: "bg-red-100 text-red-800",
+    yellow: "bg-yellow-100 text-yellow-800",
+    purple: "bg-purple-100 text-purple-800",
+    gray: "bg-gray-100 text-gray-800",
+  };
+
+  return (
+    <span className={`px-2 py-1 text-xs font-medium rounded-full ${colorClasses[color] || colorClasses.gray}`}>
+      {children}
+    </span>
   );
 }

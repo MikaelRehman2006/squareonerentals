@@ -1,236 +1,179 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Bell, Mail, Star, AlertTriangle, MessageSquare, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import dynamic from 'next/dynamic';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
-interface Settings {
-  emailNotifications: boolean;
-  listingNotifications: boolean;
-  favoriteNotifications: boolean;
-  marketingEmails: boolean;
-}
-
-// Create a no-SSR wrapper to prevent 'location is not defined' error
-const SettingsPageContent = () => {
-  const { data: session } = useSession();
-  const router = useRouter();
-
-  const [settings, setSettings] = useState<Settings>({
-    emailNotifications: true,
-    listingNotifications: true,
-    favoriteNotifications: true,
-    marketingEmails: false,
-  });
-
+export default function SettingsPage() {
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [listingUpdates, setListingUpdates] = useState(true);
+  const [favoriteListings, setFavoriteListings] = useState(true);
+  const [marketingEmails, setMarketingEmails] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleSettingChange = (key: keyof Settings) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-
-    // Save settings to backend
-    fetch('/api/settings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        [key]: !settings[key],
-      }),
-    }).catch(error => {
-      console.error('Failed to save settings:', error);
-      toast.error('Failed to save settings');
-    });
-  };
-
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmation !== 'DELETE') {
-      toast.error('Please type DELETE to confirm');
-      return;
-    }
-
-    try {
-      setIsDeleting(true);
-      const response = await fetch('/api/users/delete', {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete account');
-      }
-
-      router.push('/');
-      toast.success('Account deleted successfully');
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      toast.error('Failed to delete account');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
-
-  if (!session) {
-    router.push('/auth/signin');
-    return null;
-  }
 
   return (
-    <main className="container max-w-4xl py-8">
-      <h1 className="text-3xl font-bold mb-8">Settings</h1>
+    <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8 flex items-center">
+          <Link href="/profile" className="mr-4 p-2 rounded-full hover:bg-gray-200 transition-colors">
+            <ArrowLeft className="h-5 w-5 text-gray-600" />
+          </Link>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+        </div>
 
-      <div className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Notifications</CardTitle>
-            <CardDescription>
-              Manage how you receive notifications and updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Email Notifications</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive notifications via email
-                </p>
+        {/* Notifications Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        >
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-start">
+              <Bell className="h-6 w-6 text-blue-600 mt-1 mr-3" />
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Notifications</h2>
+                <p className="text-gray-600 mt-1">Manage how you receive notifications and updates</p>
               </div>
-              <Switch
-                checked={settings.emailNotifications}
-                onCheckedChange={() => handleSettingChange('emailNotifications')}
-              />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Listing Updates</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get notified about changes to your listings
-                </p>
-              </div>
-              <Switch
-                checked={settings.listingNotifications}
-                onCheckedChange={() => handleSettingChange('listingNotifications')}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Favorite Listings</Label>
-                <p className="text-sm text-muted-foreground">
-                  Get updates about your favorite listings
-                </p>
-              </div>
-              <Switch
-                checked={settings.favoriteNotifications}
-                onCheckedChange={() => handleSettingChange('favoriteNotifications')}
-              />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Marketing Preferences</CardTitle>
-            <CardDescription>
-              Manage your marketing communication preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+          <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Marketing Emails</Label>
-                <p className="text-sm text-muted-foreground">
-                  Receive emails about new features and special offers
-                </p>
+              <div>
+                <h3 className="text-gray-900 font-medium">Email Notifications</h3>
+                <p className="text-gray-600 text-sm">Receive notifications via email</p>
               </div>
-              <Switch
-                checked={settings.marketingEmails}
-                onCheckedChange={() => handleSettingChange('marketingEmails')}
+              <Switch 
+                checked={emailNotifications} 
+                onCheckedChange={setEmailNotifications} 
+                className="data-[state=checked]:bg-blue-600"
               />
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Danger Zone</CardTitle>
-            <CardDescription>Irreversible account actions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-              <DialogTrigger asChild>
-                <Button variant="destructive">Delete Account</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Account</DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone. This will permanently delete your
-                    account and remove your data from our servers.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                  <Label htmlFor="confirmation">
-                    Type DELETE to confirm account deletion:
-                  </Label>
-                  <Input
-                    id="confirmation"
-                    value={deleteConfirmation}
-                    onChange={(e) => setDeleteConfirmation(e.target.value)}
-                    placeholder="Type DELETE"
-                    className="mt-2"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowDeleteDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteAccount}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? 'Deleting...' : 'Delete Account'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-900 font-medium">Listing Updates</h3>
+                <p className="text-gray-600 text-sm">Get notified about changes to your listings</p>
+              </div>
+              <Switch 
+                checked={listingUpdates} 
+                onCheckedChange={setListingUpdates} 
+                className="data-[state=checked]:bg-blue-600"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-900 font-medium">Favorite Listings</h3>
+                <p className="text-gray-600 text-sm">Get updates about your favorite listings</p>
+              </div>
+              <Switch 
+                checked={favoriteListings} 
+                onCheckedChange={setFavoriteListings} 
+                className="data-[state=checked]:bg-blue-600"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Marketing Preferences */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        >
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-start">
+              <MessageSquare className="h-6 w-6 text-blue-600 mt-1 mr-3" />
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Marketing Preferences</h2>
+                <p className="text-gray-600 mt-1">Manage your marketing communication preferences</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-900 font-medium">Marketing Emails</h3>
+                <p className="text-gray-600 text-sm">Receive emails about new features and special offers</p>
+              </div>
+              <Switch 
+                checked={marketingEmails} 
+                onCheckedChange={setMarketingEmails} 
+                className="data-[state=checked]:bg-blue-600"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Danger Zone */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        >
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-start">
+              <AlertTriangle className="h-6 w-6 text-red-500 mt-1 mr-3" />
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Danger Zone</h2>
+                <p className="text-gray-600 mt-1">Irreversible account actions</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6">
+            <Button 
+              variant="destructive" 
+              className="bg-red-500 hover:bg-red-600" 
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              Delete Account
+            </Button>
+            <p className="mt-2 text-sm text-gray-500">
+              Once you delete your account, all of your data will be permanently removed.
+            </p>
+          </div>
+        </motion.div>
       </div>
-    </main>
-  );
-};
 
-// Export a dynamic component with SSR disabled to prevent 'location is not defined' error
-// The loading component provides a consistent state between server and client
-export default dynamic(() => Promise.resolve(SettingsPageContent), { 
-  ssr: false,
-  loading: () => <div className="container max-w-4xl py-8">
-    <h1 className="text-3xl font-bold mb-8">Settings</h1>
-    <div className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading...</CardTitle>
-          <CardDescription>Please wait while we load your settings</CardDescription>
-        </CardHeader>
-        <CardContent className="min-h-24" />
-      </Card>
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete your account?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete your account and remove your data from our servers.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-500">
+              Please type "delete" to confirm.
+            </p>
+            <input 
+              type="text"
+              className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Type 'delete' to confirm"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" className="bg-red-500 hover:bg-red-600">
+              Delete Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  </div>
-});
+  );
+}

@@ -35,7 +35,7 @@ const realtors: Realtor[] = [
     rating: 5.0,
     reviews: 0,
     specialties: ['Residential & Commercial Real Estate', 'Investment Properties', 'Greater Toronto Area (GTA)'],
-    experience: '',
+    experience: '21',
     description: 'Strategic | Reliable | Experienced',
     about: 'With over 21 years of leadership in digital transformation and client success in the banking and tech industries, Gulrez brings a results-driven mindset to every real estate transaction. Whether you\'re buying your first home or investing in commercial property, Gulrez is committed to delivering clarity, trust, and professionalism every step of the way.',
     email: 'https://www.rightathomerealty.com/gulrez-khan',
