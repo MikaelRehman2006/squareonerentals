@@ -246,12 +246,17 @@ function generateChangeMessage(previousState: any, currentState: any) {
     return 'A listing you favorited has been updated.';
   }
   
+  // Collect all the changes
+  const changes: string[] = [];
+  
   // Handle status changes
   if (previousState.status !== currentState.status) {
     if (currentState.status === 'ARCHIVED') {
-      return 'A listing you favorited is no longer available.';
+      changes.push('The listing is no longer available');
     } else if (currentState.status === 'ACTIVE' && previousState.status === 'ARCHIVED') {
-      return 'A listing you previously favorited is available again.';
+      changes.push('The listing is available again');
+    } else {
+      changes.push(`Status changed from ${previousState.status?.toLowerCase() || 'unknown'} to ${currentState.status?.toLowerCase() || 'unknown'}`);
     }
   }
   
@@ -259,97 +264,113 @@ function generateChangeMessage(previousState: any, currentState: any) {
   if (previousState.price !== currentState.price) {
     const priceDiff = currentState.price - previousState.price;
     if (priceDiff < 0) {
-      return `A listing you favorited has reduced its price from $${previousState.price} to $${currentState.price}.`;
+      changes.push(`Price reduced from $${previousState.price} to $${currentState.price}`);
     } else if (priceDiff > 0) {
-      return `A listing you favorited has increased its price from $${previousState.price} to $${currentState.price}.`;
+      changes.push(`Price increased from $${previousState.price} to $${currentState.price}`);
     }
   }
   
   // Handle title changes
   if (previousState.title !== currentState.title) {
-    return `A listing you favorited has been updated with a new title: "${currentState.title}".`;
+    changes.push(`Title updated to "${currentState.title}"`);
   }
 
   // Handle address/location changes
-  if (previousState.address !== currentState.address || 
-      previousState.location?.coordinates !== currentState.location?.coordinates) {
-    return `A listing you favorited has updated its location/address information.`;
+  if (previousState.address !== currentState.address) {
+    changes.push(`Address updated`);
+  }
+  
+  if (typeof previousState.location === 'string' && 
+      typeof currentState.location === 'string' && 
+      previousState.location !== currentState.location) {
+    changes.push(`Location updated from "${previousState.location}" to "${currentState.location}"`);
   }
 
   // Handle square footage changes
   if (previousState.squareFeet !== currentState.squareFeet) {
-    return `A listing you favorited has updated its size from ${previousState.squareFeet} sq ft to ${currentState.squareFeet} sq ft.`;
+    changes.push(`Size updated from ${previousState.squareFeet} sq ft to ${currentState.squareFeet} sq ft`);
   }
 
   // Handle bedroom changes
   if (previousState.bedrooms !== currentState.bedrooms) {
-    return `A listing you favorited has updated from ${previousState.bedrooms} to ${currentState.bedrooms} bedrooms.`;
+    changes.push(`Bedrooms updated from ${previousState.bedrooms} to ${currentState.bedrooms}`);
   }
 
   // Handle bathroom changes
   if (previousState.bathrooms !== currentState.bathrooms) {
-    return `A listing you favorited has updated from ${previousState.bathrooms} to ${currentState.bathrooms} bathrooms.`;
+    changes.push(`Bathrooms updated from ${previousState.bathrooms} to ${currentState.bathrooms}`);
   }
 
   // Handle property type changes
   if (previousState.propertyType !== currentState.propertyType) {
-    return `A listing you favorited has changed its property type from ${previousState.propertyType} to ${currentState.propertyType}.`;
+    changes.push(`Property type changed from ${previousState.propertyType} to ${currentState.propertyType}`);
   }
 
   // Handle listing type changes
   if (previousState.listingType !== currentState.listingType) {
-    return `A listing you favorited has changed from ${previousState.listingType} to ${currentState.listingType}.`;
+    changes.push(`Listing type changed from ${previousState.listingType} to ${currentState.listingType}`);
   }
 
   // Handle lease type changes
   if (previousState.leaseType !== currentState.leaseType) {
-    return `A listing you favorited has updated its lease type from ${previousState.leaseType} to ${currentState.leaseType}.`;
+    changes.push(`Lease type updated from ${previousState.leaseType} to ${currentState.leaseType}`);
   }
 
   // Handle availability date changes
-  if (previousState.availableFrom !== currentState.availableFrom) {
-    const prevDate = new Date(previousState.availableFrom);
-    const currDate = new Date(currentState.availableFrom);
+  if (previousState.availableDate !== currentState.availableDate) {
+    const prevDate = new Date(previousState.availableDate);
+    const currDate = new Date(currentState.availableDate);
     const formatDate = (date: Date) => date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    return `A listing you favorited has changed its availability date from ${formatDate(prevDate)} to ${formatDate(currDate)}.`;
+    changes.push(`Availability date changed from ${formatDate(prevDate)} to ${formatDate(currDate)}`);
   }
 
   // Handle parking changes
   if (previousState.parking !== currentState.parking) {
-    return `A listing you favorited has updated its parking information.`;
+    changes.push(`Parking information updated`);
   }
   
   // Handle image changes
   if (Array.isArray(previousState.images) && Array.isArray(currentState.images) &&
       previousState.images.length !== currentState.images.length) {
     if (currentState.images.length > previousState.images.length) {
-      return 'New photos have been added to a listing you favorited.';
+      changes.push(`New photos have been added`);
+    } else {
+      changes.push(`Photos have been updated`);
     }
-    return 'Photos have been updated on a listing you favorited.';
   }
 
-  // Handle amenities changes (generic message)
+  // Handle amenities changes
   if (JSON.stringify(previousState.amenities) !== JSON.stringify(currentState.amenities)) {
-    return 'The owner of a listing you favorited has updated the amenities.';
+    changes.push(`Amenities have been updated`);
   }
 
-  // Handle unit features changes (generic message)
+  // Handle unit features changes
   if (JSON.stringify(previousState.features) !== JSON.stringify(currentState.features)) {
-    return 'The owner of a listing you favorited has updated the unit features.';
+    changes.push(`Unit features have been updated`);
   }
 
-  // Handle utilities changes (generic message)
+  // Handle utilities changes
   if (JSON.stringify(previousState.utilities) !== JSON.stringify(currentState.utilities)) {
-    return 'The owner of a listing you favorited has updated the utilities information.';
+    changes.push(`Utilities information has been updated`);
   }
 
   // Handle description changes
   if (previousState.description !== currentState.description) {
-    return 'The description has been updated for a listing you favorited.';
+    changes.push(`Description has been updated`);
   }
   
-  // Default message for general updates
-  return 'A listing you favorited has been updated.';
+  // If no specific changes were detected
+  if (changes.length === 0) {
+    return 'A listing you favorited has been updated.';
+  }
+  
+  // If there's only one change, use the standard format
+  if (changes.length === 1) {
+    return `A listing you favorited has been updated: ${changes[0]}.`;
+  }
+  
+  // For multiple changes, create a bulleted list
+  return `A listing you favorited has been updated with multiple changes:\n• ${changes.join('\n• ')}`;
 }
 
 /**

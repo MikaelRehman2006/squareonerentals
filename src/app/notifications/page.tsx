@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, ArrowLeft, CheckCircle, Trash2, Filter, MailOpen, Clock, User, Edit, Star, AlertCircle, Newspaper, Gift, CreditCard } from 'lucide-react';
+import { Bell, ArrowLeft, CheckCircle, Trash2, Filter, MailOpen, Clock, User, Edit, Star, AlertCircle, Newspaper, Gift, CreditCard, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -330,6 +330,19 @@ export default function NotificationsPage() {
                         </DropdownMenu>
                       </div>
                     </div>
+                    
+                    {/* Add Go to Listing button for LISTING_UPDATE type notifications */}
+                    {notification.type === 'LISTING_UPDATE' && notification.listingId && (
+                      <div className="mt-3">
+                        <Link 
+                          href={`/listings/${notification.listingId}`}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          <span>Go to Listing</span>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               </motion.div>

@@ -190,25 +190,45 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         
         // Force update fields that might not be properly loaded
         setTimeout(() => {
-          // Use a stronger approach for address - log what we're trying to set
+          // Enhanced address field handling
           if (data.address) {
             console.log('Setting address to:', data.address);
-            // First try using setValue with all flags
-            form.setValue('address', data.address, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
             
-            // Force update the address field (needed for some form libraries)
-            const addressField = document.querySelector('[name=address]') as HTMLInputElement;
+            // First set it directly in the form state
+            form.setValue('address', data.address, { 
+              shouldValidate: true, 
+              shouldDirty: true, 
+              shouldTouch: true 
+            });
+            
+            // Also try to set it directly on the DOM element
+            const addressField = document.getElementById('address-field') as HTMLInputElement;
             if (addressField) {
               addressField.value = data.address;
-              console.log('Manually updated address input element');
+              console.log('Manually updated address input element to:', data.address);
               
-              // Dispatch input event to trigger any form listeners
-              const event = new Event('input', { bubbles: true });
-              addressField.dispatchEvent(event);
+              // Dispatch events to trigger any form listeners
+              const inputEvent = new Event('input', { bubbles: true });
+              addressField.dispatchEvent(inputEvent);
+              
+              const changeEvent = new Event('change', { bubbles: true });
+              addressField.dispatchEvent(changeEvent);
+            } else {
+              console.warn('Could not find address field element by ID');
+              
+              // Try using querySelector as a fallback
+              const addressFieldByName = document.querySelector('input[name="address"]') as HTMLInputElement;
+              if (addressFieldByName) {
+                addressFieldByName.value = data.address;
+                console.log('Updated address input by name selector to:', data.address);
+                
+                const inputEvent = new Event('input', { bubbles: true });
+                addressFieldByName.dispatchEvent(inputEvent);
+                
+                const changeEvent = new Event('change', { bubbles: true });
+                addressFieldByName.dispatchEvent(changeEvent);
+              }
             }
-            
-            // Also try using the register method
-            form.register('address', { value: data.address });
           }
           
           if (data.phoneNumber) form.setValue('phoneNumber', data.phoneNumber, { shouldValidate: true });
@@ -852,7 +872,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                           <Input 
                             {...field} 
                             id="address-field"
-                            value={field.value || ''}
+                            value={field.value || (listing?.address || '')}
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               console.log('Address changed to:', e.target.value);
