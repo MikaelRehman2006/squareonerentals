@@ -57,6 +57,7 @@ export async function POST(request: Request) {
         userId,
         planType,
         isAnnual: isAnnual ? 'true' : 'false',
+        errorRedirectUrl: `${process.env.NEXTAUTH_URL}/memberships/payment-error`,
       },
       subscription_data: {
         metadata: {
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
       },
       // Use absolute URLs for success and cancel to prevent 404 errors
       success_url: `${process.env.NEXTAUTH_URL}/memberships/payment-success`,
-      cancel_url: `${process.env.NEXTAUTH_URL}/memberships`,
+      cancel_url: `${process.env.NEXTAUTH_URL}/memberships/payment-error?code=canceled&message=Payment%20was%20canceled`,
     });
 
     return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });

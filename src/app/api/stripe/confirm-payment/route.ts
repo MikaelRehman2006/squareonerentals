@@ -19,6 +19,7 @@ import { User } from '@/models/User';
 import { Membership } from '@/models/Membership';
 import { stripe } from '@/utils/stripe';
 import { logActivity } from '@/lib/activity';
+import { createPaymentNotification } from '@/lib/notification';
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,6 +80,19 @@ export async function POST(request: NextRequest) {
         status: 'active'
       }
     });
+
+    // Create a success payment notification
+    try {
+      await createPaymentNotification(
+        userId,
+        'receipt',
+        checkoutSession.amount_total ? checkoutSession.amount_total / 100 : 0, // Convert from cents to dollars
+        `Your ${planType} ${isAnnual ? 'Annual' : 'Monthly'} membership has been activated successfully.`
+      );
+    } catch (notificationError) {
+      console.error('Error creating payment notification:', notificationError);
+      // Continue processing - don't fail if notification fails
+    }
 
     // Log the activity
     await logActivity(

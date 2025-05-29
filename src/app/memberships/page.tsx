@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useStripeCheckout } from '@/utils/useStripeCheckout';
+import { usePaymentProcessing } from '@/utils/usePaymentProcessing';
 
 export default function MembershipsPage() {
   const router = useRouter();
@@ -34,14 +35,15 @@ export default function MembershipsPage() {
   }, [annualBilling, isLoaded]);
 
   const { handleCheckout, isLoading: isCheckoutLoading } = useStripeCheckout();
+  const { handleCheckout: handleCheckoutWithNotification, isLoading: isProcessingPayment } = usePaymentProcessing();
 
   const handleSubscribe = async (plan: 'Basic' | 'Featured') => {
     // Set the selected plan for UI feedback
     setSelectedPlan(plan);
     
     try {
-      // Use our Stripe checkout integration
-      await handleCheckout(
+      // Use our payment processing hook that handles notifications
+      await handleCheckoutWithNotification(
         plan === 'Basic' ? 'BASIC' : 'FEATURED',
         annualBilling
       );

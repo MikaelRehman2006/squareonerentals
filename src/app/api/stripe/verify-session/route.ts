@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
+import { createPaymentNotification } from '@/lib/notification';
 import Stripe from 'stripe';
 
 // Create Stripe instance with your secret key
@@ -139,6 +140,19 @@ export async function POST(request: Request) {
       // Save the updated user with membership
       await user.save();
       console.log('Membership saved successfully for:', user.email);
+      
+      // Create a success payment notification
+      try {
+        await createPaymentNotification(
+          user._id.toString(),
+          'receipt',
+          0, // We don't have the amount here, but can use 0 as a placeholder
+          `Your ${type} ${isAnnual ? 'Annual' : 'Monthly'} membership has been activated successfully.`
+        );
+      } catch (notificationError) {
+        console.error('Error creating payment notification:', notificationError);
+        // Continue processing - don't fail if notification fails
+      }
     } catch (saveError) {
       console.error('Error saving user membership:', saveError);
       throw saveError; // Re-throw to be caught by outer try/catch

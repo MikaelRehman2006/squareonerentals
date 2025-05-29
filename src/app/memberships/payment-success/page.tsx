@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
@@ -37,6 +38,12 @@ export default function PaymentSuccessPage() {
             setPlan(result.membership?.type === 'FEATURED' ? 'Featured' : 'Basic');
             // Clear the session ID from localStorage
             localStorage.removeItem('stripe_session_id');
+            
+            // Display a success message
+            toast.success(
+              `${result.membership?.type === 'FEATURED' ? 'Featured' : 'Basic'} membership activated successfully!`,
+              { duration: 5000 }
+            );
           } else {
             console.error('Failed to confirm payment:', result.error);
             setError('There was an error activating your membership. Please contact support.');

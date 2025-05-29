@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { stripe } from '@/utils/stripe';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
+import { createPaymentNotification } from '@/lib/notification';
 
 // This is your Stripe webhook secret for testing your endpoint locally.
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -100,6 +101,20 @@ async function handleCheckoutSessionCompleted(session: any) {
       'membership.status': 'active',
     }
   });
+  
+  // Create a success payment notification
+  try {
+    const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents to dollars
+    await createPaymentNotification(
+      userId,
+      'receipt',
+      amount,
+      `Your ${planType} ${isAnnual ? 'Annual' : 'Monthly'} membership has been activated successfully.`
+    );
+  } catch (notificationError) {
+    console.error('Error creating payment notification:', notificationError);
+    // Continue processing - don't fail if notification fails
+  }
 }
 
 async function handleSubscriptionUpdated(subscription: any) {
@@ -144,6 +159,29 @@ async function handleSubscriptionUpdated(subscription: any) {
       'membership.status': subscription.status,
     }
   });
+  
+  // Create a subscription updated notification
+  try {
+    let notificationType = 'receipt';
+    let message = `Your ${planType} ${isAnnual ? 'Annual' : 'Monthly'} membership has been updated.`;
+    
+    if (subscription.status === 'past_due') {
+      notificationType = 'failure';
+      message = `Your ${planType} subscription payment is past due. Please update your payment method to avoid service interruption.`;
+    } else if (subscription.status === 'unpaid') {
+      notificationType = 'failure';
+      message = `Your ${planType} subscription has an unpaid invoice. Please update your payment method to restore your service.`;
+    }
+    
+    await createPaymentNotification(
+      user._id.toString(),
+      notificationType as any,
+      0, // We don't know the amount here
+      message
+    );
+  } catch (notificationError) {
+    console.error('Error creating subscription update notification:', notificationError);
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: any) {
@@ -170,4 +208,16 @@ async function handleSubscriptionDeleted(subscription: any) {
       'membership.status': 'canceled'
     }
   });
+  
+  // Create a subscription canceled notification
+  try {
+    await createPaymentNotification(
+      user._id.toString(),
+      'receipt',
+      0,
+      `Your membership subscription has been canceled. Your access will remain until the end of your current billing period.`
+    );
+  } catch (notificationError) {
+    console.error('Error creating subscription cancellation notification:', notificationError);
+  }
 }
