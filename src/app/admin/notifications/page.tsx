@@ -238,13 +238,13 @@ export default function AdminNotificationsPage() {
         >
           <Tabs defaultValue="compose" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="bg-white w-full flex justify-start overflow-x-auto p-1 border border-gray-200 rounded-xl mb-6">
-              <TabsTrigger value="compose" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+              <TabsTrigger value="compose" className="flex-1 text-gray-900 data-[state=active]:bg-blue-50 data-[state=active]:text-gray-900">
                 Compose Notification
               </TabsTrigger>
-              <TabsTrigger value="history" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+              <TabsTrigger value="history" className="flex-1 text-gray-900 data-[state=active]:bg-blue-50 data-[state=active]:text-gray-900">
                 Notification History
               </TabsTrigger>
-              <TabsTrigger value="settings" className="flex-1 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-600">
+              <TabsTrigger value="settings" className="flex-1 text-gray-900 data-[state=active]:bg-blue-50 data-[state=active]:text-gray-900">
                 Settings
               </TabsTrigger>
             </TabsList>

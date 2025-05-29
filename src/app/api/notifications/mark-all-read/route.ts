@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
-import { Notification } from '@/models/Notification';
+import { markNotificationsAsRead } from '@/lib/notification';
 
 export async function POST(request: Request) {
   try {
-    await connectDB();
-    const session = await getServerSession(authOptions) as any;
-
+    // Check authentication
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -16,29 +15,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Parse request body
     const body = await request.json();
     const { notificationIds } = body;
 
-    if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
+    if (!notificationIds || !Array.isArray(notificationIds) || notificationIds.length === 0) {
       return NextResponse.json(
-        { error: 'Invalid notification IDs' },
+        { error: 'No notification IDs provided' },
         { status: 400 }
       );
     }
 
-    // Only allow marking notifications that belong to the authenticated user
-    const result = await Notification.updateMany(
-      { 
-        _id: { $in: notificationIds },
-        userId: session.user.id
-      },
-      { $set: { read: true } }
-    );
+    // Mark notifications as read
+    await connectDB();
+    await markNotificationsAsRead(notificationIds);
 
-    return NextResponse.json({ 
-      success: true,
-      modifiedCount: result.modifiedCount
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error marking notifications as read:', error);
     return NextResponse.json(
