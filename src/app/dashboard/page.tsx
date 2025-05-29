@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { CreditCard } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +59,7 @@ export default function DashboardPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [membership, setMembership] = useState<any>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -65,39 +67,56 @@ export default function DashboardPage() {
       return;
     }
 
-    const fetchListings = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/listings/me', {
+        
+        // Fetch listings
+        const listingsResponse = await fetch('/api/listings/me', {
           credentials: 'include'
         });
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('No listings found');
-          } else if (response.status === 401) {
+        
+        if (!listingsResponse.ok) {
+          if (listingsResponse.status === 404) {
+            // If no listings, just set empty array
+            setListings([]);
+          } else if (listingsResponse.status === 401) {
             router.push('/auth/signin');
             return;
           } else {
-            const errorData = await response.json();
+            const errorData = await listingsResponse.json();
             throw new Error(errorData.error || 'Failed to fetch listings');
           }
+        } else {
+          const listingsData = await listingsResponse.json();
+          setListings(listingsData);
         }
-        const data = await response.json();
-        setListings(data);
+
+        // Fetch membership details
+        try {
+          const membershipResponse = await fetch('/api/user/membership');
+          if (membershipResponse.ok) {
+            const membershipData = await membershipResponse.json();
+            setMembership(membershipData.membership);
+          }
+        } catch (membershipError) {
+          console.error('Error fetching membership:', membershipError);
+          // Don't throw error, continue with null membership
+        }
       } catch (error) {
         if (error instanceof Error) {
-          console.error('Error fetching listings:', error);
+          console.error('Error fetching data:', error);
           setError(error.message);
         } else {
-          console.error('Error fetching listings:', error);
-          setError('Failed to fetch listings');
+          console.error('Error fetching data:', error);
+          setError('Failed to fetch data');
         }
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchListings();
+    fetchData();
   }, [router, status]);
 
   const handleEditListing = (id: string) => {
@@ -198,7 +217,89 @@ export default function DashboardPage() {
           <p className="text-gray-600 mt-2">Manage your property listings</p>
         </div>
 
-        {/* Main Content */}
+        {/* Quick Stats and Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Subscription Status */}
+          <Card className="border border-gray-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Subscription</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-2">
+              <div className="flex items-center">
+                <CreditCard className="h-8 w-8 text-blue-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Current plan</p>
+                  <p className="font-medium">
+                    {membership?.type ? 
+                      `${membership.type.charAt(0) + membership.type.slice(1).toLowerCase()} Plan` : 
+                      'No active plan'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => router.push('/dashboard/subscription')}
+              >
+                Manage Subscription
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Listings Stats */}
+          <Card className="border border-gray-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Your Listings</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-2">
+              <div className="flex items-center">
+                <Building className="h-8 w-8 text-indigo-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Active listings</p>
+                  <p className="font-medium">{listings.filter(l => l.status === 'ACTIVE').length} listings</p>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => router.push('/listings/manage')}
+              >
+                Manage Listings
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Favorites */}
+          <Card className="border border-gray-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg">Your Favorites</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-2">
+              <div className="flex items-center">
+                <Heart className="h-8 w-8 text-red-500 mr-3" />
+                <div>
+                  <p className="text-sm text-gray-500">Saved properties</p>
+                  <p className="font-medium">View your saved listings</p>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => router.push('/favorites')}
+              >
+                View Favorites
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+
+        {/* Main Content - Listings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
