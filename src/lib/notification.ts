@@ -119,7 +119,7 @@ export async function notifyFavoritedListingChange(
     // We do NOT filter out the user who made the change, as they might want to know
     // about their own changes when made through different interfaces (like admin panel)
     const notifications = await Promise.all(
-      users.map(async user => {
+      users.map(async (user: any) => {
         // Determine if this was an admin action from the admin panel
         // This is a heuristic - if the previous and current states differ in specific ways,
         // it's likely an admin action rather than a regular edit
@@ -129,7 +129,7 @@ export async function notifyFavoritedListingChange(
           
         // Create special messages for admins changing their own listings
         let adminMessage = null;
-        if (user._id.toString() === actorUserId && isLikelyAdminAction) {
+        if (user._id && user._id.toString() === actorUserId && isLikelyAdminAction) {
           if (previousState.status !== currentState.status) {
             adminMessage = `You changed the status of your listing from ${previousState.status?.toLowerCase() || 'unknown'} to ${currentState.status?.toLowerCase() || 'unknown'} via the Admin Panel.`;
           } else if (previousState.featured !== currentState.featured) {
@@ -199,10 +199,39 @@ async function getUsersWhoFavoritedListing(listingId: string) {
   try {
     await connectDB();
     
-    // Find all users who have this listing in their favorites array
+    // Convert listingId string to ObjectId to ensure proper matching
+    const objectId = new mongoose.Types.ObjectId(listingId);
+    
+    // First, check if the listing has a favoritedBy field with user IDs
+    const listing = await mongoose.model('Listing').findById(objectId).lean() as any;
+    
+    let userIds: mongoose.Types.ObjectId[] = [];
+    
+    // If listing has favoritedBy field with user IDs, use those
+    if (listing && listing.favoritedBy && Array.isArray(listing.favoritedBy) && listing.favoritedBy.length > 0) {
+      userIds = listing.favoritedBy;
+      console.log(`Found ${userIds.length} users in listing.favoritedBy for listing ${listingId}`);
+    }
+    
+    // Also find users who have this listing in their favorites array
+    const usersWithFavorite = await mongoose.model('User').find({
+      favorites: objectId
+    }).lean() as any[];
+    
+    console.log(`Found ${usersWithFavorite.length} users with listing in their favorites array for listing ${listingId}`);
+    
+    // Combine the two sets of users (from listing.favoritedBy and user.favorites)
+    const userIdStrings = new Set([
+      ...userIds.map(id => id.toString()),
+      ...usersWithFavorite.map(user => user._id ? user._id.toString() : '')
+    ].filter(Boolean));
+    
+    // Fetch the complete user objects for all user IDs
     const users = await mongoose.model('User').find({
-      favorites: { $in: [listingId] }
-    });
+      _id: { $in: Array.from(userIdStrings).map(id => new mongoose.Types.ObjectId(id)) }
+    }).lean() as any[];
+    
+    console.log(`After combining, found a total of ${users.length} unique users who favorited listing ${listingId}`);
     
     return users;
   } catch (error) {

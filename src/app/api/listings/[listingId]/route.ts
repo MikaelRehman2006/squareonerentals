@@ -285,13 +285,18 @@ export async function PATCH(request: NextRequest, { params }: Props) {
         );
       }
 
+      console.log(`Attempting to notify users about changes to listing ${listingId}`);
+      
       // Case 2: Any changes to the listing (notify users who favorited it)
-      notifyFavoritedListingChange(
+      const notificationResult = await notifyFavoritedListingChange(
         listingId,
         originalListing,
         updatedListing,
         user._id.toString()
       );
+      
+      console.log(`Notification result for listing ${listingId}:`, 
+        notificationResult ? `${Array.isArray(notificationResult) ? notificationResult.length : 1} notifications sent` : 'No notifications sent');
     } catch (notificationError) {
       // Log but don't interrupt the response flow
       console.error('Error sending notifications:', notificationError);
