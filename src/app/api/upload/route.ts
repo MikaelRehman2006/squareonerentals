@@ -108,24 +108,27 @@ export async function POST(request: Request) {
     try {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const base64 = buffer.toString('base64');
-      const fileStr = `data:${file.type};base64,${base64}`;
       const uploadResult = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload(fileStr, {
-          folder: 'listings',
-          resource_type: 'image',
-        }, (error, result) => {
-          if (error) {
-            reject(new Error(`Cloudinary upload error: ${error.message || JSON.stringify(error)}`));
-          } else if (result && result.secure_url) {
-            resolve({
-              secure_url: result.secure_url,
-              public_id: result.public_id
-            });
-          } else {
-            reject(new Error('Missing result data from Cloudinary'));
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'listings',
+            resource_type: 'image',
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary Upload Error", error);
+              reject(new Error(`Cloudinary upload failed: ${error.message || error}`));
+            } else if (result && result.secure_url && result.public_id) {
+              resolve({
+                secure_url: result.secure_url,
+                public_id: result.public_id
+              });
+            } else {
+              reject(new Error('Missing result data from Cloudinary'));
+            }
           }
-        });
+        );
+        uploadStream.end(buffer);
       });
       return NextResponse.json(uploadResult);
     } catch (cloudinaryError) {
