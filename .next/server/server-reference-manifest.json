@@ -1,14 +1,5 @@
 {
-  "node": {
-    "53320b55cc43660cfac8cb9d272e34ade885933b": {
-      "workers": {
-        "app/notifications/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5Cmikae%5C%5CDownloads%5C%5CcursorSOR2%5C%5Csquareonerentals%5C%5Csrc%5C%5Capp%5C%5Cnotifications%5C%5Cpage.tsx%22%2C%5B%22%24%24ACTION_0%22%5D%5D%5D&__client_imported__=!"
-      },
-      "layer": {
-        "app/notifications/page": "rsc"
-      }
-    }
-  },
+  "node": {},
   "edge": {},
-  "encryptionKey": "txKUU3ZCaXh4kKFk0ydXiFcmtpN5xMFRjgpbj3kV+q4="
+  "encryptionKey": "YPi3msrlohz/qsAF1OzzeKVQ78LcbOT552/6kjdg3oo="
 }

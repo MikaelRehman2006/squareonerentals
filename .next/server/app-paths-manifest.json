@@ -1,4 +1,8 @@
 {
-  "/notifications/page": "app/notifications/page.js",
-  "/favorites/page": "app/favorites/page.js"
+  "/auth/signin/page": "app/auth/signin/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/page": "app/page.js",
+  "/api/listings/route": "app/api/listings/route.js",
+  "/notifications/page": "app/notifications/page.js"
 }

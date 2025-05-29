@@ -16,7 +16,7 @@ const sampleNotifications = [
     description: 'John Smith has sent you a message about your inquiry.',
     time: '2 hours ago',
     read: false,
-    type: 'message'
+    type: 'listing'
   },
   {
     id: '2',
