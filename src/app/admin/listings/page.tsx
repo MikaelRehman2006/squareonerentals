@@ -30,6 +30,9 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { formatPrice } from '@/utils/formatPrice';
 
+// Add export const dynamic = 'force-dynamic' to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 interface Listing {
   id: string;
   title: string;
@@ -150,6 +153,15 @@ export default function ListingsPage() {
 
   const handlePriceRangeChange = (value: number[]) => {
     setPriceRange([value[0], value[1]]);
+  };
+
+  // Function to safely format dates
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   if (loading) {
@@ -288,7 +300,7 @@ export default function ListingsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="py-4 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">{formatPrice(listing.price)}</TableCell>
-                  <TableCell className="py-4 px-4 text-sm text-gray-500 dark:text-gray-400">{new Date(listing.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="py-4 px-4 text-sm text-gray-500 dark:text-gray-400">{formatDate(listing.createdAt)}</TableCell>
                   <TableCell className="py-4 px-4 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

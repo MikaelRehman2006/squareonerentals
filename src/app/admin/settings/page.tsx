@@ -22,6 +22,9 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
 

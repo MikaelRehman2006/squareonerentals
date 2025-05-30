@@ -35,6 +35,9 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/utils/formatPrice';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 interface User {
   _id: string;
   id?: string;

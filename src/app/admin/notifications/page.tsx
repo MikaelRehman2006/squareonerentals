@@ -8,6 +8,9 @@ import { Bell, Users, Send, RefreshCw, Filter, Search, ChevronDown, Trash2, Arro
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';

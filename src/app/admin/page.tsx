@@ -20,6 +20,9 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { AdvancedAnalytics } from '@/components/AdvancedAnalytics';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 interface DashboardStats {
   currentStats: {
     totalUsers: number;

@@ -92,9 +92,10 @@ export async function GET(request: NextRequest) {
         title: listing.title,
         price: listing.price,
         status: listing.status,
-        createdAt: listing.createdAt,
+        createdAt: listing.createdAt.toISOString(),
         userId: listing.userId._id.toString(),
         user: {
+          id: listing.userId._id.toString(),
           name: listing.userId.name,
           email: listing.userId.email,
         },

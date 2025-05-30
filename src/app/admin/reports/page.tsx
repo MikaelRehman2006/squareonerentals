@@ -33,6 +33,9 @@ import { MoreHorizontal, Eye, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 interface Report {
   id: string;
   listing: {

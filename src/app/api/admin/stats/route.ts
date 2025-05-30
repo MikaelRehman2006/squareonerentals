@@ -8,6 +8,57 @@ import { Listing } from '@/models/Listing';
 import { User } from '@/models/User';
 import { Report } from '@/models/Report';
 import { getAdminRole } from '@/lib/admin';
+import { Types } from 'mongoose';
+
+// Helper function to ensure dates are serialized properly
+const serializeDate = (date: Date) => date.toISOString();
+
+// Helper to safely get string from ObjectId
+const safeIdToString = (id: unknown): string => {
+  if (id instanceof Types.ObjectId) {
+    return id.toString();
+  }
+  if (typeof id === 'object' && id !== null && '_id' in id) {
+    return safeIdToString((id as any)._id);
+  }
+  return String(id);
+};
+
+// Helper function to safely transform MongoDB documents
+const transformMongoDoc = (doc: any) => {
+  if (!doc) return doc;
+  
+  // Convert _id to string
+  if (doc._id) {
+    doc.id = doc._id.toString();
+    delete doc._id;
+  }
+  
+  // Convert dates to ISO strings
+  if (doc.createdAt) {
+    doc.createdAt = serializeDate(doc.createdAt);
+  }
+  if (doc.updatedAt) {
+    doc.updatedAt = serializeDate(doc.updatedAt);
+  }
+  
+  // Process nested objects and arrays
+  Object.keys(doc).forEach(key => {
+    if (doc[key] && typeof doc[key] === 'object') {
+      if (Array.isArray(doc[key])) {
+        doc[key] = doc[key].map((item: any) => 
+          typeof item === 'object' ? transformMongoDoc(item) : item
+        );
+      } else if (doc[key] instanceof Date) {
+        doc[key] = serializeDate(doc[key]);
+      } else {
+        doc[key] = transformMongoDoc(doc[key]);
+      }
+    }
+  });
+  
+  return doc;
+};
 
 export async function GET() {
   try {
@@ -134,6 +185,50 @@ export async function GET() {
       ])
     ]);
 
+    // Transform data to ensure it's serializable
+    const processedRecentUsers = recentUsers.map((user: any) => ({
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      createdAt: serializeDate(user.createdAt)
+    }));
+
+    const processedRecentListings = recentListings.map((listing: any) => ({
+      id: listing._id.toString(),
+      title: listing.title,
+      price: listing.price,
+      status: listing.status,
+      createdAt: serializeDate(listing.createdAt),
+      userId: listing.userId?._id?.toString(),
+      user: {
+        name: listing.userId?.name || 'Unknown',
+        email: listing.userId?.email || 'unknown@email.com'
+      }
+    }));
+
+    const processedFlaggedReports = flaggedReports.map((report: any) => ({
+      id: report._id.toString(),
+      listingId: {
+        id: report.listingId?._id?.toString() || 'unknown',
+        title: report.listingId?.title || 'Unknown Listing'
+      },
+      reportedBy: {
+        name: report.reportedBy?.name || 'Unknown User',
+        email: report.reportedBy?.email || 'unknown@email.com'
+      },
+      reason: report.reason || 'No reason provided',
+      createdAt: serializeDate(report.createdAt)
+    }));
+
+    const processedListings = allListings.map((listing: any) => ({
+      id: listing._id.toString(),
+      title: listing.title,
+      price: listing.price,
+      location: listing.location,
+      status: listing.status,
+      createdAt: serializeDate(listing.createdAt)
+    }));
+
     return NextResponse.json({
       currentStats: {
         totalUsers,
@@ -147,16 +242,16 @@ export async function GET() {
         listingGrowthPercent
       },
       recentActivity: {
-        users: recentUsers,
-        listings: recentListings,
-        reports: flaggedReports
+        users: processedRecentUsers,
+        listings: processedRecentListings,
+        reports: processedFlaggedReports
       },
       monthlyStats: {
         users: monthlyStats[0],
         listings: monthlyStats[1]
       },
       // Add all listings data for advanced analytics
-      listings: allListings
+      listings: processedListings
     });
   } catch (error) {
     console.error('Error in admin stats API:', error);
