@@ -42,13 +42,33 @@ export function useNotifications() {
   const fetchUnreadCount = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/notifications/unread-count');
+      
+      // Create abort controller with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch('/api/notifications/unread-count', {
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      
+      // Clear timeout
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const data = await response.json();
-        setUnreadCount(data.count);
+        setUnreadCount(data.count || 0);
+      } else {
+        console.warn('Non-OK response from notifications API:', response.status);
       }
     } catch (error) {
-      console.error('Error fetching unread notification count:', error);
+      // Check if it's an abort error
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('Notification count request timed out');
+      } else {
+        console.error('Error fetching unread notification count:', error);
+      }
+      // Don't set unread count to 0 on error, keep the previous value
     } finally {
       setLoading(false);
     }
@@ -62,6 +82,9 @@ export function useNotifications() {
       // Set up polling for new notifications every minute
       const interval = setInterval(fetchUnreadCount, 60000);
       return () => clearInterval(interval);
+    } else {
+      // Reset count when user is not logged in
+      setUnreadCount(0);
     }
   }, [session]);
 
@@ -91,28 +114,33 @@ export function renderNotificationBadges() {
   const { unreadCount } = useNotifications();
   
   useEffect(() => {
-    // Render badge on user icon
-    const userBadgeContainer = document.getElementById('notification-badge');
-    if (userBadgeContainer && unreadCount > 0) {
-      userBadgeContainer.innerHTML = `
-        <span class="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
-          ${unreadCount > 9 ? '9+' : unreadCount}
-        </span>
-      `;
-    } else if (userBadgeContainer) {
-      userBadgeContainer.innerHTML = '';
-    }
-
-    // Render badge on notifications menu item
-    const menuBadgeContainer = document.getElementById('notification-menu-badge');
-    if (menuBadgeContainer && unreadCount > 0) {
-      menuBadgeContainer.innerHTML = `
-        <span class="absolute right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
-          ${unreadCount > 9 ? '9+' : unreadCount}
-        </span>
-      `;
-    } else if (menuBadgeContainer) {
-      menuBadgeContainer.innerHTML = '';
+    try {
+      // Render badge on user icon
+      const userBadgeContainer = document.getElementById('notification-badge');
+      if (userBadgeContainer && unreadCount > 0) {
+        userBadgeContainer.innerHTML = `
+          <span class="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+            ${unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        `;
+      } else if (userBadgeContainer) {
+        userBadgeContainer.innerHTML = '';
+      }
+  
+      // Render badge on notifications menu item
+      const menuBadgeContainer = document.getElementById('notification-menu-badge');
+      if (menuBadgeContainer && unreadCount > 0) {
+        menuBadgeContainer.innerHTML = `
+          <span class="absolute right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+            ${unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        `;
+      } else if (menuBadgeContainer) {
+        menuBadgeContainer.innerHTML = '';
+      }
+    } catch (error) {
+      console.error('Error rendering notification badges:', error);
+      // Don't throw errors from this function - it's used in the app layout
     }
   }, [unreadCount]);
   

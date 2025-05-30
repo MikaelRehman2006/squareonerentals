@@ -122,6 +122,17 @@ export async function markNotificationsAsRead(notificationIds: string[]) {
  */
 export async function getUnreadCount(userId: string) {
   try {
+    if (!userId) {
+      console.warn('getUnreadCount called with empty userId');
+      return 0;
+    }
+
+    // Check if userId is a valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.warn(`Invalid userId format: ${userId}`);
+      return 0;
+    }
+
     await connectDB();
     
     const count = await Notification.countDocuments({ 
@@ -129,7 +140,7 @@ export async function getUnreadCount(userId: string) {
       read: false 
     });
     
-    return count;
+    return count || 0;
   } catch (error) {
     console.error('Error getting unread notification count:', error);
     return 0;
