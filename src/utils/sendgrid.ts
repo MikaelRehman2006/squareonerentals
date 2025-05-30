@@ -1,4 +1,7 @@
 import sgMail from '@sendgrid/mail';
+import fs from 'fs';
+import path from 'path';
+import Handlebars from 'handlebars';
 
 interface EmailData {
   name: string;
@@ -17,16 +20,38 @@ interface NotificationEmailData {
   notificationType: 'PAYMENT' | 'LISTING_UPDATE' | 'SYSTEM' | 'MARKETING' | 'NEWSLETTER' | 'MESSAGE' | 'FAVORITE' | 'WELCOME';
 }
 
-/**
- * Initializes the SendGrid API with the API key from environment variables
- */
-export const initSendGrid = () => {
-  if (process.env.SENDGRID_API_KEY) {
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    return true;
+// Initialize SendGrid
+if (process.env.EMAIL_API_KEY) {
+  sgMail.setApiKey(process.env.EMAIL_API_KEY);
+}
+
+// Load and compile email templates
+const templateDir = path.join(process.cwd(), 'src', 'email-templates');
+
+// Cache for compiled templates
+const templateCache: Record<string, Handlebars.TemplateDelegate> = {};
+
+// Helper function to load template
+const getTemplate = (templateName: string): Handlebars.TemplateDelegate => {
+  // Return from cache if available
+  if (templateCache[templateName]) {
+    return templateCache[templateName];
   }
-  console.error('SENDGRID_API_KEY is not defined in environment variables');
-  return false;
+
+  // Load and compile the template
+  try {
+    const templatePath = path.join(templateDir, `${templateName}.html`);
+    const templateSource = fs.readFileSync(templatePath, 'utf-8');
+    const template = Handlebars.compile(templateSource);
+    
+    // Cache the compiled template
+    templateCache[templateName] = template;
+    
+    return template;
+  } catch (error) {
+    console.error(`Error loading email template ${templateName}:`, error);
+    throw new Error(`Email template ${templateName} not found`);
+  }
 };
 
 /**
@@ -79,135 +104,195 @@ ${message}
   }
 };
 
+// Interface for notification email
+interface NotificationEmailParams {
+  userEmail: string;
+  userName: string;
+  subject: string;
+  message: string;
+  notificationType: 'PAYMENT' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'MESSAGE' | 'WELCOME';
+  actionUrl?: string;
+  actionText?: string;
+}
+
+// Interface for listing update email
+interface ListingUpdateEmailParams {
+  userEmail: string;
+  userName: string;
+  subject: string;
+  message: string;
+  listingId: string;
+  listingTitle: string;
+  listingAddress: string;
+  listingPrice: string | number;
+  listingType: string;
+  listingBedrooms: string | number;
+  listingBathrooms: string | number;
+  listingSqft: string | number;
+  listingImage: string;
+  changes: string[];
+}
+
 /**
- * Sends a notification email to a user
- * @param data Notification email data
- * @returns Promise with the send result
+ * Send a general notification email
  */
-export const sendNotificationEmail = async (data: NotificationEmailData) => {
+export const sendNotificationEmail = async (params: NotificationEmailParams): Promise<boolean> => {
   try {
-    // Initialize SendGrid if not already initialized
-    initSendGrid();
-    
-    // Format the email content based on notification type
-    const { userEmail, userName, subject, message, notificationType } = data;
-    
-    // Create email template based on notification type
-    let emailSubject = '';
-    let emailContent = '';
-    
-    switch (notificationType) {
-      case 'PAYMENT':
-        emailSubject = `Square One Rentals - ${subject}`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-If you have any questions about your payment, please contact us at squareone.rental@gmail.com.
-
-Thank you for using Square One Rentals!
-        `;
-        break;
-        
-      case 'LISTING_UPDATE':
-        emailSubject = `Square One Rentals - Listing Update`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-You can view your listings in your Square One Rentals dashboard.
-
-Thank you for using Square One Rentals!
-        `;
-        break;
-      
-      case 'FAVORITE':
-        emailSubject = `Square One Rentals - Favorite Activity`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-Check your favorites in your Square One Rentals dashboard.
-
-Thank you for using Square One Rentals!
-        `;
-        break;
-        
-      case 'MESSAGE':
-        emailSubject = `Square One Rentals - New Message`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-You can view and reply to all your messages from your Square One Rentals dashboard.
-
-Thank you for using Square One Rentals!
-        `;
-        break;
-        
-      case 'WELCOME':
-        emailSubject = `Welcome to Square One Rentals`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-IMPORTANT: To ensure you receive our emails in the future, please add 'squareone.rental@gmail.com' to your contacts and mark this email as "Not Spam" if it appears in your spam folder. This will help our future communications reach you directly.
-
-Thank you for using Square One Rentals!
-        `;
-        break;
-        
-      case 'SYSTEM':
-        emailSubject = `Square One Rentals - ${subject || 'Notification'}`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-IMPORTANT: To ensure you receive our emails in the future, please add 'squareone.rental@gmail.com' to your contacts and mark this email as "Not Spam" if it appears in your spam folder. This will help our future communications reach you directly.
-
-Thank you for using Square One Rentals!
-        `;
-        break;
-        
-      case 'MARKETING':
-      case 'NEWSLETTER':
-      default:
-        emailSubject = `Square One Rentals - ${subject || 'Notification'}`;
-        emailContent = `
-Hello ${userName},
-
-${message}
-
-Thank you for using Square One Rentals!
-        `;
-        break;
+    if (!process.env.EMAIL_API_KEY) {
+      console.warn('Email API key not configured, skipping email sending');
+      return false;
     }
 
-    // Create the email
-    const msg = {
-      to: userEmail,
-      from: 'squareone.rental@gmail.com', // Must be verified sender in SendGrid
-      subject: emailSubject,
-      text: emailContent,
-    };
-
-    // Send the email
-    console.log(`Sending notification email to ${userEmail}...`);
-    const result = await sgMail.send(msg);
-    console.log(`Notification email sent successfully to ${userEmail}!`);
+    // Get template
+    const template = getTemplate('notification-template');
     
-    return { success: true, result };
+    // Prepare template data
+    const templateData = {
+      notification_title: params.notificationType === 'LISTING_UPDATE' 
+        ? 'Listing Update' 
+        : params.notificationType === 'PAYMENT'
+        ? 'Payment Notification'
+        : params.notificationType === 'WELCOME'
+        ? 'Welcome to Square One Rentals'
+        : 'Notification',
+      user_name: params.userName,
+      notification_message: params.message,
+      action_url: params.actionUrl || 'https://squareonerentals-1234.vercel.app',
+      action_text: params.actionText || 'Visit Square One Rentals',
+      unsubscribe_url: `https://squareonerentals-1234.vercel.app/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=${params.notificationType.toLowerCase()}`,
+      preferences_url: 'https://squareonerentals-1234.vercel.app/settings#notifications'
+    };
+    
+    // Render HTML
+    const html = template(templateData);
+    
+    // Prepare email
+    const msg = {
+      to: params.userEmail,
+      from: {
+        email: 'notifications@squareonerentals.ca',
+        name: 'Square One Rentals'
+      },
+      subject: params.subject,
+      html,
+      trackingSettings: {
+        clickTracking: {
+          enable: true
+        },
+        openTracking: {
+          enable: true
+        }
+      }
+    };
+    
+    // Send email
+    await sgMail.send(msg);
+    
+    return true;
   } catch (error) {
     console.error('Error sending notification email:', error);
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Unknown error occurred' };
+    return false;
   }
+};
+
+/**
+ * Send a listing update email with detailed listing information
+ */
+export const sendListingUpdateEmail = async (params: ListingUpdateEmailParams): Promise<boolean> => {
+  try {
+    if (!process.env.EMAIL_API_KEY) {
+      console.warn('Email API key not configured, skipping email sending');
+      return false;
+    }
+
+    // Get template
+    const template = getTemplate('listing-update-template');
+    
+    // Prepare template data
+    const templateData = {
+      notification_title: 'Listing Update',
+      user_name: params.userName,
+      notification_message: params.message,
+      listing_image: params.listingImage,
+      listing_title: params.listingTitle,
+      listing_address: params.listingAddress,
+      listing_price: params.listingPrice,
+      listing_type: params.listingType,
+      listing_bedrooms: params.listingBedrooms,
+      listing_bathrooms: params.listingBathrooms,
+      listing_sqft: params.listingSqft,
+      changes: params.changes,
+      listing_url: `https://squareonerentals-1234.vercel.app/listings/${params.listingId}`,
+      unsubscribe_url: `https://squareonerentals-1234.vercel.app/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=listing_update`,
+      preferences_url: 'https://squareonerentals-1234.vercel.app/settings#notifications'
+    };
+    
+    // Render HTML
+    const html = template(templateData);
+    
+    // Prepare email
+    const msg = {
+      to: params.userEmail,
+      from: {
+        email: 'notifications@squareonerentals.ca',
+        name: 'Square One Rentals'
+      },
+      subject: params.subject,
+      html,
+      trackingSettings: {
+        clickTracking: {
+          enable: true
+        },
+        openTracking: {
+          enable: true
+        }
+      }
+    };
+    
+    // Send email
+    await sgMail.send(msg);
+    
+    return true;
+  } catch (error) {
+    console.error('Error sending listing update email:', error);
+    return false;
+  }
+};
+
+/**
+ * Send a test email to verify email configuration
+ */
+export const sendTestEmail = async (toEmail: string): Promise<boolean> => {
+  try {
+    if (!process.env.EMAIL_API_KEY) {
+      console.warn('Email API key not configured, skipping test email');
+      return false;
+    }
+
+    // Prepare email
+    const msg = {
+      to: toEmail,
+      from: {
+        email: 'notifications@squareonerentals.ca',
+        name: 'Square One Rentals'
+      },
+      subject: 'Test Email from Square One Rentals',
+      text: 'This is a test email to verify your email configuration is working correctly.',
+      html: '<p>This is a test email to verify your email configuration is working correctly.</p>',
+    };
+    
+    // Send email
+    await sgMail.send(msg);
+    
+    return true;
+  } catch (error) {
+    console.error('Error sending test email:', error);
+    return false;
+  }
+};
+
+export default {
+  sendNotificationEmail,
+  sendListingUpdateEmail,
+  sendTestEmail
 };
