@@ -180,26 +180,23 @@ export default function MembershipsPage() {
             <div className="my-8 h-px w-full bg-gradient-to-r from-gray-700 via-gray-500 to-gray-700 opacity-30" />
 
             <ul className="mt-6 mb-8 space-y-5">
-              <ListItem tooltip="Your listing will appear in regular search results" light>
-                Standard listing visibility
-              </ListItem>
               <ListItem tooltip="Your listing will be posted on our Facebook group" light>
-                Facebook group post
+                Facebook listing (standard)
               </ListItem>
               <ListItem tooltip="Your listing will appear in normal search results on our website" light>
-                Standard website placement
-              </ListItem>
-              <ListItem tooltip="Upload images within the storage limit for your property" light>
-                10 MB storage cap
-              </ListItem>
-              <ListItem tooltip="See how many views and inquiries your listing receives" light>
-                Basic analytics
+                Website listing (standard)
               </ListItem>
               <ListItem tooltip="Get support via email within 24 hours" light>
                 Standard email support
               </ListItem>
               <ListItem tooltip="Your listing remains active for 30 days before needing renewal" light>
-                30 day active listing period
+                {annualBilling ? '1 year' : '30 days'} of active visibility
+              </ListItem>
+              <ListItem tooltip="Upload images within the storage limit for your property" light>
+                10MB storage cap
+              </ListItem>
+              <ListItem tooltip="Access to our network of realtors and realtor services" light>
+                Access to find realtors and other realtor services
               </ListItem>
             </ul>
 
@@ -295,32 +292,23 @@ export default function MembershipsPage() {
             <div className="my-8 h-px w-full bg-gradient-to-r from-primary/5 via-primary/20 to-primary/5" />
 
             <ul className="mt-6 mb-8 space-y-5">
-              <ListItem tooltip="Your listing will appear at the top of search results and on the homepage" premium>
-                Featured placement on listings page
-              </ListItem>
-              <ListItem tooltip="Your listing will be posted on our Facebook group" premium>
-                Facebook group post
-              </ListItem>
               <ListItem tooltip="Your listing will be featured in our Facebook group" premium>
-                Featured Facebook promotion
+                Facebook listing (featured)
               </ListItem>
               <ListItem tooltip="Your listing will be highlighted on our website" premium>
-                Featured website placement
-              </ListItem>
-              <ListItem tooltip="Upload higher quality images with a larger storage limit" premium>
-                25 MB storage cap
-              </ListItem>
-              <ListItem tooltip="Detailed analytics on views, inquiries, and user engagement" premium>
-                Advanced analytics and reporting
+                Website listing (featured)
               </ListItem>
               <ListItem tooltip="Get priority support with responses within 12 hours" premium>
-                Priority customer support
+                Priority email support
               </ListItem>
-              <ListItem tooltip="Your listing remains active for 30 days before needing renewal" premium>
-                30 day active listing period
+              <ListItem tooltip="Your listing remains active for the entire period before needing renewal" premium>
+                {annualBilling ? '1 year' : '30 days'} of active visibility
               </ListItem>
-              <ListItem tooltip="Add 3D virtual tours or video walkthroughs to your listing" premium>
-                Virtual tour support
+              <ListItem tooltip="Upload higher quality images with a larger storage limit" premium>
+                25MB storage cap
+              </ListItem>
+              <ListItem tooltip="Access to extended realtor services and promotion" premium>
+                Access to more realtor services
               </ListItem>
             </ul>
 
@@ -354,23 +342,31 @@ export default function MembershipsPage() {
           {[
             {
               question: "What's included in a Basic Membership?",
-              answer: "Basic membership includes standard listing visibility, up to 8 photos per listing, Facebook group sharing, a 10 MB storage cap, and basic analytics support. Listings are shown in standard search results.",
+              answer: "Basic membership includes Facebook listing (standard), website listing (standard), standard email support, 30 days of active visibility (or 1 year for annual plans), 10MB storage cap, and access to find realtors and other realtor services.",
             },
             {
-              question: "How does the Featured Listing work?",
-              answer: "Featured listings appear at the top of search results and receive priority exposure across our platform. They are also promoted in our Facebook group to increase visibility and engagement.",
+              question: "What's included in a Featured Membership?",
+              answer: "Featured membership includes Facebook listing (featured), website listing (featured), priority email support, 30 days of active visibility (or 1 year for annual plans), 25MB storage cap, and access to more realtor services (in addition to basic).",
+            },
+            {
+              question: "How do subscriptions work?",
+              answer: "Subscriptions auto-renew at the end of your billing period (monthly or annually) until canceled. You can manage your subscription at any time through your dashboard.",
             },
             {
               question: "Can I cancel my membership?",
-              answer: "Yes, you're free to cancel your membership at any time by reaching out to our team or using the account settings.",
+              answer: "Yes, you can cancel your membership at any time from your dashboard by navigating to Subscription and clicking 'Manage Subscription'. This will take you to the Stripe portal where you can cancel your subscription. Your access will continue until the end of your billing period.",
             },
             {
-              question: "Do you offer refunds?",
-              answer: "We currently do not offer refunds, as all memberships are digital access passes.",
+              question: "What happens when I cancel?",
+              answer: "When you cancel, your subscription remains active until the end of your current billing period. After that, your account reverts to a free account and your listings will no longer be visible to others.",
+            },
+            {
+              question: "Are there refunds if I cancel early?",
+              answer: "We do not offer prorated refunds for partial months or years. Your subscription remains active until the end of your billing period even after cancellation.",
             },
             {
               question: "How do I get started?",
-              answer: "Choose the plan that fits your needs and click the subscribe button. You'll be prompted to create an account or log in. Once you're in, you can complete the setup and start posting your listing right away.",
+              answer: "Choose the plan that fits your needs and click the 'Get Started' button. After completing the payment process, you can immediately start posting listings with your new membership benefits.",
             },
           ].map((item, idx) => (
             <AccordionItem key={item.question} question={item.question} answer={item.answer} defaultOpen={idx === 0} />

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
+import { sendNotificationEmail } from '@/utils/sendgrid';
+import { createNotification } from '@/lib/notification';
 
 export async function POST(request: Request) {
   try {
@@ -44,6 +46,27 @@ export async function POST(request: Request) {
       name: user.name,
       hasPassword: !!user.password,
     });
+
+    // Send welcome email
+    try {
+      await sendNotificationEmail({
+        userEmail: email,
+        userName: name,
+        subject: 'Welcome to Square One Rentals',
+        message: `Welcome to Square One Rentals! We're excited to have you on board.\n\nTo ensure you receive all our important notifications, please mark this email as "Not Spam" and add squareone.rental@gmail.com to your contacts.\n\nYou can now start browsing listings or create your own listing by logging into your account.`,
+        notificationType: 'SYSTEM'
+      });
+      
+      // Create in-app notification
+      await createNotification({
+        userId: user._id.toString(),
+        message: 'Welcome to Square One Rentals! Your account has been created successfully.',
+        type: 'SYSTEM'
+      });
+    } catch (emailError) {
+      // Log error but don't fail registration
+      console.error('Error sending welcome email:', emailError);
+    }
 
     return NextResponse.json({
       user: {

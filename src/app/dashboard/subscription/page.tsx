@@ -254,42 +254,54 @@ export default function SubscriptionPage() {
                         <>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Standard listing visibility</span>
+                            <span>Facebook listing (standard)</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Facebook group post</span>
+                            <span>Website listing (standard)</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>10 MB storage cap</span>
+                            <span>Standard email support</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Basic analytics</span>
+                            <span>{membership.isAnnual ? '1 year' : '30 days'} of active visibility</span>
+                          </li>
+                          <li className="flex items-start">
+                            <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                            <span>10MB storage cap</span>
+                          </li>
+                          <li className="flex items-start">
+                            <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                            <span>Access to find realtors and other realtor services</span>
                           </li>
                         </>
                       ) : (
                         <>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Featured placement on listings page</span>
+                            <span>Facebook listing (featured)</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Featured Facebook promotion</span>
+                            <span>Website listing (featured)</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>25 MB storage cap</span>
+                            <span>Priority email support</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Advanced analytics and reporting</span>
+                            <span>{membership.isAnnual ? '1 year' : '30 days'} of active visibility</span>
                           </li>
                           <li className="flex items-start">
                             <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                            <span>Virtual tour support</span>
+                            <span>25MB storage cap</span>
+                          </li>
+                          <li className="flex items-start">
+                            <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                            <span>Access to more realtor services</span>
                           </li>
                         </>
                       )}
