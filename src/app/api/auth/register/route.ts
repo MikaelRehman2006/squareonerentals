@@ -66,8 +66,14 @@ You can now start browsing listings or create your own listing by logging into y
       // Create in-app notification
       await createNotification({
         userId: user._id.toString(),
-        message: 'Welcome to Square One Rentals! Your account has been created successfully.',
-        type: 'SYSTEM'
+        message: `Welcome to Square One Rentals! We're excited to have you on board.
+
+To ensure you receive all our important notifications, please mark this email as "Not Spam" and add squareone.rental@gmail.com to your contacts.
+
+You'll see a 🔴 notification badge beside your profile icon when you have unread notifications. Click on it to view your notifications.
+
+You can now start browsing listings or create your own listing by logging into your account.`,
+        type: 'WELCOME'
       });
     } catch (emailError) {
       // Log error but don't fail registration

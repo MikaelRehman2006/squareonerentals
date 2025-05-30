@@ -36,7 +36,8 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/utils/formatPrice';
 
 interface User {
-  id: string;
+  _id: string;
+  id?: string;
   name: string | null;
   email: string | null;
   image: string | null;
@@ -112,7 +113,12 @@ export default function UsersPage() {
       const response = await fetch(`/api/admin/users?${queryParams}`);
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users || []);
+        const formattedUsers = (data.users || []).map((user: any) => ({
+          ...user,
+          _id: user._id || user.id,
+          id: user.id || user._id
+        }));
+        setUsers(formattedUsers);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -123,6 +129,15 @@ export default function UsersPage() {
   };
 
   const updateUserRole = async (userId: string, newRole: string) => {
+    if (!userId) {
+      toast.error('Invalid user ID');
+      console.error('Attempted to update role with undefined userId');
+      return;
+    }
+    
+    // Log the userId for debugging
+    console.log(`Updating role for user ID: ${userId} to ${newRole}`);
+    
     try {
       const response = await fetch(`/api/admin/users/${userId}/role`, {
         method: 'PATCH',
@@ -147,7 +162,11 @@ export default function UsersPage() {
   };
 
   const handleBanUser = async (duration: string) => {
-    if (!selectedUserId) return;
+    if (!selectedUserId) {
+      toast.error('No user selected for banning');
+      setShowBanDialog(false);
+      return;
+    }
 
     try {
       const response = await fetch(`/api/admin/users/${selectedUserId}/ban`, {
@@ -156,13 +175,16 @@ export default function UsersPage() {
         body: JSON.stringify({ duration }),
       });
 
-      if (response.ok) {
-        fetchUsers();
-        toast.success('User banned successfully');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to ban user');
       }
+
+      fetchUsers();
+      toast.success('User banned successfully');
     } catch (error) {
       console.error('Error banning user:', error);
-      toast.error('Failed to ban user');
+      toast.error(error instanceof Error ? error.message : 'Failed to ban user');
     } finally {
       setShowBanDialog(false);
       setSelectedUserId(null);
@@ -170,6 +192,12 @@ export default function UsersPage() {
   };
 
   const handleRestrictUser = async (userId: string, type: 'listing' | 'messaging') => {
+    if (!userId) {
+      toast.error('Invalid user ID');
+      console.error('Attempted to restrict user with undefined userId');
+      return;
+    }
+    
     try {
       const response = await fetch(`/api/admin/users/${userId}/restrict`, {
         method: 'POST',
@@ -177,17 +205,26 @@ export default function UsersPage() {
         body: JSON.stringify({ type }),
       });
 
-      if (response.ok) {
-        fetchUsers();
-        toast.success(`User ${type} restriction applied`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to restrict user ${type}`);
       }
+
+      fetchUsers();
+      toast.success(`User ${type} restriction applied`);
     } catch (error) {
       console.error('Error restricting user:', error);
-      toast.error('Failed to restrict user');
+      toast.error(error instanceof Error ? error.message : 'Failed to restrict user');
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
+    if (!userId) {
+      toast.error('Invalid user ID');
+      console.error('Attempted to delete user with undefined userId');
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
@@ -202,7 +239,7 @@ export default function UsersPage() {
         throw new Error(errorData.error || 'Failed to delete user');
       }
 
-      setUsers(users.filter(user => user.id !== userId));
+      setUsers(users.filter(user => (user._id || user.id) !== userId));
       toast.success('User deleted successfully');
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -267,7 +304,7 @@ export default function UsersPage() {
         <TableBody>
           {users && users.length > 0 ? (
             users.map((user) => (
-              <TableRow key={user.id} className="even:bg-gray-50 dark:even:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+              <TableRow key={user._id || user.id} className="even:bg-gray-50 dark:even:bg-gray-800 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                 <TableCell className="px-4 py-2 flex items-center gap-3">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.image || ''} />
@@ -298,7 +335,7 @@ export default function UsersPage() {
                         <DropdownMenuItem
                           onClick={() =>
                             updateUserRole(
-                              user.id,
+                              user._id || user.id || '',
                               user.role === 'ADMIN' ? 'USER' : 'ADMIN'
                             )
                           }
@@ -309,25 +346,25 @@ export default function UsersPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
-                            setSelectedUserId(user.id);
+                            setSelectedUserId(user._id || user.id || '');
                             setShowBanDialog(true);
                           }}
                         >
                           Ban User
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleRestrictUser(user.id, 'listing')}
+                          onClick={() => handleRestrictUser(user._id || user.id || '', 'listing')}
                         >
                           Restrict Listings
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleRestrictUser(user.id, 'messaging')}
+                          onClick={() => handleRestrictUser(user._id || user.id || '', 'messaging')}
                         >
                           Restrict Messaging
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => handleDeleteUser(user.id)}
+                          onClick={() => handleDeleteUser(user._id || user.id || '')}
                           className="text-red-600"
                         >
                           Delete User

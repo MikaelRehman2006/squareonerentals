@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 export interface INotification {
   userId: string;
   message: string;
-  type: 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT';
+  type: 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT' | 'WELCOME';
   read: boolean;
   listingId?: string;
   relatedUserId?: string;
@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema<INotification>({
   type: { 
     type: String, 
     required: true,
-    enum: ['MESSAGE', 'LISTING_UPDATE', 'FAVORITE', 'SYSTEM', 'NEWSLETTER', 'MARKETING', 'PAYMENT']
+    enum: ['MESSAGE', 'LISTING_UPDATE', 'FAVORITE', 'SYSTEM', 'NEWSLETTER', 'MARKETING', 'PAYMENT', 'WELCOME']
   },
   read: { type: Boolean, default: false },
   listingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Listing' },

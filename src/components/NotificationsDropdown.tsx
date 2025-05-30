@@ -1,24 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Bell, Check, ExternalLink, AlertCircle, Edit, Star, Newspaper, Gift, CreditCard, MessagesSquare, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { Bell, ExternalLink, X, Check } from 'lucide-react';
+import { toast } from 'sonner';
+
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 interface Notification {
   _id: string;
   userId: string;
   message: string;
-  type: 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM';
+  type: 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT' | 'WELCOME';
   read: boolean;
   listingId?: {
     _id: string;
@@ -120,9 +121,21 @@ export function NotificationsDropdown() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'LISTING_UPDATE':
-        return <ExternalLink className="h-4 w-4 text-blue-500" />;
+        return <Edit className="h-4 w-4 text-indigo-500" />;
       case 'FAVORITE':
-        return <Bell className="h-4 w-4 text-rose-500" />;
+        return <Star className="h-4 w-4 text-amber-500" />;
+      case 'SYSTEM':
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case 'MESSAGE':
+        return <MessagesSquare className="h-4 w-4 text-violet-500" />;
+      case 'NEWSLETTER':
+        return <Newspaper className="h-4 w-4 text-blue-500" />;
+      case 'MARKETING':
+        return <Gift className="h-4 w-4 text-pink-500" />;
+      case 'PAYMENT':
+        return <CreditCard className="h-4 w-4 text-green-500" />;
+      case 'WELCOME':
+        return <PartyPopper className="h-4 w-4 text-emerald-500" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }

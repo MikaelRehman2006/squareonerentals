@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to map front-end notification types to database model types
-function mapNotificationType(type: string): 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT' {
+function mapNotificationType(type: string): 'MESSAGE' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT' | 'WELCOME' {
   switch (type) {
     case 'system':
       return 'SYSTEM';
@@ -170,6 +170,8 @@ function mapNotificationType(type: string): 'MESSAGE' | 'LISTING_UPDATE' | 'FAVO
       return 'MARKETING';
     case 'payment':
       return 'PAYMENT';
+    case 'welcome':
+      return 'WELCOME';
     default:
       return 'SYSTEM';
   }

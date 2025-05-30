@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, ArrowLeft, CheckCircle, Trash2, Filter, MailOpen, Clock, User, Edit, Star, AlertCircle, Newspaper, Gift, CreditCard, ExternalLink } from 'lucide-react';
+import { Bell, ArrowLeft, CheckCircle, Trash2, Filter, MailOpen, Clock, User, Edit, Star, AlertCircle, Newspaper, Gift, CreditCard, ExternalLink, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -209,6 +209,8 @@ export default function NotificationsPage() {
         return 'marketing';
       case 'PAYMENT':
         return 'payment';
+      case 'WELCOME':
+        return 'welcome';
       default:
         return 'system';
     }
@@ -403,6 +405,8 @@ function getNotificationIcon(type: string) {
       return <Gift className="h-5 w-5 text-pink-600" />;
     case 'payment':
       return <CreditCard className="h-5 w-5 text-green-600" />;
+    case 'welcome':
+      return <PartyPopper className="h-5 w-5 text-emerald-600" />;
     default:
       return <Bell className="h-5 w-5 text-gray-600" />;
   }
@@ -424,6 +428,8 @@ function getNotificationIconBg(type: string) {
       return 'bg-pink-50';
     case 'payment':
       return 'bg-green-50';
+    case 'welcome':
+      return 'bg-emerald-50';
     default:
       return 'bg-gray-100';
   }

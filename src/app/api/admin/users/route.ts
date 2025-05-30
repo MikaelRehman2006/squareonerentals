@@ -24,10 +24,21 @@ export async function GET() {
     
     // Get all users with their roles
     const users = await User.find({})
-      .select('email name role createdAt image')
+      .select('_id email name role createdAt image')
       .sort({ createdAt: -1 });
     
-    return NextResponse.json({ users });
+    // Format user objects to include both _id and id for client-side consistency
+    const formattedUsers = users.map(user => {
+      const userObj = user.toObject();
+      return {
+        ...userObj,
+        // Ensure both _id and id are present
+        id: userObj._id.toString(),
+        _id: userObj._id.toString()
+      };
+    });
+    
+    return NextResponse.json({ users: formattedUsers });
   } catch (error) {
     console.error('Error in GET /api/admin/users:', error);
     return NextResponse.json(

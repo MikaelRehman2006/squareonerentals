@@ -6,7 +6,8 @@ import {
   Gift, 
   CreditCard, 
   MessagesSquare,
-  Bell
+  Bell,
+  PartyPopper
 } from 'lucide-react';
 import React, { ReactNode } from 'react';
 
@@ -17,7 +18,8 @@ export type NotificationType =
   | 'newsletter' 
   | 'marketing' 
   | 'payment'
-  | 'message';
+  | 'message'
+  | 'welcome';
 
 export interface NotificationTemplate {
   type: NotificationType;
@@ -61,6 +63,11 @@ export const notificationTemplates: Record<NotificationType, NotificationTemplat
     type: 'message',
     title: 'New message',
     description: 'You have received a new message.'
+  },
+  welcome: {
+    type: 'welcome',
+    title: 'Welcome to Square One Rentals',
+    description: 'Information for new users about the platform.'
   }
 };
 
@@ -81,6 +88,8 @@ export function getNotificationIcon(type: NotificationType | string): ReactNode 
       return React.createElement(CreditCard, { className: "h-5 w-5 text-green-600" });
     case 'message':
       return React.createElement(MessagesSquare, { className: "h-5 w-5 text-violet-600" });
+    case 'welcome':
+      return React.createElement(PartyPopper, { className: "h-5 w-5 text-emerald-600" });
     default:
       return React.createElement(Bell, { className: "h-5 w-5 text-gray-600" });
   }
@@ -103,6 +112,8 @@ export function getNotificationIconBg(type: NotificationType | string): string {
       return 'bg-green-50';
     case 'message':
       return 'bg-violet-50';
+    case 'welcome':
+      return 'bg-emerald-50';
     default:
       return 'bg-gray-100';
   }
@@ -125,6 +136,8 @@ export function getNotificationTypeLabel(type: NotificationType | string): strin
       return 'Payment';
     case 'message':
       return 'Message';
+    case 'welcome':
+      return 'Welcome';
     default:
       return 'Notification';
   }
