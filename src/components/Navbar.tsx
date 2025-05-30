@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Menu, User, X, Heart, Bell, Settings, MessageSquare, LayoutDashboard, ShieldCheck } from 'lucide-react';
-import { NotificationsDropdown } from './NotificationsDropdown';
+import { renderNotificationBadges } from './NotificationsDropdown';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -32,6 +32,9 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+
+  // Add notification badges
+  renderNotificationBadges();
 
   const handleAuth = (action: 'signin' | 'signup') => {
     setIsOpen(false);
@@ -87,11 +90,11 @@ export default function Navbar() {
             
             {session?.user ? (
               <>
-                <NotificationsDropdown />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative">
                       <User className="h-5 w-5" />
+                      <div id="notification-badge"></div>
                       <span className="sr-only">User menu</span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -122,9 +125,10 @@ export default function Navbar() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/notifications" className="flex items-center">
+                      <Link href="/notifications" className="flex items-center relative">
                         <Bell className="w-4 h-4 mr-2" />
                         Notifications
+                        <div id="notification-menu-badge"></div>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

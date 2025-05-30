@@ -872,17 +872,10 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                           <Input 
                             {...field} 
                             id="address-field"
-                            value={field.value || (listing?.address || '')}
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                              console.log('Address changed to:', e.target.value);
-                            }}
+                            value={field.value || ''}
                             className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>
-                        <FormDescription className="text-[#A0A0A0]">
-                          The full address of the property being listed
-                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -1095,13 +1088,17 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {FEATURES.map((feature) => (
                       <div key={feature} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`feature-${feature}`}
-                          checked={selectedFeatures.includes(feature)}
-                          onCheckedChange={() => handleFeatureToggle(feature)}
-                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                        />
-                        <label htmlFor={`feature-${feature}`} className="text-sm font-normal text-[#CCCCCC]">{feature}</label>
+                        <div className="flex items-center h-5">
+                          <Checkbox
+                            id={`feature-${feature}`}
+                            checked={selectedFeatures.includes(feature)}
+                            onCheckedChange={() => handleFeatureToggle(feature)}
+                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          />
+                        </div>
+                        <div className="ml-2 text-sm">
+                          <label htmlFor={`feature-${feature}`} className="font-normal text-[#CCCCCC] cursor-pointer">{feature}</label>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1110,15 +1107,20 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                 <div>
                   <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Building Amenities</h3>
                   <CardDescription className="text-[#A0A0A0] mb-4">What's available in the building</CardDescription>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {AMENITIES.map((amenity) => (
-                      <div key={amenity} className="flex items-center gap-2 p-2 rounded-md hover:bg-[#2A2A2A] transition-colors">
-                        <Checkbox
-                          checked={selectedAmenities.includes(amenity)}
-                          onCheckedChange={() => handleAmenityToggle(amenity)}
-                          className="h-4 w-4 border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                        />
-                        <label className="text-sm font-normal text-[#CCCCCC] cursor-pointer select-none">{amenity}</label>
+                      <div key={amenity} className="flex items-center space-x-2">
+                        <div className="flex items-center h-5">
+                          <Checkbox
+                            id={`amenity-${amenity}`}
+                            checked={selectedAmenities.includes(amenity)}
+                            onCheckedChange={() => handleAmenityToggle(amenity)}
+                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          />
+                        </div>
+                        <div className="ml-2 text-sm">
+                          <label htmlFor={`amenity-${amenity}`} className="font-normal text-[#CCCCCC] cursor-pointer">{amenity}</label>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1130,13 +1132,17 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {UTILITIES.map((utility) => (
                       <div key={utility} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`utility-${utility}`}
-                          checked={selectedUtilities.includes(utility)}
-                          onCheckedChange={() => handleUtilityToggle(utility)}
-                          className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                        />
-                        <label htmlFor={`utility-${utility}`} className="text-sm font-normal text-[#CCCCCC]">{utility}</label>
+                        <div className="flex items-center h-5">
+                          <Checkbox
+                            id={`utility-${utility}`}
+                            checked={selectedUtilities.includes(utility)}
+                            onCheckedChange={() => handleUtilityToggle(utility)}
+                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
+                          />
+                        </div>
+                        <div className="ml-2 text-sm">
+                          <label htmlFor={`utility-${utility}`} className="font-normal text-[#CCCCCC] cursor-pointer">{utility}</label>
+                        </div>
                       </div>
                     ))}
                   </div>

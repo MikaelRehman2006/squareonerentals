@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Bell, Check, ExternalLink, AlertCircle, Edit, Star, Newspaper, Gift, CreditCard, MessagesSquare, PartyPopper } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 import {
   Popover,
@@ -13,7 +14,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useSession } from 'next-auth/react';
 
 interface Notification {
   _id: string;
@@ -30,6 +30,93 @@ interface Notification {
     name: string;
   };
   createdAt: string;
+}
+
+// Create a custom hook for notification data
+export function useNotifications() {
+  const { data: session } = useSession();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch unread count
+  const fetchUnreadCount = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/notifications/unread-count');
+      if (response.ok) {
+        const data = await response.json();
+        setUnreadCount(data.count);
+      }
+    } catch (error) {
+      console.error('Error fetching unread notification count:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch unread count on mount
+  useEffect(() => {
+    if (session?.user) {
+      fetchUnreadCount();
+      
+      // Set up polling for new notifications every minute
+      const interval = setInterval(fetchUnreadCount, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [session]);
+
+  // Mark all notifications as read
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch('/api/notifications/mark-all-read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        setUnreadCount(0);
+        toast.success('All notifications marked as read');
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      toast.error('Failed to mark notifications as read');
+    }
+  };
+
+  return { unreadCount, loading, markAllAsRead };
+}
+
+// Render notifications badge on the profile icon
+export function renderNotificationBadges() {
+  const { unreadCount } = useNotifications();
+  
+  useEffect(() => {
+    // Render badge on user icon
+    const userBadgeContainer = document.getElementById('notification-badge');
+    if (userBadgeContainer && unreadCount > 0) {
+      userBadgeContainer.innerHTML = `
+        <span class="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+          ${unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      `;
+    } else if (userBadgeContainer) {
+      userBadgeContainer.innerHTML = '';
+    }
+
+    // Render badge on notifications menu item
+    const menuBadgeContainer = document.getElementById('notification-menu-badge');
+    if (menuBadgeContainer && unreadCount > 0) {
+      menuBadgeContainer.innerHTML = `
+        <span class="absolute right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+          ${unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      `;
+    } else if (menuBadgeContainer) {
+      menuBadgeContainer.innerHTML = '';
+    }
+  }, [unreadCount]);
+  
+  return null;
 }
 
 export function NotificationsDropdown() {
@@ -63,30 +150,6 @@ export function NotificationsDropdown() {
     }
   };
 
-  // Mark a notification as read
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const response = await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ notificationId }),
-      });
-
-      if (response.ok) {
-        setNotifications(
-          notifications.map((n) =>
-            n._id === notificationId ? { ...n, read: true } : n
-          )
-        );
-        setUnreadCount(Math.max(0, unreadCount - 1));
-      }
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
@@ -114,6 +177,30 @@ export function NotificationsDropdown() {
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
       toast.error('Failed to mark notifications as read');
+    }
+  };
+
+  // Mark a notification as read
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notificationId }),
+      });
+
+      if (response.ok) {
+        setNotifications(
+          notifications.map((n) =>
+            n._id === notificationId ? { ...n, read: true } : n
+          )
+        );
+        setUnreadCount(Math.max(0, unreadCount - 1));
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
   };
 
