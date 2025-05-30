@@ -62,7 +62,7 @@ export async function createNotification({
           userName: user.name || 'User',
           subject,
           message,
-          notificationType: type,
+          notificationType: type as 'PAYMENT' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'MESSAGE' | 'WELCOME',
         });
       }
     } catch (emailError) {

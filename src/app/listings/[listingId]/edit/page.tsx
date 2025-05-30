@@ -877,7 +877,6 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                               field.onChange(e.target.value);
                               console.log('Address changed to:', e.target.value);
                             }}
-                            placeholder="Enter the property address"
                             className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
                           />
                         </FormControl>

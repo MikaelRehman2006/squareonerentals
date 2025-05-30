@@ -60,19 +60,13 @@ To ensure you receive all our important notifications, please mark this email as
 You'll see a 🔴 notification badge beside your profile icon when you have unread notifications. Click on it to view your notifications.
 
 You can now start browsing listings or create your own listing by logging into your account.`,
-        notificationType: 'SYSTEM'
+        notificationType: 'WELCOME'
       });
       
       // Create in-app notification
       await createNotification({
         userId: user._id.toString(),
-        message: `Welcome to Square One Rentals! We're excited to have you on board.
-
-To ensure you receive all our important notifications, please mark this email as "Not Spam" and add squareone.rental@gmail.com to your contacts.
-
-You'll see a 🔴 notification badge beside your profile icon when you have unread notifications. Click on it to view your notifications.
-
-You can now start browsing listings or create your own listing by logging into your account.`,
+        message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications.`,
         type: 'WELCOME'
       });
     } catch (emailError) {
