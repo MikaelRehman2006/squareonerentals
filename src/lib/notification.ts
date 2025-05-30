@@ -51,6 +51,9 @@ export async function createNotification({
           case 'NEWSLETTER':
             subject = 'Newsletter';
             break;
+          case 'WELCOME':
+            subject = 'Welcome to Square One Rentals';
+            break;
         }
         
         // Send the email notification

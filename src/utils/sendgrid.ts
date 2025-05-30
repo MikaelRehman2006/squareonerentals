@@ -14,7 +14,7 @@ interface NotificationEmailData {
   userName: string;
   subject: string;
   message: string;
-  notificationType: 'PAYMENT' | 'LISTING_UPDATE' | 'SYSTEM' | 'MARKETING' | 'NEWSLETTER' | 'MESSAGE' | 'FAVORITE';
+  notificationType: 'PAYMENT' | 'LISTING_UPDATE' | 'SYSTEM' | 'MARKETING' | 'NEWSLETTER' | 'MESSAGE' | 'FAVORITE' | 'WELCOME';
 }
 
 /**
@@ -144,6 +144,19 @@ Hello ${userName},
 ${message}
 
 You can view and reply to all your messages from your Square One Rentals dashboard.
+
+Thank you for using Square One Rentals!
+        `;
+        break;
+        
+      case 'WELCOME':
+        emailSubject = `Welcome to Square One Rentals`;
+        emailContent = `
+Hello ${userName},
+
+${message}
+
+IMPORTANT: To ensure you receive our emails in the future, please add 'squareone.rental@gmail.com' to your contacts and mark this email as "Not Spam" if it appears in your spam folder. This will help our future communications reach you directly.
 
 Thank you for using Square One Rentals!
         `;
