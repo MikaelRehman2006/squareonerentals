@@ -10,6 +10,9 @@ import { Card } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Facebook, Loader2, ArrowRight, Building2 } from 'lucide-react';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',

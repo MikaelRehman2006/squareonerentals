@@ -17,7 +17,9 @@ const nextConfig = {
   // Enable strict URL matching to prevent 404 errors with query parameters
   experimental: {
     // Treat query parameters separately from the path matching
-    scrollRestoration: true
+    scrollRestoration: true,
+    // Ensure App Router features are enabled
+    appDir: true,
   },
   // Explicitly allow all query parameters
   async rewrites() {
@@ -35,6 +37,8 @@ const nextConfig = {
     // Number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2,
   },
+  // Disable static rendering for pages with dynamic content
+  staticPageGenerationTimeout: 0,
 }
 
 module.exports = nextConfig

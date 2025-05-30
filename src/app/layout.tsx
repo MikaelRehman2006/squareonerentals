@@ -9,6 +9,9 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { renderNotificationBadges } from '@/components/NotificationsDropdown';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {

@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 export default function PaymentSuccessPage() {
   const router = useRouter();
   const [isLoaded, setIsLoaded] = useState(false);

@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 function SuccessPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();

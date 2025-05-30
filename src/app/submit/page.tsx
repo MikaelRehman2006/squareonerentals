@@ -10,6 +10,9 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 
+// Add dynamic export to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
