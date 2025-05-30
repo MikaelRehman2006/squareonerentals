@@ -184,7 +184,7 @@ export async function notifyFavoritedListingChange(
         return createNotification({
           userId: user._id.toString(),
           message: adminMessage || message,
-          type: 'LISTING_UPDATE',
+          type: 'FAVORITE',
           listingId,
           relatedUserId: actorUserId,
         });
