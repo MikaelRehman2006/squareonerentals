@@ -7,10 +7,18 @@ import { Toaster } from 'sonner';
 import AuthProvider from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { renderNotificationBadges } from '@/components/NotificationsDropdown';
+import dynamicImport from 'next/dynamic';
 
 // Add dynamic export to prevent prerendering issues
 export const dynamic = 'force-dynamic';
+
+// Import notification badges component with SSR disabled
+const NotificationBadgesRenderer = dynamicImport(
+  () => import('@/components/NotificationsDropdown').then(mod => ({ 
+    default: mod.renderNotificationBadges 
+  })),
+  { ssr: false }
+);
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -30,7 +38,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <MuiThemeProvider>
             <AuthProvider>
-              {renderNotificationBadges()}
+              <NotificationBadgesRenderer />
               <div className="flex flex-col min-h-screen">
                 <Navbar />
                 <main className="flex-grow">
