@@ -61,9 +61,6 @@ const getTemplate = (templateName: string): Handlebars.TemplateDelegate => {
  */
 export const sendContactEmail = async (data: EmailData) => {
   try {
-    // Initialize SendGrid if not already initialized
-    initSendGrid();
-    
     // Format the email content
     const { name, email, phone, subject, message } = data;
     
