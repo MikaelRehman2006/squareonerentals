@@ -4,16 +4,55 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Mail, Star, AlertTriangle, MessageSquare, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { signOut } from 'next-auth/react';
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [listingUpdates, setListingUpdates] = useState(true);
   const [favoriteListings, setFavoriteListings] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== 'delete') {
+      toast.error('Please type "delete" to confirm');
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      const response = await fetch('/api/user/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ confirmation: deleteConfirmation }),
+      });
+
+      if (response.ok) {
+        toast.success('Your account has been deleted');
+        // Sign out the user
+        await signOut({ callbackUrl: '/' });
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Failed to delete account');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('An error occurred while deleting your account');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
 
   return (
     <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -43,39 +82,48 @@ export default function SettingsPage() {
           </div>
 
           <div className="p-6 space-y-6">
+            {/* Email Notifications */}
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-gray-900 font-medium">Email Notifications</h3>
-                <p className="text-gray-600 text-sm">Receive notifications via email</p>
+              <div className="flex items-start">
+                <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Email Notifications</h3>
+                  <p className="text-sm text-gray-500 mt-1">Receive notifications via email</p>
+                </div>
               </div>
-              <Switch 
-                checked={emailNotifications} 
-                onCheckedChange={setEmailNotifications} 
-                className="data-[state=checked]:bg-blue-600"
+              <Switch
+                checked={emailNotifications}
+                onCheckedChange={setEmailNotifications}
               />
             </div>
 
+            {/* Listing Updates */}
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-gray-900 font-medium">Listing Updates</h3>
-                <p className="text-gray-600 text-sm">Get notified about changes to your listings</p>
+              <div className="flex items-start">
+                <MessageSquare className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Listing Updates</h3>
+                  <p className="text-sm text-gray-500 mt-1">Get notified about changes to your listings</p>
+                </div>
               </div>
-              <Switch 
-                checked={listingUpdates} 
-                onCheckedChange={setListingUpdates} 
-                className="data-[state=checked]:bg-blue-600"
+              <Switch
+                checked={listingUpdates}
+                onCheckedChange={setListingUpdates}
               />
             </div>
 
+            {/* Favorite Listings */}
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-gray-900 font-medium">Favorite Listings</h3>
-                <p className="text-gray-600 text-sm">Get updates about your favorite listings</p>
+              <div className="flex items-start">
+                <Star className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Favorite Listings</h3>
+                  <p className="text-sm text-gray-500 mt-1">Get updates about your favorite listings</p>
+                </div>
               </div>
-              <Switch 
-                checked={favoriteListings} 
-                onCheckedChange={setFavoriteListings} 
-                className="data-[state=checked]:bg-blue-600"
+              <Switch
+                checked={favoriteListings}
+                onCheckedChange={setFavoriteListings}
               />
             </div>
           </div>
@@ -90,7 +138,7 @@ export default function SettingsPage() {
         >
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-start">
-              <MessageSquare className="h-6 w-6 text-blue-600 mt-1 mr-3" />
+              <Mail className="h-6 w-6 text-blue-600 mt-1 mr-3" />
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Marketing Preferences</h2>
                 <p className="text-gray-600 mt-1">Manage your marketing communication preferences</p>
@@ -98,16 +146,19 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 space-y-6">
+            {/* Marketing Emails */}
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-gray-900 font-medium">Marketing Emails</h3>
-                <p className="text-gray-600 text-sm">Receive emails about new features and special offers</p>
+              <div className="flex items-start">
+                <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Marketing Emails</h3>
+                  <p className="text-sm text-gray-500 mt-1">Receive emails about new features and special offers</p>
+                </div>
               </div>
-              <Switch 
-                checked={marketingEmails} 
-                onCheckedChange={setMarketingEmails} 
-                className="data-[state=checked]:bg-blue-600"
+              <Switch
+                checked={marketingEmails}
+                onCheckedChange={setMarketingEmails}
               />
             </div>
           </div>
@@ -162,14 +213,21 @@ export default function SettingsPage() {
               type="text"
               className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Type 'delete' to confirm"
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} disabled={isDeleting}>
               Cancel
             </Button>
-            <Button variant="destructive" className="bg-red-500 hover:bg-red-600">
-              Delete Account
+            <Button 
+              variant="destructive" 
+              className="bg-red-500 hover:bg-red-600"
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Account'}
             </Button>
           </DialogFooter>
         </DialogContent>

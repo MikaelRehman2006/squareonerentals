@@ -150,6 +150,18 @@ Thank you for using Square One Rentals!
         break;
         
       case 'SYSTEM':
+        emailSubject = `Square One Rentals - ${subject || 'Notification'}`;
+        emailContent = `
+Hello ${userName},
+
+${message}
+
+IMPORTANT: To ensure you receive our emails in the future, please add 'squareone.rental@gmail.com' to your contacts and mark this email as "Not Spam" if it appears in your spam folder. This will help our future communications reach you directly.
+
+Thank you for using Square One Rentals!
+        `;
+        break;
+        
       case 'MARKETING':
       case 'NEWSLETTER':
       default:

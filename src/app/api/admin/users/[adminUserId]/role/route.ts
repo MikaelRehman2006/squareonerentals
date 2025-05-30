@@ -42,6 +42,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'Cannot modify owner role' }, { status: 403 });
     }
 
+    // Don't allow users to modify their own role
+    if (session.user.email === userToUpdate.email) {
+      return NextResponse.json({ error: 'Cannot modify your own role' }, { status: 403 });
+    }
+
     // Update the user's role
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -57,12 +62,9 @@ export async function PATCH(
     // Log the action
     console.log(`User role updated: ${updatedUser.email || 'unknown'} changed to ${role} by admin ${session.user.email}`);
 
-    return NextResponse.json({
-      user: updatedUser,
-      message: 'Role updated successfully. The user must sign out and sign back in for changes to take effect.'
-    });
+    return NextResponse.json(updatedUser);
   } catch (error) {
     console.error('Error updating user role:', error);
-    return NextResponse.json({ error: 'Failed to update user role' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

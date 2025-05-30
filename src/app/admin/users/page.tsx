@@ -130,16 +130,19 @@ export default function UsersPage() {
         body: JSON.stringify({ role: newRole }),
       });
 
-      if (response.ok) {
-        fetchUsers();
-        toast.success(
-          `User role updated to ${newRole}. User must sign out and sign back in for changes to take effect.`,
-          { duration: 6000 }
-        );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user role');
       }
+
+      fetchUsers();
+      toast.success(
+        `User role updated to ${newRole}. User must sign out and sign back in for changes to take effect.`,
+        { duration: 6000 }
+      );
     } catch (error) {
       console.error('Error updating user role:', error);
-      toast.error('Failed to update user role');
+      toast.error(error instanceof Error ? error.message : 'Failed to update user role');
     }
   };
 
@@ -194,13 +197,16 @@ export default function UsersPage() {
         method: 'DELETE',
       });
 
-      if (response.ok) {
-        setUsers(users.filter(user => user.id !== userId));
-        toast.success('User deleted successfully');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
       }
+
+      setUsers(users.filter(user => user.id !== userId));
+      toast.success('User deleted successfully');
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error('Failed to delete user');
+      toast.error(error instanceof Error ? error.message : 'Failed to delete user');
     }
   };
 

@@ -53,7 +53,13 @@ export async function POST(request: Request) {
         userEmail: email,
         userName: name,
         subject: 'Welcome to Square One Rentals',
-        message: `Welcome to Square One Rentals! We're excited to have you on board.\n\nTo ensure you receive all our important notifications, please mark this email as "Not Spam" and add squareone.rental@gmail.com to your contacts.\n\nYou can now start browsing listings or create your own listing by logging into your account.`,
+        message: `Welcome to Square One Rentals! We're excited to have you on board.
+
+To ensure you receive all our important notifications, please mark this email as "Not Spam" and add squareone.rental@gmail.com to your contacts.
+
+You'll see a 🔴 notification badge beside your profile icon when you have unread notifications. Click on it to view your notifications.
+
+You can now start browsing listings or create your own listing by logging into your account.`,
         notificationType: 'SYSTEM'
       });
       

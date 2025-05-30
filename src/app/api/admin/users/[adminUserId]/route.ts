@@ -3,7 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
+import { Listing } from '@/models/Listing';
+import { Notification } from '@/models/Notification';
 import mongoose from 'mongoose';
+import { isOwner } from '@/lib/admin';
 
 export async function PATCH(
   request: NextRequest,
@@ -22,7 +25,7 @@ export async function PATCH(
     const { role } = await request.json();
 
     if (!role || !['USER', 'ADMIN'].includes(role)) {
-      return new NextResponse('Invalid role', { status: 400 });
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
     }
 
     // Use MongoDB to update the user
@@ -63,7 +66,7 @@ export async function DELETE(
 
     // Check if user is admin
     if (!session || session.user?.role !== 'ADMIN') {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
     // Connect to the database
@@ -83,19 +86,30 @@ export async function DELETE(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     
-    // Don't allow deleting yourself (comparing emails since ID formats may differ)
+    // Don't allow deleting yourself
     if (session.user.email === userToDelete.email) {
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
     }
 
-    // Delete user with MongoDB
+    // Don't allow deleting the owner
+    if (isOwner(userToDelete.email)) {
+      return NextResponse.json({ error: 'Cannot delete the owner account' }, { status: 403 });
+    }
+
+    // Delete user's listings
+    await Listing.deleteMany({ userId });
+    
+    // Delete user's notifications
+    await Notification.deleteMany({ userId });
+    
+    // Delete the user
     await User.findByIdAndDelete(userId);
     
     console.log(`User ${userToDelete.email} deleted by admin ${session.user.email}`);
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ success: true, message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error deleting user:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
