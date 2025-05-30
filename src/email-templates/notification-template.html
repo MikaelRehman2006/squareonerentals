@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Square One Rentals Notification</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    /* Reset styles */
+    body, p, div, h1, h2, h3, h4, h5, h6 {
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
+      line-height: 1.4;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+    
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    
+    table td {
+      padding: 0;
+      vertical-align: top;
+    }
+    
+    /* Base styles */
+    .body {
+      background-color: #f6f6f6;
+      width: 100%;
+    }
+    
+    .container {
+      display: block;
+      margin: 0 auto !important;
+      max-width: 600px;
+      padding: 10px;
+    }
+    
+    .content {
+      box-sizing: border-box;
+      display: block;
+      margin: 0 auto;
+      max-width: 600px;
+      padding: 10px;
+    }
+    
+    /* Header, main, and footer */
+    .main {
+      background: #ffffff;
+      border-radius: 3px;
+      width: 100%;
+    }
+    
+    .wrapper {
+      box-sizing: border-box;
+      padding: 20px;
+    }
+    
+    .content-block {
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+    
+    .footer {
+      clear: both;
+      margin-top: 10px;
+      text-align: center;
+      width: 100%;
+    }
+    
+    .footer td,
+    .footer p,
+    .footer span,
+    .footer a {
+      color: #999999;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    /* Logo */
+    .logo {
+      text-align: center;
+      padding: 20px 0;
+    }
+    
+    .logo img {
+      max-width: 150px;
+      height: auto;
+    }
+    
+    /* Typography */
+    h1, h2, h3, h4 {
+      color: #000000;
+      font-family: Arial, sans-serif;
+      font-weight: 400;
+      line-height: 1.4;
+      margin: 0 0 20px;
+    }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      text-align: center;
+      text-transform: capitalize;
+    }
+    
+    p, ul, ol {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: normal;
+      margin: 0 0 15px;
+    }
+    
+    /* Buttons */
+    .btn {
+      box-sizing: border-box;
+      width: 100%;
+    }
+    
+    .btn > tbody > tr > td {
+      padding-bottom: 15px;
+    }
+    
+    .btn table {
+      width: auto;
+    }
+    
+    .btn table td {
+      background-color: #ffffff;
+      border-radius: 5px;
+      text-align: center;
+    }
+    
+    .btn a {
+      background-color: #2563eb;
+      border: solid 1px #2563eb;
+      border-radius: 5px;
+      box-sizing: border-box;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: bold;
+      margin: 0;
+      padding: 12px 25px;
+      text-decoration: none;
+      text-transform: capitalize;
+    }
+    
+    /* Notifications specific styles */
+    .notification-wrapper {
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .notification-icon {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      background-color: #f3f4f6;
+      border-radius: 50%;
+      text-align: center;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    
+    .notification-content {
+      display: inline-block;
+      vertical-align: middle;
+      width: calc(100% - 60px);
+    }
+    
+    /* Unsubscribe section */
+    .unsubscribe-module {
+      padding: 20px;
+      background-color: #f3f4f6;
+      border-radius: 4px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    .unsubscribe-module p {
+      font-size: 12px;
+      line-height: 20px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+    
+    .unsubscribe-sendername {
+      font-size: 17px;
+      line-height: 20px;
+      margin-bottom: 5px;
+    }
+    
+    .unsubscribe-senderaddress {
+      font-size: 12px;
+      line-height: 20px;
+      color: #6b7280;
+    }
+    
+    .unsubscribe-link, .unsubscribe-preferences {
+      font-size: 12px;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    
+    /* Responsive and mobile friendly styles */
+    @media only screen and (max-width: 620px) {
+      table.body {
+        width: 100%;
+        min-width: 100%;
+      }
+      
+      .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      
+      .content {
+        padding: 0 !important;
+      }
+      
+      .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+      
+      .btn table {
+        width: 100% !important;
+      }
+      
+      .btn a {
+        width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+      <td>&nbsp;</td>
+      <td class="container">
+        <div class="content">
+          <!-- START MAIN CONTENT AREA -->
+          <table role="presentation" class="main">
+            <tr>
+              <td class="wrapper">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td>
+                      <!-- Logo -->
+                      <div class="logo">
+                        <img src="https://squareonerentals-1234.vercel.app/logo.png" alt="Square One Rentals" />
+                      </div>
+                      
+                      <!-- Notification Content -->
+                      <h1>{{notification_title}}</h1>
+                      <p>Hello {{user_name}},</p>
+                      <p>{{notification_message}}</p>
+                      
+                      <!-- Call to Action Button -->
+                      <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn">
+                        <tbody>
+                          <tr>
+                            <td align="center">
+                              <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                <tbody>
+                                  <tr>
+                                    <td><a href="{{action_url}}" target="_blank">{{action_text}}</a></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      
+                      <p>If you have any questions, simply reply to this email - we're always happy to help!</p>
+                      <p>Cheers,<br />The Square One Rentals Team</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- END MAIN CONTENT AREA -->
+          
+          <!-- START FOOTER -->
+          <div class="footer">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td class="content-block">
+                  <div class="unsubscribe-module">
+                    <p class="unsubscribe-sendername">Square One Rentals</p>
+                    <p class="unsubscribe-senderaddress">4225 Confederation Parkway, Mississauga, ON L5B 4J2</p>
+                    <p>
+                      <a href="{{unsubscribe_url}}" class="unsubscribe-link">Unsubscribe</a> · 
+                      <a href="{{preferences_url}}" class="unsubscribe-preferences">Unsubscribe Preferences</a>
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- END FOOTER -->
+        </div>
+      </td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+</body>
+</html> 
