@@ -333,8 +333,8 @@ export default function NotificationsPage() {
                       </div>
                     </div>
                     
-                    {/* Add Go to Listing button for LISTING_UPDATE type notifications */}
-                    {notification.type === 'LISTING_UPDATE' && notification.listingId && (
+                    {/* Add Go to Listing button for listing-related notifications */}
+                    {(notification.type === 'LISTING_UPDATE' || notification.type === 'FAVORITE') && notification.listingId && (
                       <div className="mt-3">
                         <Link 
                           href={`/listings/${typeof notification.listingId === 'string' ? notification.listingId : notification.listingId._id}`}

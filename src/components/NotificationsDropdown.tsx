@@ -351,29 +351,17 @@ export function NotificationsDropdown() {
                   <div className="flex-1">
                     <p className="text-sm">{notification.message}</p>
                     {notification.listingId && (
-                      notification.type === 'LISTING_UPDATE' ? (
-                        <div className="mt-2">
-                          <Link
-                            href={`/listings/${typeof notification.listingId === 'string' 
-                              ? notification.listingId 
-                              : notification.listingId._id}`}
-                            className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                          >
-                            <span>Go to Listing</span>
-                            <ExternalLink className="h-3 w-3" />
-                          </Link>
-                        </div>
-                      ) : (
+                      <div className="mt-2">
                         <Link
-                          href={`/listings/${typeof notification.listingId === 'string'
-                            ? notification.listingId
+                          href={`/listings/${typeof notification.listingId === 'string' 
+                            ? notification.listingId 
                             : notification.listingId._id}`}
-                          className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
+                          className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                         >
-                          <span>View listing</span>
+                          <span>Go to Listing</span>
                           <ExternalLink className="h-3 w-3" />
                         </Link>
-                      )
+                      </div>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
                       {formatNotificationTime(notification.createdAt)}
