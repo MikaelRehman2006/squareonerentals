@@ -774,40 +774,51 @@ export default function EditListingPage({ params }: { params: { listingId: strin
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] py-8">
-      <div className="container max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-[#E0E0E0] uppercase">Edit Your Listing</h1>
-            <p className="mt-2 text-[#A0A0A0]">Update your property details below.</p>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 py-12">
+      {/* Sticky header with blurred background */}
+      <div className="sticky top-0 z-10 backdrop-blur-md bg-gray-900/70 border-b border-gray-800 shadow-xl py-4 mb-8">
+        <div className="container max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white uppercase">Edit Your Listing</h1>
+              <p className="mt-1 text-gray-300">Update your property details below.</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => router.back()}
+              className="bg-gray-800/80 text-white hover:bg-gray-700 border-gray-700 hover:border-gray-600 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg"
+            >
+              Back
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => router.back()}
-            className="bg-[#333333] text-white hover:bg-[#444444] border-[#444444]"
-          >
-            Back
-          </Button>
         </div>
-
+      </div>
+      
+      <div className="container max-w-5xl mx-auto px-4 sm:px-6 pb-16">        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Basic Information</CardTitle>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+            {/* Basic Information Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Basic Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="space-y-10 p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
                   <FormField
                     control={form.control}
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Title</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Title</FormLabel>
                         <FormControl>
-                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
+                          <Input 
+                            {...field} 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -817,17 +828,19 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Price (per month)</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Price (per month)</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -837,27 +850,38 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                   control={form.control}
                   name="description"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#CCCCCC]">Description</FormLabel>
+                    <FormItem className="mb-4">
+                      <FormLabel className="text-gray-200 text-sm font-medium mb-3">Description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} rows={4} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm resize-none" />
+                        <Textarea 
+                          {...field} 
+                          rows={4} 
+                          className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 
+                            focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                            hover:border-gray-400 transition-all duration-200 shadow-inner resize-none" 
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400 mt-2.5" />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
                   <FormField
                     control={form.control}
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Location</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Location</FormLabel>
                         <FormControl>
-                          <Input {...field} className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" />
+                          <Input 
+                            {...field} 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
+                          />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -867,16 +891,18 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Address</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Address</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
                             id="address-field"
                             value={field.value || ''}
-                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -884,28 +910,31 @@ export default function EditListingPage({ params }: { params: { listingId: strin
               </CardContent>
             </Card>
 
-            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Property Details</CardTitle>
+            {/* Property Details Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Property Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="space-y-10 p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-4">
                   <FormField
                     control={form.control}
                     name="bedrooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Bedrooms</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Bedrooms</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -915,17 +944,19 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     name="bathrooms"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Bathrooms</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Bathrooms</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -935,45 +966,49 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     name="squareFeet"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Square Feet</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Square Feet</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             {...field} 
                             value={field.value || ''} 
                             onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)} 
-                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
                   <FormField
                     control={form.control}
                     name="propertyType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Property Type</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Property Type</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                              <SelectTrigger className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                                focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                                hover:border-gray-400 transition-all duration-200 shadow-inner">
                                 <SelectValue placeholder="Select property type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="APARTMENT">Apartment</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="CONDO">Condo</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="HOUSE">House</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="TOWNHOUSE">Townhouse</SelectItem>
+                            <SelectContent className="bg-gray-700 text-white border-gray-600">
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="APARTMENT">Apartment</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="CONDO">Condo</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="HOUSE">House</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="TOWNHOUSE">Townhouse</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -983,48 +1018,53 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     name="listingType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Listing Type</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Listing Type</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                              <SelectTrigger className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                                focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                                hover:border-gray-400 transition-all duration-200 shadow-inner">
                                 <SelectValue placeholder="Select listing type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="LONG_TERM">Long Term</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="SHORT_TERM">Short Term</SelectItem>
+                            <SelectContent className="bg-gray-700 text-white border-gray-600">
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="LONG_TERM">Long Term</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="SHORT_TERM">Short Term</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
                   <FormField
                     control={form.control}
                     name="leaseType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Lease Type</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Lease Type</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
+                              <SelectTrigger className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                                focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                                hover:border-gray-400 transition-all duration-200 shadow-inner">
                                 <SelectValue placeholder="Select lease type" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FIXED">Fixed Term</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="MONTH_TO_MONTH">Month-to-Month</SelectItem>
-                              <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="FLEXIBLE">Flexible</SelectItem>
+                            <SelectContent className="bg-gray-700 text-white border-gray-600">
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="FIXED">Fixed Term (6 months/1 year)</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="MONTH_TO_MONTH">Month to Month</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="SHORT_TERM">Short Term (less than 6 months)</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="OTHER">Other</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
@@ -1034,257 +1074,280 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                     name="availableDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[#CCCCCC]">Available Date</FormLabel>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Available Date</FormLabel>
                         <FormControl>
                           <Input 
                             type="date" 
                             {...field} 
-                            className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400 mt-2.5" />
                       </FormItem>
                     )}
                   />
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="parking"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#CCCCCC]">Parking</FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
-                              <SelectValue placeholder="Select parking option" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="None">None</SelectItem>
-                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Street">Street Parking</SelectItem>
-                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Garage">Garage</SelectItem>
-                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Driveway">Driveway</SelectItem>
-                            <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="Paid">Paid Parking</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Features & Amenities</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Features</h3>
-                  <CardDescription className="text-[#A0A0A0] mb-4">What's included in the unit</CardDescription>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {FEATURES.map((feature) => (
-                      <div key={feature} className="flex items-center space-x-2">
-                        <div className="flex items-center h-5">
-                          <Checkbox
-                            id={`feature-${feature}`}
-                            checked={selectedFeatures.includes(feature)}
-                            onCheckedChange={() => handleFeatureToggle(feature)}
-                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                          />
-                        </div>
-                        <div className="ml-2 text-sm">
-                          <label htmlFor={`feature-${feature}`} className="font-normal text-[#CCCCCC] cursor-pointer">{feature}</label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Building Amenities</h3>
-                  <CardDescription className="text-[#A0A0A0] mb-4">What's available in the building</CardDescription>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {AMENITIES.map((amenity) => (
-                      <div key={amenity} className="flex items-center space-x-2">
-                        <div className="flex items-center h-5">
-                          <Checkbox
-                            id={`amenity-${amenity}`}
-                            checked={selectedAmenities.includes(amenity)}
-                            onCheckedChange={() => handleAmenityToggle(amenity)}
-                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                          />
-                        </div>
-                        <div className="ml-2 text-sm">
-                          <label htmlFor={`amenity-${amenity}`} className="font-normal text-[#CCCCCC] cursor-pointer">{amenity}</label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-medium text-[#E0E0E0] mb-2">Utilities Included</h3>
-                  <CardDescription className="text-[#A0A0A0] mb-4">What's covered in the rent</CardDescription>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {UTILITIES.map((utility) => (
-                      <div key={utility} className="flex items-center space-x-2">
-                        <div className="flex items-center h-5">
-                          <Checkbox
-                            id={`utility-${utility}`}
-                            checked={selectedUtilities.includes(utility)}
-                            onCheckedChange={() => handleUtilityToggle(utility)}
-                            className="border-[#3B82F6] data-[state=checked]:bg-[#3B82F6] data-[state=checked]:text-white"
-                          />
-                        </div>
-                        <div className="ml-2 text-sm">
-                          <label htmlFor={`utility-${utility}`} className="font-normal text-[#CCCCCC] cursor-pointer">{utility}</label>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#CCCCCC]">Phone Number</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
-                          placeholder="Optional phone number for inquiries"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="facebookUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#CCCCCC]">Facebook Profile URL</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm" 
-                          placeholder="Optional Facebook profile URL"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-[#E0E0E0] uppercase">Listing Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#CCCCCC]">Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <div className="flex space-x-6">
+                  <FormField
+                    control={form.control}
+                    name="parking"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Parking</FormLabel>
                         <FormControl>
-                          <SelectTrigger className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                                focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                                hover:border-gray-400 transition-all duration-200 shadow-inner">
+                                <SelectValue placeholder="Select parking" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-gray-700 text-white border-gray-600">
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="None">None</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="Street Parking">Street Parking</SelectItem>
+                              <SelectItem className="hover:bg-gray-600 focus:bg-gray-600" value="Private Parking">Private Parking</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
-                        <SelectContent className="bg-[#2A2A2A] text-white border-[#444444]">
-                          <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="ACTIVE">Active</SelectItem>
-                          <SelectItem className="hover:bg-[#333333] focus:bg-[#333333]" value="ARCHIVED">Archived</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription className="text-[#A0A0A0]">
-                        Active listings are visible to potential renters. Archived listings are hidden from search results.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage className="text-red-400 mt-2.5" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-md bg-[#1F1F1F] border border-[#333333]">
-              <CardHeader>
-                <FormLabel className="text-[#CCCCCC]">Upload Images (optional)</FormLabel>
+            {/* Images Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Images</CardTitle>
+                <CardDescription className="text-gray-400 mt-1">Upload and manage your listing images</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-10 p-8">
                 {/* Storage Usage Bar */}
                 <StorageUsageBar 
                   currentUsage={storageUsage} 
                   uploadedFiles={pendingFiles}
                 />
-                <div className="flex flex-col gap-4 mt-4">
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="bg-[#2A2A2A] text-white border-[#444444] focus:border-[#3B82F6] focus:ring-[#3B82F6] shadow-sm"
-                  />
-                  <p className="text-sm text-[#A0A0A0]">
-                    You can select multiple images. Supported formats: JPG, PNG, WebP.
-                  </p>
+                
+                {/* Image Upload Section with Drag & Drop */}
+                <div className="flex flex-col gap-4">
+                  <div className="border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors duration-200 rounded-xl p-5 bg-gray-700/30">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="bg-transparent text-gray-300 border-0 cursor-pointer file:mr-4 file:py-2 file:px-4
+                        file:rounded-xl file:border-0 file:text-sm file:font-medium
+                        file:bg-blue-600 file:text-white hover:file:bg-blue-500"
+                    />
+                    <p className="text-sm text-gray-400 mt-2">
+                      Drag and drop images here, or click to browse. Supported formats: JPG, PNG, WebP.
+                    </p>
+                  </div>
                 </div>
-                {/* Image Preview Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-                  {uploadedImages.map((url, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={url}
-                        alt={`Uploaded image ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        ×
-                      </button>
+
+                {/* Current Images Grid */}
+                <div>
+                  <h3 className="text-lg font-medium text-white mb-5">Current Images</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {uploadedImages.length > 0 ? (
+                      uploadedImages.map((imageUrl, index) => (
+                        <div key={index} className="relative group rounded-xl overflow-hidden shadow-lg transition-all duration-200 hover:shadow-xl">
+                          <div className="aspect-square relative">
+                            <Image
+                              src={imageUrl}
+                              alt={`Property image ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="shadow-xl hover:scale-105 transition-transform"
+                                onClick={() => removeImage(index)}
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-400 col-span-full">No images have been uploaded yet.</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Contact Information</CardTitle>
+                <CardDescription className="text-gray-400 mt-1">Optional ways for interested renters to contact you</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-10 p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Phone Number (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            placeholder="e.g. (123) 456-7890"
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
+                          />
+                        </FormControl>
+                        <FormDescription className="text-gray-400 text-sm mt-2.5">
+                          Your phone number will be displayed on your listing if provided
+                        </FormDescription>
+                        <FormMessage className="text-red-400 mt-2.5" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="facebookUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-200 text-sm font-medium mb-3">Facebook Profile (Optional)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            value={field.value || ''}
+                            placeholder="https://facebook.com/yourusername"
+                            className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                              focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                              hover:border-gray-400 transition-all duration-200 shadow-inner" 
+                          />
+                        </FormControl>
+                        <FormDescription className="text-gray-400 text-sm mt-2.5">
+                          Enter your Facebook profile URL for interested renters to contact you
+                        </FormDescription>
+                        <FormMessage className="text-red-400 mt-2.5" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Amenities Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Building Amenities</CardTitle>
+                <CardDescription className="text-gray-400 mt-1">What the property/building offers</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {AMENITIES.map((amenity) => (
+                    <div 
+                      key={amenity} 
+                      onClick={() => handleAmenityToggle(amenity)}
+                      className={`
+                        px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
+                        flex items-center justify-center text-center text-sm
+                        ${selectedAmenities.includes(amenity) 
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
+                          : 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-2 border-gray-600'}
+                      `}
+                    >
+                      {amenity}
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            <div className="flex gap-4">
+            {/* Features & Utilities Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Unit Features & Utilities</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-12 p-8">
+                <div>
+                  <h3 className="text-lg font-medium text-white mb-5">Features</h3>
+                  <CardDescription className="text-gray-400 mb-5">What's inside the unit</CardDescription>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {FEATURES.map((feature) => (
+                      <div 
+                        key={feature} 
+                        onClick={() => handleFeatureToggle(feature)}
+                        className={`
+                          px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
+                          flex items-center justify-center text-center text-sm
+                          ${selectedFeatures.includes(feature) 
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
+                            : 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-2 border-gray-600'}
+                        `}
+                      >
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t-2 border-gray-600">
+                  <h3 className="text-lg font-medium text-white mb-5 mt-2">Utilities Included</h3>
+                  <CardDescription className="text-gray-400 mb-5">What's covered in the rent</CardDescription>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {UTILITIES.map((utility) => (
+                      <div 
+                        key={utility} 
+                        onClick={() => handleUtilityToggle(utility)}
+                        className={`
+                          px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
+                          flex items-center justify-center text-center text-sm
+                          ${selectedUtilities.includes(utility) 
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' 
+                            : 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-2 border-gray-600'}
+                        `}
+                      >
+                        {utility}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-4 pt-8">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push('/dashboard')}
-                className="flex-1 bg-[#444444] text-white hover:bg-[#555555] border-[#333333]"
+                onClick={() => router.back()}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white border-2 border-gray-600 
+                  hover:border-gray-500 rounded-xl h-12 shadow-md hover:shadow-lg transition-all duration-200"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-[#3B82F6] hover:bg-[#2563EB] text-white shadow-md transition-all duration-200 hover:shadow-lg"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12
+                  shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden"
               >
-                {isSubmitting ? 'Updating...' : 'Update Listing'}
+                {isSubmitting ? (
+                  <>
+                    <span className="inline-block animate-pulse">Saving Changes...</span>
+                    <span className="absolute bottom-0 left-0 h-1 bg-blue-400 animate-progress"></span>
+                  </>
+                ) : 'Save Changes'}
               </Button>
             </div>
           </form>

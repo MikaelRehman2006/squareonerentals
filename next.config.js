@@ -6,7 +6,8 @@ const nextConfig = {
       'lh3.googleusercontent.com', 
       'res.cloudinary.com',
       'source.unsplash.com',
-      'placehold.co'
+      'placehold.co',
+      'www.gravatar.com'
     ],
     dangerouslyAllowSVG: true,
   },
