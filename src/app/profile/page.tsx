@@ -10,7 +10,6 @@ import React from 'react';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -19,17 +18,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Mail, Bell, MessageSquare, Heart, Home, ShieldAlert, Star, Settings } from 'lucide-react';
-
-// Define notification types
-const NOTIFICATION_TYPES = [
-  { id: 'new_message', label: 'New messages', icon: MessageSquare },
-  { id: 'listing_favorite', label: 'When someone favorites your listing', icon: Heart },
-  { id: 'new_listing', label: 'New listings in your area', icon: Home },
-  { id: 'security', label: 'Security alerts', icon: ShieldAlert },
-  { id: 'featured_listing', label: 'Featured listings', icon: Star },
-  { id: 'system', label: 'System updates', icon: Settings },
-];
+import { Mail, Settings } from 'lucide-react';
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -37,34 +26,12 @@ export default function ProfilePage() {
   const [email, setEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const router = useRouter();
-  
-  // Notification preferences
-  const [notificationPrefs, setNotificationPrefs] = useState<Record<string, { inApp: boolean, email: boolean }>>({});
 
   // Preload name and email from session
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name || '');
       setEmail(session.user.email || '');
-      
-      // Initialize notification preferences - all on by default
-      const defaultPrefs: Record<string, { inApp: boolean, email: boolean }> = {};
-      NOTIFICATION_TYPES.forEach(type => {
-        defaultPrefs[type.id] = { inApp: true, email: true };
-      });
-      
-      // Try to load saved preferences from localStorage
-      try {
-        const savedPrefs = localStorage.getItem('notificationPreferences');
-        if (savedPrefs) {
-          setNotificationPrefs(JSON.parse(savedPrefs));
-        } else {
-          setNotificationPrefs(defaultPrefs);
-        }
-      } catch (error) {
-        console.error('Error loading notification preferences:', error);
-        setNotificationPrefs(defaultPrefs);
-      }
     }
   }, [session]);
 
@@ -72,18 +39,12 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    try {
-      // Save notification preferences to localStorage
-      localStorage.setItem('notificationPreferences', JSON.stringify(notificationPrefs));
-      
+    try {      
       // Save name to API
       const response = await fetch('/api/user/update', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name,
-          notificationPreferences: notificationPrefs 
-        }),
+        body: JSON.stringify({ name }),
       });
       
       if (!response.ok) {
@@ -99,17 +60,6 @@ export default function ProfilePage() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  // Handle notification toggle
-  const handleNotificationToggle = (typeId: string, channel: 'inApp' | 'email', value: boolean) => {
-    setNotificationPrefs(prev => ({
-      ...prev,
-      [typeId]: {
-        ...prev[typeId],
-        [channel]: value
-      }
-    }));
   };
 
   if (!session) {
@@ -168,49 +118,6 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Notification Preferences */}
-              <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Notification Settings</h2>
-                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="text-sm font-medium text-gray-900">Notification Type</div>
-                    <div className="flex space-x-6">
-                      <div className="text-sm font-medium text-gray-900 flex items-center">
-                        <Bell size={16} className="mr-1.5" />
-                        <span>In-App</span>
-                      </div>
-                      <div className="text-sm font-medium text-gray-900 flex items-center">
-                        <Mail size={16} className="mr-1.5" />
-                        <span>Email</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-5">
-                    {NOTIFICATION_TYPES.map((type) => (
-                      <div key={type.id} className="flex justify-between items-center py-2 border-t border-gray-200">
-                        <div className="flex items-center">
-                          <type.icon size={18} className="mr-3 text-gray-500" />
-                          <span className="text-sm text-gray-700">{type.label}</span>
-                        </div>
-                        <div className="flex space-x-8 items-center">
-                          <Switch 
-                            checked={notificationPrefs[type.id]?.inApp ?? true}
-                            onCheckedChange={(checked) => handleNotificationToggle(type.id, 'inApp', checked)}
-                            className="data-[state=checked]:bg-blue-600"
-                          />
-                          <Switch 
-                            checked={notificationPrefs[type.id]?.email ?? true}
-                            onCheckedChange={(checked) => handleNotificationToggle(type.id, 'email', checked)}
-                            className="data-[state=checked]:bg-blue-600"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
               {/* Password Info */}
               <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                 <h3 className="text-sm font-medium text-blue-800 mb-2">Password Management</h3>
@@ -229,7 +136,7 @@ export default function ProfilePage() {
               </Button>
             </form>
 
-            <div className="pt-4 mt-6 border-t border-gray-200">
+            <div className="flex gap-4 pt-4 mt-6 border-t border-gray-200">
               <Button
                 type="button"
                 variant="outline"
@@ -238,6 +145,15 @@ export default function ProfilePage() {
               >
                 <Mail size={18} />
                 <span>Contact Support</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-gray-300 hover:bg-gray-50 text-gray-800 flex items-center justify-center gap-2 py-2 rounded-lg"
+                onClick={() => router.push('/settings')}
+              >
+                <Settings size={18} />
+                <span>Settings</span>
               </Button>
             </div>
           </CardContent>

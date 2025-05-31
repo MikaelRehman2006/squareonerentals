@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Mail, Star, AlertTriangle, MessageSquare, ArrowLeft, Home, Heart, Shield, Settings } from 'lucide-react';
+import { Bell, Mail, Star, AlertTriangle, MessageSquare, ArrowLeft, Home, Heart, Shield, Settings, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
@@ -13,17 +13,12 @@ import { signOut } from 'next-auth/react';
 
 // Define notification types
 const NOTIFICATION_TYPES = [
-  { id: 'emailNotifications', label: 'Email Notifications', description: 'Receive notifications via email', icon: Mail },
-  { id: 'listingUpdates', label: 'Listing Updates', description: 'Get notified about changes to your listings', icon: MessageSquare },
-  { id: 'favoriteListings', label: 'Favorite Listings', description: 'Get updates about your favorite listings', icon: Star },
-  { id: 'newMessages', label: 'New Messages', description: 'Get notified about new messages', icon: MessageSquare },
-  { id: 'securityAlerts', label: 'Security Alerts', description: 'Receive alerts about account security', icon: Shield },
-  { id: 'newListings', label: 'New Listings', description: 'Get notified about new listings in your area', icon: Home },
-];
-
-// Marketing preferences
-const MARKETING_TYPES = [
-  { id: 'marketingEmails', label: 'Marketing Emails', description: 'Receive emails about new features and special offers', icon: Mail },
+  { id: 'systemAlerts', label: 'System Alerts', description: 'Important notifications about your account and security', icon: Shield },
+  { id: 'newsletter', label: 'Newsletter', description: 'Updates about our service and features', icon: Mail },
+  { id: 'specialOffers', label: 'Special Offers', description: 'Promotions and special deals', icon: Star },
+  { id: 'favoriteUpdates', label: 'Favorite Listing Updates', description: 'When owners update listings you have favorited', icon: Heart },
+  { id: 'listingChanges', label: 'Admin Listing Changes', description: 'When administrators make changes to your listings', icon: Home },
+  { id: 'paymentNotifications', label: 'Membership & Payment', description: 'Updates about your subscription and payments', icon: DollarSign },
 ];
 
 export default function SettingsPage() {
@@ -32,8 +27,8 @@ export default function SettingsPage() {
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Use a more flexible state structure for notification settings
-  const [notificationSettings, setNotificationSettings] = useState<Record<string, boolean>>({});
+  // State for notification settings - now with inApp and email for each type
+  const [notificationSettings, setNotificationSettings] = useState<Record<string, { inApp: boolean, email: boolean }>>({});
   
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -42,10 +37,10 @@ export default function SettingsPage() {
       if (savedSettings) {
         setNotificationSettings(JSON.parse(savedSettings));
       } else {
-        // Default all settings to true except marketing emails
-        const defaultSettings: Record<string, boolean> = {};
-        [...NOTIFICATION_TYPES, ...MARKETING_TYPES].forEach(type => {
-          defaultSettings[type.id] = type.id === 'marketingEmails' ? false : true;
+        // Default all settings to true
+        const defaultSettings: Record<string, { inApp: boolean, email: boolean }> = {};
+        NOTIFICATION_TYPES.forEach(type => {
+          defaultSettings[type.id] = { inApp: true, email: true };
         });
         setNotificationSettings(defaultSettings);
         localStorage.setItem('notificationSettings', JSON.stringify(defaultSettings));
@@ -53,17 +48,23 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error loading notification settings:', error);
       // Set defaults on error
-      const fallbackSettings: Record<string, boolean> = {};
-      [...NOTIFICATION_TYPES, ...MARKETING_TYPES].forEach(type => {
-        fallbackSettings[type.id] = type.id === 'marketingEmails' ? false : true;
+      const fallbackSettings: Record<string, { inApp: boolean, email: boolean }> = {};
+      NOTIFICATION_TYPES.forEach(type => {
+        fallbackSettings[type.id] = { inApp: true, email: true };
       });
       setNotificationSettings(fallbackSettings);
     }
   }, []);
 
   // Update setting and save to localStorage
-  const updateSetting = (key: string, value: boolean) => {
-    const newSettings = { ...notificationSettings, [key]: value };
+  const updateSetting = (key: string, channel: 'inApp' | 'email', value: boolean) => {
+    const newSettings = { 
+      ...notificationSettings, 
+      [key]: {
+        ...notificationSettings[key],
+        [channel]: value
+      }
+    };
     setNotificationSettings(newSettings);
     
     // Save to localStorage
@@ -79,7 +80,7 @@ export default function SettingsPage() {
   };
 
   // Simulate saving to backend
-  const saveSettingsToBackend = async (settings: Record<string, boolean>) => {
+  const saveSettingsToBackend = async (settings: Record<string, { inApp: boolean, email: boolean }>) => {
     try {
       // This would be your actual API call
       // const response = await fetch('/api/user/settings', {
@@ -130,23 +131,6 @@ export default function SettingsPage() {
     }
   };
 
-  // Generate setting components from configuration
-  const renderSettingItem = (item: typeof NOTIFICATION_TYPES[0]) => (
-    <div key={item.id} className="flex items-center justify-between py-4 border-b border-gray-100 last:border-b-0">
-      <div className="flex items-start">
-        <item.icon className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
-        <div>
-          <h3 className="font-medium text-gray-900">{item.label}</h3>
-          <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-        </div>
-      </div>
-      <Switch
-        checked={notificationSettings[item.id] ?? true}
-        onCheckedChange={(checked) => updateSetting(item.id, checked)}
-      />
-    </div>
-  );
-
   return (
     <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
@@ -169,35 +153,49 @@ export default function SettingsPage() {
               <Bell className="h-5 w-5 text-blue-600 mr-3" />
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
-                <p className="text-sm text-gray-600">Manage how you receive notifications and updates</p>
+                <p className="text-sm text-gray-600">Manage how you receive notifications</p>
               </div>
             </div>
           </div>
 
           <div className="px-6 py-2">
-            {NOTIFICATION_TYPES.map(renderSettingItem)}
-          </div>
-        </motion.div>
-
-        {/* Marketing Preferences */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-        >
-          <div className="px-6 py-4 border-b border-gray-100">
-            <div className="flex items-center">
-              <Mail className="h-5 w-5 text-blue-600 mr-3" />
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">Marketing Preferences</h2>
-                <p className="text-sm text-gray-600">Manage your marketing communication preferences</p>
+            {/* Column headers */}
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <div className="text-sm font-medium text-gray-900">Notification Type</div>
+              <div className="flex items-center space-x-16">
+                <div className="text-sm font-medium text-gray-900 flex items-center">
+                  <Bell size={16} className="mr-1.5" />
+                  <span>In-App</span>
+                </div>
+                <div className="text-sm font-medium text-gray-900 flex items-center">
+                  <Mail size={16} className="mr-1.5" />
+                  <span>Email</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="px-6 py-2">
-            {MARKETING_TYPES.map(renderSettingItem)}
+            {/* Notification Settings List */}
+            {NOTIFICATION_TYPES.map((type) => (
+              <div key={type.id} className="flex justify-between items-center py-4 border-b border-gray-100 last:border-b-0">
+                <div className="flex items-start">
+                  <type.icon className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
+                  <div>
+                    <h3 className="font-medium text-gray-900">{type.label}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{type.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-16">
+                  <Switch
+                    checked={notificationSettings[type.id]?.inApp ?? true}
+                    onCheckedChange={(checked) => updateSetting(type.id, 'inApp', checked)}
+                  />
+                  <Switch
+                    checked={notificationSettings[type.id]?.email ?? true}
+                    onCheckedChange={(checked) => updateSetting(type.id, 'email', checked)}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
 
