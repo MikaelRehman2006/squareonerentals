@@ -199,7 +199,7 @@ export default function ManageListingsPage() {
             </Link>
             <h1 className="text-3xl font-bold text-gray-900">Manage Your Listings</h1>
           </div>
-          <Link href="/listings/create">
+          <Link href="/submit">
             <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               Create New Listing
@@ -223,7 +223,7 @@ export default function ManageListingsPage() {
               {error ? (
                 <div className="text-center py-8">
                   <p className="text-red-500 mb-4">{error}</p>
-                  <Link href="/listings/create">
+                  <Link href="/submit">
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       Create Your First Listing
                     </Button>
@@ -238,7 +238,7 @@ export default function ManageListingsPage() {
                   <p className="text-gray-600 max-w-sm mx-auto mb-6">
                     You haven't created any property listings yet. Create your first listing to get started.
                   </p>
-                  <Link href="/listings/create">
+                  <Link href="/submit">
                     <Button className="bg-blue-600 hover:bg-blue-700">
                       Create Your First Listing
                     </Button>
