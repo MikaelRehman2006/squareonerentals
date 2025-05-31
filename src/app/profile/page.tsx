@@ -149,7 +149,7 @@ export default function ProfilePage() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-gray-300 hover:bg-gray-50 text-gray-800 flex items-center justify-center gap-2 py-2 rounded-lg"
+                className="w-full bg-gray-800 hover:bg-gray-700 text-white border-gray-700 flex items-center justify-center gap-2 py-2 rounded-lg"
                 onClick={() => router.push('/settings')}
               >
                 <Settings size={18} />
