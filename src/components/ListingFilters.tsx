@@ -146,23 +146,17 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
   }, [onFilterChange]);
 
   const FilterContent = () => (
-    <Card className="bg-white border border-gray-200 shadow-sm w-[250px]">
-      <CardHeader className="border-b border-gray-200 p-4">
+    <Card className="bg-white border border-gray-200 shadow-sm w-full md:w-[250px]">
+      <CardHeader className="border-b border-gray-200 p-3 sm:p-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium text-gray-800">Filters</CardTitle>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="sm:hidden p-1 hover:bg-gray-100 rounded-md"
-          >
-            <X className="h-4 w-4 text-gray-500" />
-          </button>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-6 space-y-6">
+      <CardContent className="p-3 sm:p-4 sm:pt-6 space-y-4 sm:space-y-6">
         {/* Price Range */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <h3 className="text-sm font-medium text-gray-800">Price Range</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Input
               type="text"
               inputMode="numeric"
@@ -185,9 +179,9 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
         </div>
 
         {/* Property Details */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           <h3 className="text-sm font-medium text-gray-800">Property Details</h3>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <Select
               value={filters.bedrooms === '' ? 'any' : filters.bedrooms.toString()}
               onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? '' : parseInt(value))}

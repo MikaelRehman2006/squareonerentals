@@ -6,7 +6,7 @@ import { ListingCard } from '@/components/ListingCard';
 import { ListingFilters } from '@/components/ListingFilters';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Grid, List, SlidersHorizontal } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, X } from 'lucide-react';
 import { BackgroundPattern } from '@/components/BackgroundPattern';
 import {
   Select,
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface FilterState {
   priceRange: {
@@ -70,8 +71,9 @@ export default function ListingsPage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('newest');
-  const [showFilters, setShowFilters] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Fetch listings
   useEffect(() => {
@@ -262,31 +264,30 @@ export default function ListingsPage() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-6 sm:py-12 px-2 sm:px-6 lg:px-8">
       <BackgroundPattern />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col space-y-6">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="flex flex-col space-y-4 sm:space-y-6">
           {/* Header section */}
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold">Available Listings</h1>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center gap-4 mb-6">
-                <Select
-                  value={sortBy}
-                  onValueChange={handleSortChange}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Sort by..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="date-asc">Date: Oldest First</SelectItem>
-                    <SelectItem value="date-desc">Date: Newest First</SelectItem>
-                    <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                    <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">Available Listings</h1>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <Select
+                value={sortBy}
+                onValueChange={handleSortChange}
+              >
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-asc">Date: Oldest First</SelectItem>
+                  <SelectItem value="date-desc">Date: Newest First</SelectItem>
+                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <div className="flex items-center space-x-2 border rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -303,14 +304,40 @@ export default function ListingsPage() {
                   <List className="h-4 w-4" />
                 </Button>
               </div>
+              
+              {/* Mobile filter button - using Sheet component */}
+              <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="sm:hidden"
+                  >
+                    <SlidersHorizontal className="h-4 w-4 mr-2" />
+                    Filters {appliedFilters.length > 0 && `(${appliedFilters.length})`}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] p-0 sm:max-w-none overflow-y-auto">
+                  <div className="p-4 border-b flex items-center justify-between">
+                    <h3 className="font-semibold">Filters</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setIsMobileFilterOpen(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="p-4">
+                    <ListingFilters onFilterChange={handleFilterChange} />
+                  </div>
+                </SheetContent>
+              </Sheet>
+              
+              {/* Desktop filter toggle */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="md:hidden"
+                className="hidden md:flex"
               >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filters
+                {showFilters ? "Hide Filters" : "Show Filters"}
               </Button>
             </div>
           </div>
@@ -354,9 +381,9 @@ export default function ListingsPage() {
             </div>
           )}
 
-          <div className="flex gap-6">
-            {/* Filters sidebar */}
-            <div className={`w-64 flex-shrink-0 ${showFilters ? 'block' : 'hidden md:block'}`}>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+            {/* Filters sidebar - desktop only */}
+            <div className={`md:w-64 flex-shrink-0 hidden md:block ${showFilters ? 'md:block' : 'md:hidden'}`}>
               <div className="sticky top-4">
                 <ScrollArea className="h-[calc(100vh-8rem)]">
                   <ListingFilters onFilterChange={handleFilterChange} />
@@ -367,9 +394,9 @@ export default function ListingsPage() {
             {/* Listings grid */}
             <div className="flex-1">
               {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {[1, 2, 3, 4, 5, 6].map((n) => (
-                    <div key={n} className="h-[400px] bg-gray-100 rounded-lg animate-pulse" />
+                    <div key={n} className="h-[350px] bg-gray-100 rounded-lg animate-pulse" />
                   ))}
                 </div>
               ) : filteredListings.length === 0 ? (
@@ -379,8 +406,8 @@ export default function ListingsPage() {
               ) : (
                 <div className={
                   viewMode === 'grid'
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                    : "flex flex-col space-y-6"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
+                    : "flex flex-col space-y-4 sm:space-y-6"
                 }>
                   {filteredListings.map((listing) => (
                     <ListingCard
