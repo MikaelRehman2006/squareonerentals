@@ -113,7 +113,7 @@ export async function POST(request: Request) {
           }
         }
       );
-      stream.end(buffer); // Send buffer into the stream
+      stream.end(buffer); // Send buffer into the streamm
     });
 
     return NextResponse.json(uploadResult);
