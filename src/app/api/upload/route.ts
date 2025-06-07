@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     const uploadResult = await new Promise<{ secure_url: string, public_id: string }>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder: 'listings',
+          upload_preset: 'listings_upload',
           resource_type: 'image'
         },
         (error, result) => {
