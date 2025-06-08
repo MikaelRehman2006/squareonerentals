@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 
 interface FilterState {
   priceRange: {
@@ -379,12 +379,12 @@ export default function ListingsPage() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px] p-0 sm:max-w-none overflow-y-auto">
-                  <div className="p-4 border-b flex items-center justify-between">
-                    <h3 className="font-semibold">Filters</h3>
+                  <SheetHeader className="p-4 border-b flex items-center justify-between">
+                    <SheetTitle className="font-semibold text-left">Filters</SheetTitle>
                     <Button variant="ghost" size="sm" onClick={() => setIsMobileFilterOpen(false)}>
                       <X className="h-4 w-4" />
                     </Button>
-                  </div>
+                  </SheetHeader>
                   <div className="p-4">
                     <ListingFilters onFilterChange={handleFilterChange} resetTrigger={resetTrigger} />
                   </div>
