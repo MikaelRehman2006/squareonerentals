@@ -43,9 +43,16 @@ export async function POST(request: NextRequest) {
       hasGroupId: !!groupId
     });
 
-    if (!accessToken || !pageId) {
+    if (!accessToken) {
       return NextResponse.json(
-        { error: 'Facebook integration not configured' },
+        { error: 'Facebook access token not configured' },
+        { status: 500 }
+      );
+    }
+
+    if (!groupId) {
+      return NextResponse.json(
+        { error: 'Facebook group ID not configured' },
         { status: 500 }
       );
     }
@@ -54,31 +61,25 @@ export async function POST(request: NextRequest) {
     const postContent = {
       message: data.message,
       link: data.link,
+      // The format for access token when using page to post in group is:
+      // access_token={access-token}
+      access_token: accessToken
     };
 
-    // First, we need to post as the Page - either to the Page's feed or directly to the group
-    let endpoint = `https://graph.facebook.com/v18.0/${pageId}/feed`;
-    
-    // If we have a group ID and want to post directly to the group
-    if (groupId) {
-      // For posting to a group as a Page, we need to use the page access token
-      // and post to the group's feed
-      endpoint = `https://graph.facebook.com/v18.0/${groupId}/feed`;
-    }
-
-    console.log('Using Facebook API endpoint:', endpoint);
+    console.log('Using Facebook API to post directly to group:', groupId);
     console.log('Post content:', postContent);
 
-    // Call Facebook Graph API to post as the Page
+    // Directly post to the group feed using the user token
+    // This approach requires fewer permissions than posting as a Page
+    const endpoint = `https://graph.facebook.com/v18.0/${groupId}/feed`;
+    
+    // Call Facebook Graph API to post to the group
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...postContent,
-        access_token: accessToken,
-      }),
+      body: JSON.stringify(postContent),
     });
 
     // Handle Facebook API response
@@ -98,9 +99,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       postId: result.id,
-      message: groupId 
-        ? 'Successfully posted to Facebook group' 
-        : 'Successfully posted to Facebook Page'
+      message: 'Successfully posted to Facebook group'
     });
   } catch (error) {
     console.error('Error posting to Facebook:', error);
