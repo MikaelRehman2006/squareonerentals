@@ -25,6 +25,23 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Square One Rentals',
   description: 'Find your perfect rental in Square One, Mississauga',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/logo192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/logo512.png', type: 'image/png', sizes: '512x512' }
+    ],
+    apple: [
+      { url: '/logo192.png', sizes: '192x192', type: 'image/png' }
+    ],
+    other: [
+      {
+        rel: 'apple-touch-icon',
+        url: '/logo192.png',
+      },
+    ],
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

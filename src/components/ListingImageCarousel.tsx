@@ -104,29 +104,29 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
 
       {/* Navigation Buttons */}
       {imageUrls.length > 1 && (
-        <div className="absolute inset-0 flex items-center justify-between p-4 opacity-100 transition-opacity">
+        <div className="absolute inset-0 flex items-center justify-between p-4 opacity-100 transition-opacity z-10">
           <Button
             variant="secondary"
             size="icon"
-            className="rounded-full bg-white/80 hover:bg-white"
+            className="rounded-full bg-black/60 hover:bg-black/80 text-white border-white border shadow-md h-12 w-12 flex items-center justify-center"
             onClick={prevSlide}
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-8 w-8" />
           </Button>
           <Button
             variant="secondary"
             size="icon"
-            className="rounded-full bg-white/80 hover:bg-white"
+            className="rounded-full bg-black/60 hover:bg-black/80 text-white border-white border shadow-md h-12 w-12 flex items-center justify-center"
             onClick={nextSlide}
           >
-            <ChevronRight className="h-6 w-6" />
+            <ChevronRight className="h-8 w-8" />
           </Button>
         </div>
       )}
 
       {/* Image Counter */}
       {imageUrls.length > 1 && (
-        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm opacity-100">
+        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm opacity-100 z-10">
           {currentIndex + 1} / {imageUrls.length}
         </div>
       )}
