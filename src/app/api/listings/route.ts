@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
     await listing.save();
 
     // Try to post to Facebook if integration is configured
-    if (process.env.FACEBOOK_AUTO_POST === 'true' && process.env.FACEBOOK_ACCESS_TOKEN && process.env.FACEBOOK_GROUP_ID) {
+    if (process.env.FACEBOOK_AUTO_POST === 'true' && process.env.FACEBOOK_ACCESS_TOKEN && (process.env.FACEBOOK_PAGE_ID || process.env.FACEBOOK_GROUP_ID)) {
       try {
         // Prepare message for Facebook post
         const listingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.squareonerentals.com'}/listings/${listing._id}`;

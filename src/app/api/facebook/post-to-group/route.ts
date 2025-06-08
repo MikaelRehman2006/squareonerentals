@@ -34,9 +34,10 @@ export async function POST(request: NextRequest) {
 
     // Fetch Facebook credentials from environment variables
     const accessToken = process.env.FACEBOOK_ACCESS_TOKEN;
+    const pageId = process.env.FACEBOOK_PAGE_ID;
     const groupId = process.env.FACEBOOK_GROUP_ID;
 
-    if (!accessToken || !groupId) {
+    if (!accessToken || !pageId) {
       return NextResponse.json(
         { error: 'Facebook integration not configured' },
         { status: 500 }
@@ -47,23 +48,29 @@ export async function POST(request: NextRequest) {
     const postContent = {
       message: data.message,
       link: data.link,
-      // Add more fields as needed
     };
 
-    // Call Facebook Graph API to post to group
-    const response = await fetch(
-      `https://graph.facebook.com/v18.0/${groupId}/feed`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...postContent,
-          access_token: accessToken,
-        }),
-      }
-    );
+    // First, we need to post as the Page - either to the Page's feed or directly to the group
+    let endpoint = `https://graph.facebook.com/v18.0/${pageId}/feed`;
+    
+    // If we have a group ID and want to post directly to the group
+    if (groupId) {
+      // For posting to a group as a Page, we need to use the page access token
+      // and post to the group's feed
+      endpoint = `https://graph.facebook.com/v18.0/${groupId}/feed`;
+    }
+
+    // Call Facebook Graph API to post as the Page
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...postContent,
+        access_token: accessToken,
+      }),
+    });
 
     // Handle Facebook API response
     const result = await response.json();
@@ -78,7 +85,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       postId: result.id,
-      message: 'Successfully posted to Facebook group'
+      message: groupId 
+        ? 'Successfully posted to Facebook group' 
+        : 'Successfully posted to Facebook Page'
     });
   } catch (error) {
     console.error('Error posting to Facebook:', error);
