@@ -54,17 +54,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    // Cloudinary config at runtime
+    // Cloudinary config at runtime - only need cloud_name and api_key for unsigned uploads
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
       secure: true,
     });
 
     console.log("Cloudinary ENV Check", {
       API_KEY: process.env.CLOUDINARY_API_KEY,
-      API_SECRET_EXISTS: !!process.env.CLOUDINARY_API_SECRET
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME
     });
 
     // Auth check
@@ -97,7 +96,8 @@ export async function POST(request: Request) {
       const stream = cloudinary.uploader.upload_stream(
         {
           upload_preset: 'listings_upload',
-          resource_type: 'image'
+          resource_type: 'image',
+          unsigned: true
         },
         (error, result) => {
           if (error) {
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
           }
         }
       );
-      stream.end(buffer); // Send buffer into the streamm
+      stream.end(buffer); // Send buffer into the stream
     });
 
     return NextResponse.json(uploadResult);
