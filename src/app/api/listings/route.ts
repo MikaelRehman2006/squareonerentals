@@ -324,6 +324,46 @@ export async function POST(request: NextRequest) {
 
     await listing.save();
 
+    // Try to post to Facebook if integration is configured
+    if (process.env.FACEBOOK_AUTO_POST === 'true' && process.env.FACEBOOK_ACCESS_TOKEN && process.env.FACEBOOK_GROUP_ID) {
+      try {
+        // Prepare message for Facebook post
+        const listingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.squareonerentals.com'}/listings/${listing._id}`;
+        const message = `🏠 New Listing: ${data.title}\n\n💰 Price: $${data.price}/month\n📍 Location: ${data.location}\n\n${data.description.substring(0, 200)}${data.description.length > 200 ? '...' : ''}\n\nView full listing: ${listingUrl}`;
+
+        // Get the first image if available
+        const imageUrl = data.images && data.images.length > 0 ? data.images[0] : undefined;
+
+        // Post to Facebook
+        const fbResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/facebook/post-to-group`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message,
+            link: listingUrl,
+            listingId: listing._id.toString(),
+            title: data.title,
+            price: data.price,
+            location: data.location,
+            imageUrl
+          })
+        });
+
+        const fbResult = await fbResponse.json();
+        if (!fbResponse.ok) {
+          console.error('Failed to post to Facebook:', fbResult);
+          // Don't return an error, just log it - the listing was still created successfully
+        } else {
+          console.log('Successfully posted to Facebook:', fbResult);
+        }
+      } catch (fbError) {
+        console.error('Error posting to Facebook:', fbError);
+        // Don't return an error, just log it - the listing was still created successfully
+      }
+    }
+
     return NextResponse.json({ 
       message: 'Listing created successfully',
       id: listing._id?.toString()
