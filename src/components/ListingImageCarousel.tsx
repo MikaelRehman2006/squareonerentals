@@ -104,7 +104,7 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
 
       {/* Navigation Buttons */}
       {imageUrls.length > 1 && (
-        <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 flex items-center justify-between p-4 opacity-100 transition-opacity">
           <Button
             variant="secondary"
             size="icon"
@@ -126,7 +126,7 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
 
       {/* Image Counter */}
       {imageUrls.length > 1 && (
-        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm opacity-100">
           {currentIndex + 1} / {imageUrls.length}
         </div>
       )}
