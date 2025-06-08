@@ -138,6 +138,18 @@ export function renderNotificationBadges() {
       } else if (menuBadgeContainer) {
         menuBadgeContainer.innerHTML = '';
       }
+      
+      // Render badge on mobile notifications menu item
+      const mobileBadgeContainer = document.getElementById('mobile-notification-badge');
+      if (mobileBadgeContainer && unreadCount > 0) {
+        mobileBadgeContainer.innerHTML = `
+          <span class="h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+            ${unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        `;
+      } else if (mobileBadgeContainer) {
+        mobileBadgeContainer.innerHTML = '';
+      }
     } catch (error) {
       console.error('Error rendering notification badges:', error);
       // Don't throw errors from this function - it's used in the app layout

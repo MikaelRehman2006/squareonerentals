@@ -211,7 +211,73 @@ export default function Navbar() {
                 >
                   Submit Listing
                 </Link>
-                {!session?.user && (
+                {session?.user ? (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="px-4 py-2">
+                      <p className="text-base font-medium text-gray-900">{session.user.name}</p>
+                      <p className="text-sm text-gray-500">{session.user.email}</p>
+                    </div>
+                    <div className="mt-2 space-y-1">
+                      <Link
+                        href="/dashboard"
+                        className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 flex items-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <LayoutDashboard className="w-5 h-5 mr-3" />
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 flex items-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <User className="w-5 h-5 mr-3" />
+                        Profile
+                      </Link>
+                      <Link
+                        href="/favorites"
+                        className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 flex items-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Heart className="w-5 h-5 mr-3" />
+                        Favorites
+                      </Link>
+                      <Link
+                        href="/notifications"
+                        className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 flex items-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Bell className="w-5 h-5 mr-3" />
+                        Notifications
+                        <div id="mobile-notification-badge" className="ml-2"></div>
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 flex items-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Settings className="w-5 h-5 mr-3" />
+                        Settings
+                      </Link>
+                      {isAdmin(session?.user?.role) && (
+                        <Link
+                          href="/admin"
+                          className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 flex items-center"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <ShieldCheck className="w-5 h-5 mr-3" />
+                          Admin
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleSignOut}
+                        className="block w-full text-left px-4 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 mt-2 border-t border-gray-200"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <div className="mt-2 px-4 pt-2 border-t border-gray-200">
                     <div className="grid gap-2">
                       <Button 
