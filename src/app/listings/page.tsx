@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Listing } from '@/types/listing';
 import { ListingCard } from '@/components/ListingCard';
 import { ListingFilters } from '@/components/ListingFilters';
@@ -306,10 +306,9 @@ export default function ListingsPage() {
     handleFilterChange(updatedFilterState);
   };
 
-  const handleClearAll = () => {
-    setAppliedFilters([]);
-    setResetTrigger(prev => prev + 1);
-    handleFilterChange({
+  const handleClearAll = useCallback(() => {
+    // Use a single batch update rather than multiple state updates
+    const defaultFilters: FilterState = {
       priceRange: { min: '', max: '' },
       bedrooms: '',
       bathrooms: '',
@@ -317,9 +316,13 @@ export default function ListingsPage() {
       amenities: [],
       features: [],
       utilities: [],
-      sortBy: 'date-desc',
-    });
-  };
+      sortBy: 'date-desc' as 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc',
+    };
+    
+    setAppliedFilters([]);
+    setResetTrigger(prev => prev + 1);
+    handleFilterChange(defaultFilters);
+  }, [handleFilterChange, setResetTrigger, setAppliedFilters]);
 
   return (
     <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-6 sm:py-12 px-2 sm:px-6 lg:px-8">
