@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Only allow admins to post to Facebook
     // You can modify this logic based on your needs
-    if (!session.user.isAdmin) {
+    if (!session.user.role || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: 'Only admins can post to Facebook' }, { status: 403 });
     }
 
