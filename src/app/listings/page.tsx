@@ -74,6 +74,7 @@ export default function ListingsPage() {
   const [showFilters, setShowFilters] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [resetTrigger, setResetTrigger] = useState(0);
 
   // Fetch listings
   useEffect(() => {
@@ -169,6 +170,48 @@ export default function ListingsPage() {
     if (filters.propertyType !== '') {
       filtered = filtered.filter(listing => listing.propertyType === filters.propertyType);
     }
+    
+    // Filter by amenities
+    if (filters.amenities.length > 0) {
+      filtered = filtered.filter(listing => {
+        const listingAmenities = Array.isArray(listing.amenities) 
+          ? listing.amenities 
+          : listing.amenities?.split(',') || [];
+        
+        // Check if the listing has all selected amenities
+        return filters.amenities.every(amenity => 
+          listingAmenities.some(a => a.trim() === amenity)
+        );
+      });
+    }
+    
+    // Filter by features
+    if (filters.features.length > 0) {
+      filtered = filtered.filter(listing => {
+        const listingFeatures = Array.isArray(listing.features) 
+          ? listing.features 
+          : listing.features?.split(',') || [];
+        
+        // Check if the listing has all selected features
+        return filters.features.every(feature => 
+          listingFeatures.some(f => f.trim() === feature)
+        );
+      });
+    }
+    
+    // Filter by utilities
+    if (filters.utilities.length > 0) {
+      filtered = filtered.filter(listing => {
+        const listingUtilities = Array.isArray(listing.utilities) 
+          ? listing.utilities 
+          : listing.utilities?.split(',') || [];
+        
+        // Check if the listing has all selected utilities
+        return filters.utilities.every(utility => 
+          listingUtilities.some(u => u.trim() === utility)
+        );
+      });
+    }
 
     // Update applied filters list
     const newAppliedFilters: string[] = [];
@@ -263,6 +306,21 @@ export default function ListingsPage() {
     handleFilterChange(updatedFilterState);
   };
 
+  const handleClearAll = () => {
+    setAppliedFilters([]);
+    setResetTrigger(prev => prev + 1);
+    handleFilterChange({
+      priceRange: { min: '', max: '' },
+      bedrooms: '',
+      bathrooms: '',
+      propertyType: '',
+      amenities: [],
+      features: [],
+      utilities: [],
+      sortBy: 'date-desc',
+    });
+  };
+
   return (
     <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-6 sm:py-12 px-2 sm:px-6 lg:px-8">
       <BackgroundPattern />
@@ -328,7 +386,7 @@ export default function ListingsPage() {
                     </Button>
                   </div>
                   <div className="p-4">
-                    <ListingFilters onFilterChange={handleFilterChange} />
+                    <ListingFilters onFilterChange={handleFilterChange} resetTrigger={resetTrigger} />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -365,19 +423,7 @@ export default function ListingsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setAppliedFilters([]);
-                  handleFilterChange({
-                    priceRange: { min: '', max: '' },
-                    bedrooms: '',
-                    bathrooms: '',
-                    propertyType: '',
-                    amenities: [],
-                    features: [],
-                    utilities: [],
-                    sortBy: 'date-desc',
-                  });
-                }}
+                onClick={handleClearAll}
               >
                 Clear all
               </Button>
@@ -389,7 +435,7 @@ export default function ListingsPage() {
             <div className={`md:w-64 flex-shrink-0 hidden md:block ${showFilters ? 'md:block' : 'md:hidden'}`}>
               <div className="sticky top-4">
                 <ScrollArea className="h-[calc(100vh-8rem)]">
-                  <ListingFilters onFilterChange={handleFilterChange} />
+                  <ListingFilters onFilterChange={handleFilterChange} resetTrigger={resetTrigger} />
                 </ScrollArea>
               </div>
             </div>

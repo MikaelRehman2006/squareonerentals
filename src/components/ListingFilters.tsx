@@ -23,6 +23,7 @@ interface FilterState {
 
 interface ListingFiltersProps {
   onFilterChange: (filters: FilterState) => void;
+  resetTrigger?: number;
 }
 
 const PROPERTY_TYPES = ['APARTMENT', 'CONDO', 'HOUSE', 'TOWNHOUSE'];
@@ -58,7 +59,7 @@ const UTILITIES = [
   'Trash Collection'
 ];
 
-export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
+export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
     priceRange: { min: '', max: '' },
     bedrooms: '',
@@ -144,6 +145,13 @@ export function ListingFilters({ onFilterChange }: ListingFiltersProps) {
     setFilters(defaultFilters);
     onFilterChange(defaultFilters);
   }, [onFilterChange]);
+  
+  // Add effect to reset filters when resetTrigger changes (moved after resetFilters declaration)
+  useEffect(() => {
+    if (resetTrigger > 0) {
+      resetFilters();
+    }
+  }, [resetTrigger, resetFilters]);
 
   const FilterContent = () => (
     <Card className="bg-white border border-gray-200 shadow-sm w-full md:w-[250px]">
