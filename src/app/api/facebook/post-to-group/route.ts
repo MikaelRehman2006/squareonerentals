@@ -37,6 +37,12 @@ export async function POST(request: NextRequest) {
     const pageId = process.env.FACEBOOK_PAGE_ID;
     const groupId = process.env.FACEBOOK_GROUP_ID;
 
+    console.log('Facebook integration check:', {
+      hasAccessToken: !!accessToken,
+      hasPageId: !!pageId,
+      hasGroupId: !!groupId
+    });
+
     if (!accessToken || !pageId) {
       return NextResponse.json(
         { error: 'Facebook integration not configured' },
@@ -60,6 +66,9 @@ export async function POST(request: NextRequest) {
       endpoint = `https://graph.facebook.com/v18.0/${groupId}/feed`;
     }
 
+    console.log('Using Facebook API endpoint:', endpoint);
+    console.log('Post content:', postContent);
+
     // Call Facebook Graph API to post as the Page
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -74,6 +83,10 @@ export async function POST(request: NextRequest) {
 
     // Handle Facebook API response
     const result = await response.json();
+    
+    console.log('Facebook API response status:', response.status);
+    console.log('Facebook API response:', result);
+    
     if (!response.ok) {
       console.error('Facebook API error:', result);
       return NextResponse.json(
