@@ -71,7 +71,7 @@ export default function ListingsPage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('newest');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState<string[]>([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -273,20 +273,23 @@ export default function ListingsPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-2xl sm:text-3xl font-bold">Available Listings</h1>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-              <Select
-                value={sortBy}
-                onValueChange={handleSortChange}
-              >
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Sort by..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date-asc">Date: Oldest First</SelectItem>
-                  <SelectItem value="date-desc">Date: Newest First</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto gap-1">
+                <span className="text-sm text-gray-600 mr-1">Sort by:</span>
+                <Select
+                  value={sortBy}
+                  onValueChange={handleSortChange}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date-asc">Date: Oldest First</SelectItem>
+                    <SelectItem value="date-desc">Date: Newest First</SelectItem>
+                    <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                    <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               <div className="flex items-center space-x-2 border rounded-lg p-1">
                 <Button
@@ -309,9 +312,9 @@ export default function ListingsPage() {
               <Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
                 <SheetTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
-                    className="sm:hidden"
+                    className="sm:hidden text-white"
                   >
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
                     Filters {appliedFilters.length > 0 && `(${appliedFilters.length})`}
@@ -332,10 +335,10 @@ export default function ListingsPage() {
               
               {/* Desktop filter toggle */}
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="hidden md:flex"
+                className="hidden md:flex text-white"
               >
                 {showFilters ? "Hide Filters" : "Show Filters"}
               </Button>
