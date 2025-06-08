@@ -788,15 +788,53 @@ export default function EditListingPage({ params }: { params: { listingId: strin
               onClick={() => router.back()}
               className="bg-gray-800/80 text-white hover:bg-gray-700 border-gray-700 hover:border-gray-600 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg"
             >
-              Back
+              Cancel
             </Button>
           </div>
         </div>
       </div>
       
-      <div className="container max-w-5xl mx-auto px-4 sm:px-6 pb-16">        
+      <div className="container max-w-5xl mx-auto px-4 sm:px-6 pb-20">        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Status Selection Card */}
+            <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
+              <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
+                <CardTitle className="text-xl font-semibold text-white uppercase tracking-wide mb-2">Listing Status</CardTitle>
+                <CardDescription className="text-gray-400 mt-1">Control the visibility of your listing</CardDescription>
+              </CardHeader>
+              <CardContent className="p-8">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-200 text-sm font-medium mb-3">Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-gray-700 text-white border-2 border-gray-600 rounded-xl px-4 py-3 h-12 
+                                focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 
+                                hover:border-gray-400 transition-all duration-200 shadow-inner">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ACTIVE">Active (Visible to everyone)</SelectItem>
+                          <SelectItem value="ARCHIVED">Archived (Hidden from listings)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-gray-400 text-sm mt-2.5">
+                        {field.value === "ACTIVE" 
+                          ? "Your listing is currently visible to all users." 
+                          : "Your listing is currently hidden and not visible on the site."}
+                      </FormDescription>
+                      <FormMessage className="text-red-400 mt-2.5" />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+            
             {/* Basic Information Card */}
             <Card className="shadow-xl bg-gray-800 border-2 border-gray-700 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
               <CardHeader className="bg-gray-800/90 border-b-2 border-gray-600 px-6 py-8 mb-6">
