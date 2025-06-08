@@ -13,6 +13,7 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imageError, setImageError] = useState(false);
+  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
 
   useEffect(() => {
     // Process and validate image URLs
@@ -63,12 +64,14 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
   }
 
   const nextSlide = () => {
+    setDirection(1); // Moving right
     setCurrentIndex((prevIndex) => 
       prevIndex === imageUrls.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const prevSlide = () => {
+    setDirection(-1); // Moving left
     setCurrentIndex((prevIndex) => 
       prevIndex === 0 ? imageUrls.length - 1 : prevIndex - 1
     );
@@ -81,7 +84,7 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
 
   return (
     <div className="relative h-[500px] rounded-lg overflow-hidden group">
-      <div className="absolute inset-0 transition-transform duration-500 ease-in-out hover:scale-105">
+      <div className="absolute inset-0 overflow-hidden">
         {imageError ? (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
             <div className="text-center">
@@ -90,15 +93,35 @@ export function ListingImageCarousel({ images }: ListingImageCarouselProps) {
             </div>
           </div>
         ) : (
-          <Image
-            src={imageUrls[currentIndex]}
-            alt={`Property image ${currentIndex + 1}`}
-            fill
-            className="object-cover"
-            priority={currentIndex === 0}
-            unoptimized={true}
-            onError={handleImageError}
-          />
+          <div className="w-full h-full relative">
+            {imageUrls.map((url, index) => (
+              <div 
+                key={index}
+                className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
+                  index === currentIndex 
+                    ? 'translate-x-0 z-10' 
+                    : index < currentIndex || (currentIndex === 0 && index === imageUrls.length - 1)
+                      ? (direction === 1 ? '-translate-x-full' : 'translate-x-full') 
+                      : (direction === 1 ? 'translate-x-full' : '-translate-x-full')
+                }`}
+              >
+                <Image
+                  src={url}
+                  alt={`Property image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  priority={index === currentIndex}
+                  unoptimized={true}
+                  onError={() => {
+                    if (index === currentIndex) {
+                      console.error(`Failed to load image: ${url}`);
+                      setImageError(true);
+                    }
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

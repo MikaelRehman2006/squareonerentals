@@ -19,6 +19,7 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [validImages, setValidImages] = useState<string[]>([]);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
   
   // Default image if none is provided or if the first image is invalid
   const defaultImage = 'https://placehold.co/800x600/e2e8f0/1e293b?text=No+Image+Available';
@@ -69,6 +70,7 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
     e.preventDefault();
     e.stopPropagation();
     if (validImages.length > 1) {
+      setDirection(1); // Moving right
       setCurrentImageIndex((prev) => (prev + 1) % validImages.length);
     }
   };
@@ -77,6 +79,7 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
     e.preventDefault();
     e.stopPropagation();
     if (validImages.length > 1) {
+      setDirection(-1); // Moving left
       setCurrentImageIndex((prev) => (prev === 0 ? validImages.length - 1 : prev - 1));
     }
   };
@@ -95,44 +98,57 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <Image
-          src={imageUrl}
-          alt={listing.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          unoptimized={imageUrl.startsWith('/uploads/')}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {validImages.map((url, index) => (
+          <div 
+            key={index}
+            className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
+              index === currentImageIndex 
+                ? 'translate-x-0 z-10' 
+                : index < currentImageIndex || (currentImageIndex === 0 && index === validImages.length - 1)
+                  ? (direction === 1 ? '-translate-x-full' : 'translate-x-full') 
+                  : (direction === 1 ? 'translate-x-full' : '-translate-x-full')
+            }`}
+          >
+            <Image
+              src={url}
+              alt={`${listing.title} - Image ${index + 1}`}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              unoptimized={url.startsWith('/uploads/')}
+            />
+          </div>
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20" />
         
         {/* Image navigation arrows - always show on mobile, hover on desktop */}
         {validImages.length > 1 && (
-          <div className={`absolute inset-0 flex items-center justify-between px-2 ${isTouchDevice ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <div className={`absolute inset-0 flex items-center justify-between px-2 ${isTouchDevice ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity z-30`}>
             <button 
               onClick={prevImage}
-              className="p-1 rounded-full bg-white/80 hover:bg-white shadow-md transition-all"
+              className="p-2 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white shadow-md transition-all"
               aria-label="Previous image"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-800" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <button 
               onClick={nextImage}
-              className="p-1 rounded-full bg-white/80 hover:bg-white shadow-md transition-all"
+              className="p-2 rounded-full bg-black/60 hover:bg-black/80 text-white border border-white shadow-md transition-all"
               aria-label="Next image"
             >
-              <ChevronRight className="w-5 h-5 text-gray-800" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         )}
         
         {/* Image counter - always show on mobile, hover on desktop */}
         {validImages.length > 1 && (
-          <div className={`absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2 py-1 rounded-full ${isTouchDevice ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <div className={`absolute bottom-4 right-4 bg-black/60 text-white text-xs px-2 py-1 rounded-full ${isTouchDevice ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity z-30`}>
             {currentImageIndex + 1} / {validImages.length}
           </div>
         )}
         
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="absolute top-4 right-4 flex gap-2 z-30">
           <FavoriteButton 
             listingId={listing._id}
             isFavorited={isFavorited}
@@ -146,7 +162,7 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
         </div>
         
         {/* View Details button - always visible on mobile */}
-        <div className={`absolute bottom-4 left-4 right-4 ${isTouchDevice ? 'translate-y-0 opacity-100' : 'transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100'} transition-all duration-300`}>
+        <div className={`absolute bottom-4 left-4 right-4 ${isTouchDevice ? 'translate-y-0 opacity-100' : 'transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100'} transition-all duration-300 z-30`}>
           <Link href={`/listings/${listing._id}`}>
             <Button className="w-full bg-white text-gray-900 hover:bg-gray-100">
               <Eye className="w-4 h-4 mr-2" />
