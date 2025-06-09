@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
+
+// Define interface for image metadata document
+interface IImageMetadata {
+  userId: string;
+  url: string;
+  publicId: string;
+  size: number;
+  listingId?: string;
+  createdAt: Date;
+}
 
 // Define a schema for image metadata if it doesn't exist
-let ImageMetadata;
+let ImageMetadata: Model<IImageMetadata>;
 try {
-  ImageMetadata = mongoose.model('ImageMetadata');
+  ImageMetadata = mongoose.model<IImageMetadata>('ImageMetadata');
 } catch (e) {
   const ImageMetadataSchema = new mongoose.Schema({
     userId: { 
@@ -38,7 +48,7 @@ try {
     }
   });
   
-  ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
+  ImageMetadata = mongoose.model<IImageMetadata>('ImageMetadata', ImageMetadataSchema);
 }
 
 export async function POST(request: NextRequest) {
@@ -107,7 +117,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query based on parameters
-    const query: any = {};
+    const query: Record<string, string> = {};
     if (userId) query.userId = userId;
     if (listingId) query.listingId = listingId;
 
@@ -153,7 +163,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Build query based on parameters
-    const query: any = {};
+    const query: Record<string, string> = {};
     if (url) query.url = url;
     if (publicId) query.publicId = publicId;
 

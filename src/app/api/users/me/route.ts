@@ -7,6 +7,12 @@ import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { Listing } from '@/models/Listing';
 
+interface ListingType {
+  id: string;
+  images: string[] | string;
+  size?: number;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -31,12 +37,8 @@ export async function GET() {
 
     // Calculate storage usage based on user's listings and images
     const userListings = await Listing.find({
-      userId: user._id,
-      select: {
-        images: true,
-        id: true
-      }
-    });
+      userId: user._id
+    }).select('images id');
 
     // Count the total number of images across all listings
     let totalImageCount = 0;
@@ -55,17 +57,12 @@ export async function GET() {
       
       // Try to get actual image sizes from metadata if available
       const imageSizes = await Listing.find({
-        where: {
-          _id: listing.id
-        },
-        select: {
-          size: true
-        }
-      });
+        _id: listing.id
+      }).select('size');
       
       // Sum up actual sizes if available
       if (imageSizes.length > 0) {
-        totalStorageUsed += imageSizes.reduce((sum, img) => sum + (img.size || 0), 0);
+        totalStorageUsed += imageSizes.reduce((sum: number, img: { size?: number }) => sum + (img.size || 0), 0);
       } else {
         // Fallback to estimate - 400KB per image (average compressed size)
         totalStorageUsed += images.length * 400 * 1024;

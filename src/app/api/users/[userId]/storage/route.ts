@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
+
+// Define interface for image metadata document
+interface IImageMetadata {
+  userId: string;
+  url: string;
+  publicId: string;
+  size: number;
+  listingId?: string;
+  createdAt: Date;
+}
 
 // Get or initialize the ImageMetadata model
-let ImageMetadata;
+let ImageMetadata: Model<IImageMetadata>;
 try {
-  ImageMetadata = mongoose.model('ImageMetadata');
+  ImageMetadata = mongoose.model<IImageMetadata>('ImageMetadata');
 } catch (e) {
   // Model not registered yet, will be registered when metadata API is called
   const ImageMetadataSchema = new mongoose.Schema({
@@ -19,7 +29,7 @@ try {
     createdAt: { type: Date, default: Date.now }
   });
   
-  ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
+  ImageMetadata = mongoose.model<IImageMetadata>('ImageMetadata', ImageMetadataSchema);
 }
 
 export async function GET(
@@ -45,11 +55,11 @@ export async function GET(
     const metadata = await ImageMetadata.find({ userId });
     
     // Calculate total size - use actual sizes if available
-    const totalSize = metadata.reduce((total, item) => total + (item.size || 0), 0);
+    const totalSize = metadata.reduce((total: number, item: IImageMetadata) => total + (item.size || 0), 0);
     const imageCount = metadata.length;
 
     // Calculate based on membership type
-    const STORAGE_LIMITS = {
+    const STORAGE_LIMITS: Record<string, number> = {
       FEATURED: 25 * 1024 * 1024, // 25MB
       BASIC: 10 * 1024 * 1024,    // 10MB
       NONE: 5 * 1024 * 1024       // 5MB default
@@ -62,7 +72,7 @@ export async function GET(
     const storageLimit = STORAGE_LIMITS[membershipType] || STORAGE_LIMITS.NONE;
     
     // Use actual size if we have metadata, otherwise use estimate
-    let storageUsage;
+    let storageUsage: number;
     if (metadata.length > 0) {
       storageUsage = totalSize;
     } else {
