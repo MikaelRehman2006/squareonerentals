@@ -30,17 +30,48 @@ export async function GET() {
     }
 
     // Calculate storage usage based on user's listings and images
-    const listings = await Listing.find({ userId: user._id });
-    
-    // Count total images correctly
+    const userListings = await Listing.find({
+      userId: user._id,
+      select: {
+        images: true,
+        id: true
+      }
+    });
+
+    // Count the total number of images across all listings
     let totalImageCount = 0;
-    for (const listing of listings) {
-      totalImageCount += listing.images?.length || 0;
+    let totalStorageUsed = 0;
+
+    // Process each listing
+    for (const listing of userListings) {
+      // Handle both string and array image formats
+      const images = typeof listing.images === 'string' 
+        ? listing.images.split(',').filter(Boolean) 
+        : Array.isArray(listing.images) 
+          ? listing.images.filter(Boolean)
+          : [];
+          
+      totalImageCount += images.length;
+      
+      // Try to get actual image sizes from metadata if available
+      const imageSizes = await Listing.find({
+        where: {
+          _id: listing.id
+        },
+        select: {
+          size: true
+        }
+      });
+      
+      // Sum up actual sizes if available
+      if (imageSizes.length > 0) {
+        totalStorageUsed += imageSizes.reduce((sum, img) => sum + (img.size || 0), 0);
+      } else {
+        // Fallback to estimate - 400KB per image (average compressed size)
+        totalStorageUsed += images.length * 400 * 1024;
+      }
     }
-    
-    // Calculate more accurate storage estimation - 400KB per image (average compressed size)
-    const estimatedStorageUsage = totalImageCount > 0 ? totalImageCount * 400 * 1024 : 0; // Start at zero if no images
-    
+
     // Return user data with storage information
     return NextResponse.json({
       id: user._id,
@@ -48,10 +79,11 @@ export async function GET() {
       email: user.email,
       image: user.image,
       role: user.role,
+      createdAt: user.createdAt,
       membership: user.membership || null,
       storageUsage: {
-        bytes: estimatedStorageUsage,
-        imageCount: totalImageCount,
+        bytes: totalStorageUsed,
+        count: totalImageCount
       }
     });
     

@@ -19,12 +19,16 @@ export default function StorageUsageBar({ currentUsage, uploadedFiles = [] }: St
     percent: number; // 0-100
     pendingSize: number; // size of files about to be uploaded
     pendingPercent: number; // 0-100
+    totalSize: number; // current + pending
+    totalPercent: number; // 0-100
   }>({
     current: 0,
     limit: 5 * 1024 * 1024, // Default 5MB
     percent: 0,
     pendingSize: 0,
-    pendingPercent: 0
+    pendingPercent: 0,
+    totalSize: 0,
+    totalPercent: 0
   });
 
   // Membership info
@@ -41,16 +45,19 @@ export default function StorageUsageBar({ currentUsage, uploadedFiles = [] }: St
   // Calculate total size of files about to be uploaded
   useEffect(() => {
     const pendingSize = uploadedFiles.reduce((total, file) => total + file.size, 0);
-    const totalUsage = currentUsage + pendingSize;
+    const totalSize = currentUsage + pendingSize;
     const percent = Math.min(100, Math.round((currentUsage / usage.limit) * 100));
-    const pendingPercent = Math.min(100, Math.round((totalUsage / usage.limit) * 100)) - percent;
+    const pendingPercent = Math.min(100, Math.round((pendingSize / usage.limit) * 100));
+    const totalPercent = Math.min(100, Math.round((totalSize / usage.limit) * 100));
     
     setUsage(prev => ({
       ...prev,
       current: currentUsage,
       pendingSize,
+      totalSize,
       percent,
-      pendingPercent
+      pendingPercent,
+      totalPercent
     }));
   }, [currentUsage, uploadedFiles, usage.limit]);
 
@@ -106,8 +113,9 @@ export default function StorageUsageBar({ currentUsage, uploadedFiles = [] }: St
 
   // Determine color based on usage percentage
   const getProgressColor = () => {
-    if (usage.percent + usage.pendingPercent > 90) return 'bg-red-500';
-    if (usage.percent + usage.pendingPercent > 70) return 'bg-amber-500';
+    const totalPercent = usage.percent + usage.pendingPercent;
+    if (totalPercent > 90) return 'bg-red-500';
+    if (totalPercent > 70) return 'bg-amber-500';
     return 'bg-emerald-500';
   };
 
@@ -174,10 +182,10 @@ export default function StorageUsageBar({ currentUsage, uploadedFiles = [] }: St
             style={{ width: `${usage.percent}%` }}
           />
           {/* Pending uploads visualization */}
-          {usage.pendingPercent > 0 && (
+          {usage.pendingSize > 0 && (
             <div 
               className={`h-full ${getProgressColor()} opacity-60 -mt-3 backdrop-blur-sm transition-all duration-500 ease-out`} 
-              style={{ width: `${usage.percent + usage.pendingPercent}%` }}
+              style={{ width: `${usage.totalPercent}%` }}
             />
           )}
         </div>
@@ -187,7 +195,7 @@ export default function StorageUsageBar({ currentUsage, uploadedFiles = [] }: St
             {formatBytes(usage.current)} used
             {usage.pendingSize > 0 && (
               <span className="text-blue-400 ml-1 animate-pulse">
-                (+ {formatBytes(usage.pendingSize)} pending)
+                (+ {formatBytes(usage.pendingSize)} pending = {formatBytes(usage.totalSize)} total)
               </span>
             )}
           </span>

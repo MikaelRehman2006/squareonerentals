@@ -268,34 +268,89 @@ export default function SubmitListingPage() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Update pending files for the storage bar
+    // Update pending files for the storage bar visualization
     setPendingFiles(Array.from(files));
+    
+    // Calculate total size of pending files
+    const totalPendingSize = Array.from(files).reduce((total, file) => total + file.size, 0);
+    console.log(`Total pending size: ${totalPendingSize} bytes`);
 
     try {
       const loadingToast = toast.loading('Uploading images...');
       
-      // Check file size before upload (5MB limit)
+      // Check file size before upload (5MB limit per file)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
       for (let i = 0; i < files.length; i++) {
         if (files[i].size > MAX_FILE_SIZE) {
           toast.dismiss(loadingToast);
           toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
+          setPendingFiles([]); // Clear pending files on error
           return;
         }
         
         if (!files[i].type.startsWith('image/')) {
           toast.dismiss(loadingToast);
           toast.error(`File ${files[i].name} is not an image`);
+          setPendingFiles([]); // Clear pending files on error
           return;
         }
       }
 
+      // Check membership status and storage limit before attempting upload
+      try {
+        const membershipResponse = await fetch('/api/users/me');
+        const userData = await membershipResponse.json();
+        
+        // If no active membership, direct to membership page immediately
+        if (!userData.membership || userData.membership.status !== 'active') {
+          toast.dismiss(loadingToast);
+          toast.error('Membership required', {
+            description: 'You need an active membership to upload images and create listings. Please purchase a plan to continue.',
+            action: {
+              label: 'Get Membership',
+              onClick: () => router.push('/memberships')
+            }
+          });
+          setPendingFiles([]);
+          return;
+        }
+        
+        // Check storage limit
+        const currentUsage = userData.storageUsage?.bytes || 0;
+        const membershipType = userData.membership?.type || 'DEFAULT';
+        
+        // Storage limits based on membership type
+        const STORAGE_LIMITS = {
+          FEATURED: 25 * 1024 * 1024, // 25MB
+          BASIC: 10 * 1024 * 1024,    // 10MB
+          DEFAULT: 5 * 1024 * 1024    // 5MB default
+        };
+        
+        const storageLimit = STORAGE_LIMITS[membershipType as keyof typeof STORAGE_LIMITS] || STORAGE_LIMITS.DEFAULT;
+        
+        if (currentUsage + totalPendingSize > storageLimit) {
+          toast.dismiss(loadingToast);
+          toast.error('Storage limit exceeded', {
+            description: `You've reached your storage limit of ${(storageLimit / (1024 * 1024)).toFixed(0)}MB. Please delete some images or upgrade your plan.`,
+            action: {
+              label: 'Upgrade Plan',
+              onClick: () => router.push('/memberships')
+            }
+          });
+          setPendingFiles([]);
+          return;
+        }
+      } catch (membershipError) {
+        console.error('Error checking membership status:', membershipError);
+        // Continue to image upload attempt - the upload API will also check membership status
+      }
+        
       console.log('Starting image upload for', files.length, 'files');
       
       const uploadPromises = Array.from(files).map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
-        console.log('Uploading file:', file.name);
+        console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -323,33 +378,8 @@ export default function SubmitListingPage() {
         return result.secure_url;
       });
 
-      // Handle upload with proper error handling
-      let newImageUrls;
-      
-      // Check user membership status first - if they don't have one, redirect early
-      try {
-        const membershipResponse = await fetch('/api/users/me');
-        const userData = await membershipResponse.json();
-        
-        // If no active membership, direct to membership page immediately
-        if (!userData.membership || userData.membership.status !== 'active') {
-          toast.dismiss(loadingToast);
-          toast.error('Membership required', {
-            description: 'You need an active membership to upload images and create listings. Please purchase a plan to continue.',
-            action: {
-              label: 'Get Membership',
-              onClick: () => router.push('/memberships')
-            }
-          });
-          setPendingFiles([]);
-          return;
-        }
-      } catch (membershipError) {
-        console.error('Error checking membership status:', membershipError);
-        // Continue to image upload attempt - the upload API will also check membership status
-      }
-      
       // Now try the actual upload
+      let newImageUrls;
       try {
         newImageUrls = await Promise.all(uploadPromises);
         console.log('All uploads complete, new image URLs:', newImageUrls);
@@ -366,8 +396,17 @@ export default function SubmitListingPage() {
               onClick: () => router.push('/memberships')
             }
           });
+        } else if (error.message && error.message.includes('Storage limit exceeded')) {
+          // Storage limit issue
+          toast.error('Storage limit exceeded', {
+            description: 'You\'ve reached your storage limit. Please delete some images or upgrade your plan.',
+            action: {
+              label: 'Upgrade Plan',
+              onClick: () => router.push('/memberships')
+            }
+          });
         } else {
-          // Generic error - no fallback to local storage since that's not production-ready
+          // Generic error
           toast.error(`Upload error`, {
             description: error.message || 'Failed to upload images. Please try again or consider purchasing a membership if you have not yet purchased one.',
             action: {
@@ -412,6 +451,9 @@ export default function SubmitListingPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      
+      // Refresh storage usage after successful upload
+      fetchStorageUsage();
     } catch (error) {
       console.error('Upload error:', error);
       toast.dismiss();
@@ -421,6 +463,9 @@ export default function SubmitListingPage() {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    } finally {
+      // Clear pending files after upload attempt
+      setPendingFiles([]);
     }
   };
 

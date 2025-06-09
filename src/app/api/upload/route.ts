@@ -78,6 +78,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Active membership required' }, { status: 403 });
     }
 
+    // Storage check - get user's current storage usage
+    // This is an estimation based on the user's uploaded images
+    const userId = user._id.toString();
+    const storageUsed = await getUserStorageUsed(userId);
+    
     const formData = await request.formData();
     const file = formData.get('file');
 
@@ -88,11 +93,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Only image uploads are allowed' }, { status: 400 });
     }
 
+    // Get file size
+    const fileSize = file.size;
+    
+    // Check if this upload would exceed the user's storage limit
+    const membershipType = user.membership?.type || 'DEFAULT';
+    const storageLimit = STORAGE_LIMITS[membershipType] || STORAGE_LIMITS.DEFAULT;
+    
+    if (storageUsed + fileSize > storageLimit) {
+      return NextResponse.json({ 
+        error: 'Storage limit exceeded',
+        storageUsed,
+        storageLimit,
+        fileSize
+      }, { status: 400 });
+    }
+
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
     // Upload using stream
-    const uploadResult = await new Promise<{ secure_url: string, public_id: string }>((resolve, reject) => {
+    const uploadResult = await new Promise<{ secure_url: string, public_id: string, bytes: number }>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           upload_preset: 'listings_upload',
@@ -106,7 +127,8 @@ export async function POST(request: Request) {
           } else if (result?.secure_url) {
             resolve({
               secure_url: result.secure_url,
-              public_id: result.public_id
+              public_id: result.public_id,
+              bytes: result.bytes || fileSize
             });
           } else {
             reject(new Error("Unexpected Cloudinary result"));
@@ -116,10 +138,70 @@ export async function POST(request: Request) {
       stream.end(buffer); // Send buffer into the stream
     });
 
-    return NextResponse.json(uploadResult);
+    // Store the file size in the database for accurate tracking
+    try {
+      await storeImageMetadata({
+        userId: userId,
+        url: uploadResult.secure_url,
+        publicId: uploadResult.public_id,
+        size: uploadResult.bytes || fileSize
+      });
+    } catch (error) {
+      console.error("Failed to store image metadata:", error);
+      // Continue anyway - the image was uploaded successfully
+    }
+
+    return NextResponse.json({
+      ...uploadResult,
+      size: uploadResult.bytes || fileSize
+    });
   } catch (error) {
     console.error("Upload Failed:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+  }
+}
+
+// Helper function to get a user's total storage used
+async function getUserStorageUsed(userId: string): Promise<number> {
+  try {
+    // Attempt to get from the ImageMetadata collection first (most accurate)
+    const result = await fetch(`/api/users/${userId}/storage`);
+    if (result.ok) {
+      const data = await result.json();
+      return data.storageUsage?.bytes || 0;
+    }
+    return 0;
+  } catch (error) {
+    console.error("Error getting storage usage:", error);
+    return 0; // Default to 0 if there's an error
+  }
+}
+
+// Helper function to store image metadata
+async function storeImageMetadata(metadata: { 
+  userId: string, 
+  url: string, 
+  publicId: string, 
+  size: number,
+  listingId?: string
+}) {
+  try {
+    const response = await fetch('/api/images/metadata', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(metadata),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to store image metadata');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error storing image metadata:", error);
+    throw error;
   }
 }
 
