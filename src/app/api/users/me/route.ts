@@ -8,8 +8,9 @@ import { User } from '@/models/User';
 import { Listing } from '@/models/Listing';
 
 interface ListingType {
+  _id: string;
   id: string;
-  images: string[] | string;
+  images: string[] | string | undefined;
   size?: number;
 }
 
@@ -38,7 +39,7 @@ export async function GET() {
     // Calculate storage usage based on user's listings and images
     const userListings = await Listing.find({
       userId: user._id
-    }).select('images id');
+    }).select('images id').lean() as ListingType[];
 
     // Count the total number of images across all listings
     let totalImageCount = 0;
@@ -47,10 +48,11 @@ export async function GET() {
     // Process each listing
     for (const listing of userListings) {
       // Handle both string and array image formats
-      const images = typeof listing.images === 'string' 
-        ? listing.images.split(',').filter(Boolean) 
-        : Array.isArray(listing.images) 
-          ? listing.images.filter(Boolean)
+      const listingImages = listing.images;
+      const images = typeof listingImages === 'string' 
+        ? listingImages.split(',').filter(Boolean) 
+        : Array.isArray(listingImages) 
+          ? listingImages.filter(Boolean)
           : [];
           
       totalImageCount += images.length;
@@ -58,7 +60,7 @@ export async function GET() {
       // Try to get actual image sizes from metadata if available
       const imageSizes = await Listing.find({
         _id: listing.id
-      }).select('size');
+      }).select('size').lean();
       
       // Sum up actual sizes if available
       if (imageSizes.length > 0) {

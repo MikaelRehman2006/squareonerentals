@@ -14,6 +14,13 @@ interface IImageMetadata {
   createdAt: Date;
 }
 
+interface Listing {
+  _id: string;
+  id: string;
+  images: string[] | string | undefined;
+  userId: string;
+}
+
 // Get or initialize the ImageMetadata model
 let ImageMetadata: Model<IImageMetadata>;
 try {
@@ -77,15 +84,17 @@ export async function GET(
       storageUsage = totalSize;
     } else {
       // Fallback to estimation if no metadata exists yet
-      const listings = await mongoose.model('Listing').find({ userId });
+      const Listing = mongoose.model('Listing');
+      const listings = await Listing.find({ userId }).lean() as Listing[];
       
       // Calculate total images across all listings
       let fallbackImageCount = 0;
       for (const listing of listings) {
-        const images = Array.isArray(listing.images) 
-          ? listing.images
-          : typeof listing.images === 'string'
-            ? listing.images.split(',').filter(Boolean)
+        const listingImages = listing.images;
+        const images = typeof listingImages === 'string' 
+          ? listingImages.split(',').filter(Boolean)
+          : Array.isArray(listingImages)
+            ? listingImages.filter(Boolean)
             : [];
         fallbackImageCount += images.length;
       }
