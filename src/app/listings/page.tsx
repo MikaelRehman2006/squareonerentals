@@ -117,7 +117,7 @@ export default function ListingsPage() {
   }, []);
 
   // Apply sorting
-  const handleSortChange = (value: string) => {
+  const handleSortChange = useCallback((value: string) => {
     setSortBy(value as 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc');
     let sortedListings = [...filteredListings];
 
@@ -144,12 +144,13 @@ export default function ListingsPage() {
     }
 
     setFilteredListings(sortedListings);
-  };
+  }, [filteredListings]);
 
-  const handleFilterChange = (filters: FilterState) => {
+  // Define filterListings as a separate function to avoid circular dependencies
+  const filterListings = useCallback((filters: FilterState) => {
     if (!Array.isArray(listings)) {
       console.error('listings is not an array:', listings);
-      return;
+      return [];
     }
 
     let filtered = [...listings];
@@ -213,19 +214,6 @@ export default function ListingsPage() {
       });
     }
 
-    // Update applied filters list
-    const newAppliedFilters: string[] = [];
-    if (filters.priceRange.min !== '') newAppliedFilters.push(`Min $${filters.priceRange.min.toLocaleString()}`);
-    if (filters.priceRange.max !== '') newAppliedFilters.push(`Max $${filters.priceRange.max.toLocaleString()}`);
-    if (filters.bedrooms !== '') newAppliedFilters.push(`${filters.bedrooms}+ beds`);
-    if (filters.bathrooms !== '') newAppliedFilters.push(`${filters.bathrooms}+ baths`);
-    if (filters.propertyType !== '') newAppliedFilters.push(filters.propertyType);
-    filters.amenities.forEach(amenity => newAppliedFilters.push(amenity));
-    filters.features.forEach(feature => newAppliedFilters.push(feature));
-    filters.utilities.forEach(utility => newAppliedFilters.push(utility));
-
-    setAppliedFilters(newAppliedFilters);
-    
     // Apply current sort to filtered results
     let sortedFiltered = [...filtered];
     switch (filters.sortBy) {
@@ -249,10 +237,29 @@ export default function ListingsPage() {
         });
     }
     
-    setFilteredListings(sortedFiltered);
-  };
+    return sortedFiltered;
+  }, [listings]);
 
-  const removeFilter = (filter: string) => {
+  const handleFilterChange = useCallback((filters: FilterState) => {
+    // Update applied filters list
+    const newAppliedFilters: string[] = [];
+    if (filters.priceRange.min !== '') newAppliedFilters.push(`Min $${filters.priceRange.min.toLocaleString()}`);
+    if (filters.priceRange.max !== '') newAppliedFilters.push(`Max $${filters.priceRange.max.toLocaleString()}`);
+    if (filters.bedrooms !== '') newAppliedFilters.push(`${filters.bedrooms}+ beds`);
+    if (filters.bathrooms !== '') newAppliedFilters.push(`${filters.bathrooms}+ baths`);
+    if (filters.propertyType !== '') newAppliedFilters.push(filters.propertyType);
+    filters.amenities.forEach(amenity => newAppliedFilters.push(amenity));
+    filters.features.forEach(feature => newAppliedFilters.push(feature));
+    filters.utilities.forEach(utility => newAppliedFilters.push(utility));
+
+    setAppliedFilters(newAppliedFilters);
+    
+    // Filter and sort listings
+    const sortedFiltered = filterListings(filters);
+    setFilteredListings(sortedFiltered);
+  }, [filterListings]);
+
+  const removeFilter = useCallback((filter: string) => {
     const newFilters = appliedFilters.filter(f => f !== filter);
     setAppliedFilters(newFilters);
     
@@ -304,7 +311,7 @@ export default function ListingsPage() {
     
     // Apply the reconstructed filters
     handleFilterChange(updatedFilterState);
-  };
+  }, [appliedFilters, handleFilterChange, sortBy, PROPERTY_TYPES, AMENITIES, FEATURES, UTILITIES]);
 
   const handleClearAll = useCallback(() => {
     // Use a single batch update rather than multiple state updates
@@ -322,7 +329,7 @@ export default function ListingsPage() {
     setAppliedFilters([]);
     setResetTrigger(prev => prev + 1);
     handleFilterChange(defaultFilters);
-  }, [handleFilterChange, setResetTrigger, setAppliedFilters]);
+  }, [handleFilterChange]);
 
   return (
     <div className="bg-gradient-to-b from-white via-gray-50 to-gray-100 min-h-screen py-6 sm:py-12 px-2 sm:px-6 lg:px-8">
