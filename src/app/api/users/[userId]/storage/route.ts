@@ -59,10 +59,14 @@ export async function GET(
     }
 
     // Get all image metadata for the user
-    const metadata = await ImageMetadata.find({ userId });
+    const metadata = await ImageMetadata.find({ userId }).lean();
     
     // Calculate total size - use actual sizes if available
-    const totalSize = metadata.reduce((total: number, item: IImageMetadata) => total + (item.size || 0), 0);
+    const totalSize = metadata.reduce((total: number, item: IImageMetadata) => {
+      const itemSize = item && typeof item.size === 'number' ? item.size : 0;
+      return total + itemSize;
+    }, 0);
+    
     const imageCount = metadata.length;
 
     // Calculate based on membership type

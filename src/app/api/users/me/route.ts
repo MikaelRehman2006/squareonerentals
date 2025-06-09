@@ -14,6 +14,11 @@ interface ListingType {
   size?: number;
 }
 
+interface ImageSize {
+  size?: number;
+  _id?: string;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -57,16 +62,29 @@ export async function GET() {
           
       totalImageCount += images.length;
       
-      // Try to get actual image sizes from metadata if available
-      const imageSizes = await Listing.find({
-        _id: listing.id
-      }).select('size').lean();
-      
-      // Sum up actual sizes if available
-      if (imageSizes.length > 0) {
-        totalStorageUsed += imageSizes.reduce((sum: number, img: { size?: number }) => sum + (img.size || 0), 0);
-      } else {
-        // Fallback to estimate - 400KB per image (average compressed size)
+      try {
+        // Try to get actual image sizes from metadata if available
+        const imageSizes = await Listing.find({
+          _id: listing.id
+        }).select('size').lean() as ImageSize[];
+        
+        // Sum up actual sizes if available
+        if (imageSizes && imageSizes.length > 0) {
+          // Calculate the sum from the image sizes
+          const sizeSum = imageSizes.reduce((sum: number, img: ImageSize) => {
+            const imgSize = img && typeof img.size === 'number' ? img.size : 0;
+            return sum + imgSize;
+          }, 0);
+          
+          // Add the sum to the total
+          totalStorageUsed += sizeSum;
+        } else {
+          // Fallback to estimate - 400KB per image (average compressed size)
+          totalStorageUsed += images.length * 400 * 1024;
+        }
+      } catch (error) {
+        console.error('Error getting image sizes:', error);
+        // Fallback to estimate if there's an error
         totalStorageUsed += images.length * 400 * 1024;
       }
     }
