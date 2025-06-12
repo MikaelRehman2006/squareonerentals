@@ -15,6 +15,8 @@ export async function createNotification({
   relatedUserId,
 }: Pick<INotification, 'userId' | 'message' | 'type' | 'listingId' | 'relatedUserId'>) {
   try {
+    console.log(`Creating ${type} notification for user ${userId}`);
+    
     await connectDB();
     
     const notification = await Notification.create({
@@ -26,10 +28,20 @@ export async function createNotification({
       read: false,
     });
     
+    console.log(`Notification created successfully with ID: ${notification._id}`);
+    
     // Also send an email notification
     try {
+      console.log(`Fetching user data for email notification...`);
+      
       // Get the user's email and name
       const user = await User.findById(userId).select('name email').lean();
+      
+      console.log(`User data for email:`, {
+        found: !!user,
+        hasEmail: user && !!user.email,
+        name: user?.name || 'Not found'
+      });
       
       if (user && user.email) {
         // Set a subject based on the notification type
@@ -56,18 +68,28 @@ export async function createNotification({
             break;
         }
         
+        console.log(`Sending ${type} email notification to ${user.email}`);
+        
         // Send the email notification
-        await sendNotificationEmail({
+        const emailResult = await sendNotificationEmail({
           userEmail: user.email,
           userName: user.name || 'User',
           subject,
           message,
           notificationType: type as 'PAYMENT' | 'LISTING_UPDATE' | 'FAVORITE' | 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'MESSAGE' | 'WELCOME',
         });
+        
+        console.log(`Email notification result: ${emailResult ? 'Sent' : 'Failed'}`);
+      } else {
+        console.warn(`Cannot send email notification: User ${userId} not found or has no email`);
       }
     } catch (emailError) {
       // Log the error but don't fail the function
       console.error('Error sending notification email:', emailError);
+      console.error('Error details:', {
+        error: emailError instanceof Error ? emailError.message : 'Unknown error',
+        stack: emailError instanceof Error ? emailError.stack : 'No stack trace',
+      });
     }
     
     return notification;

@@ -64,7 +64,8 @@ export const FACEBOOK_CONFIG = {
 // Application URLs
 export const APP_URLS = {
   baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  notificationActionUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 };
 
 /**

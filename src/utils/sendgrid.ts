@@ -2,6 +2,7 @@ import sgMail from '@sendgrid/mail';
 import fs from 'fs';
 import path from 'path';
 import Handlebars from 'handlebars';
+import { EMAIL_CONFIG, APP_URLS } from '@/lib/envConfig';
 
 interface EmailData {
   name: string;
@@ -21,8 +22,11 @@ interface NotificationEmailData {
 }
 
 // Initialize SendGrid
-if (process.env.EMAIL_API_KEY) {
-  sgMail.setApiKey(process.env.EMAIL_API_KEY);
+if (EMAIL_CONFIG.isConfigured) {
+  sgMail.setApiKey(EMAIL_CONFIG.apiKey);
+  console.log('SendGrid initialized successfully');
+} else {
+  console.warn('EMAIL_API_KEY not configured, email functionality will be disabled');
 }
 
 // Load and compile email templates
@@ -79,8 +83,8 @@ ${message}
 
     // Create the email
     const msg = {
-      to: 'squareone.rental@gmail.com',
-      from: 'squareone.rental@gmail.com', // Must be verified sender in SendGrid
+      to: EMAIL_CONFIG.contactEmail,
+      from: EMAIL_CONFIG.fromEmail, // Must be verified sender in SendGrid
       subject: `Contact Form: ${subject}`,
       text: content,
       replyTo: email // So you can reply directly to the sender
@@ -135,7 +139,7 @@ interface ListingUpdateEmailParams {
  */
 export const sendNotificationEmail = async (params: NotificationEmailParams): Promise<boolean> => {
   try {
-    if (!process.env.EMAIL_API_KEY) {
+    if (!EMAIL_CONFIG.isConfigured) {
       console.warn('Email API key not configured, skipping email sending');
       return false;
     }
@@ -154,10 +158,10 @@ export const sendNotificationEmail = async (params: NotificationEmailParams): Pr
         : 'Notification',
       user_name: params.userName,
       notification_message: params.message,
-      action_url: params.actionUrl || 'https://squareonerentals-1234.vercel.app',
+      action_url: params.actionUrl || APP_URLS.notificationActionUrl,
       action_text: params.actionText || 'Visit Square One Rentals',
-      unsubscribe_url: `https://squareonerentals-1234.vercel.app/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=${params.notificationType.toLowerCase()}`,
-      preferences_url: 'https://squareonerentals-1234.vercel.app/settings#notifications'
+      unsubscribe_url: `${APP_URLS.baseUrl}/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=${params.notificationType.toLowerCase()}`,
+      preferences_url: `${APP_URLS.baseUrl}/settings#notifications`
     };
     
     // Render HTML
@@ -167,7 +171,7 @@ export const sendNotificationEmail = async (params: NotificationEmailParams): Pr
     const msg = {
       to: params.userEmail,
       from: {
-        email: 'notifications@squareonerentals.ca',
+        email: EMAIL_CONFIG.fromEmail,
         name: 'Square One Rentals'
       },
       subject: params.subject,
@@ -197,7 +201,7 @@ export const sendNotificationEmail = async (params: NotificationEmailParams): Pr
  */
 export const sendListingUpdateEmail = async (params: ListingUpdateEmailParams): Promise<boolean> => {
   try {
-    if (!process.env.EMAIL_API_KEY) {
+    if (!EMAIL_CONFIG.isConfigured) {
       console.warn('Email API key not configured, skipping email sending');
       return false;
     }
@@ -219,9 +223,9 @@ export const sendListingUpdateEmail = async (params: ListingUpdateEmailParams): 
       listing_bathrooms: params.listingBathrooms,
       listing_sqft: params.listingSqft,
       changes: params.changes,
-      listing_url: `https://squareonerentals-1234.vercel.app/listings/${params.listingId}`,
-      unsubscribe_url: `https://squareonerentals-1234.vercel.app/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=listing_update`,
-      preferences_url: 'https://squareonerentals-1234.vercel.app/settings#notifications'
+      listing_url: `${APP_URLS.baseUrl}/listings/${params.listingId}`,
+      unsubscribe_url: `${APP_URLS.baseUrl}/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=listing_update`,
+      preferences_url: `${APP_URLS.baseUrl}/settings#notifications`
     };
     
     // Render HTML
@@ -231,7 +235,7 @@ export const sendListingUpdateEmail = async (params: ListingUpdateEmailParams): 
     const msg = {
       to: params.userEmail,
       from: {
-        email: 'notifications@squareonerentals.ca',
+        email: EMAIL_CONFIG.fromEmail,
         name: 'Square One Rentals'
       },
       subject: params.subject,
@@ -261,7 +265,7 @@ export const sendListingUpdateEmail = async (params: ListingUpdateEmailParams): 
  */
 export const sendTestEmail = async (toEmail: string): Promise<boolean> => {
   try {
-    if (!process.env.EMAIL_API_KEY) {
+    if (!EMAIL_CONFIG.isConfigured) {
       console.warn('Email API key not configured, skipping test email');
       return false;
     }
@@ -270,7 +274,7 @@ export const sendTestEmail = async (toEmail: string): Promise<boolean> => {
     const msg = {
       to: toEmail,
       from: {
-        email: 'notifications@squareonerentals.ca',
+        email: EMAIL_CONFIG.fromEmail,
         name: 'Square One Rentals'
       },
       subject: 'Test Email from Square One Rentals',

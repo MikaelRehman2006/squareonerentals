@@ -82,7 +82,9 @@ export async function POST(request: Request) {
 
     // Send welcome email
     try {
-      await sendNotificationEmail({
+      console.log('Attempting to send welcome email to:', email);
+      
+      const emailResult = await sendNotificationEmail({
         userEmail: email,
         userName: name,
         subject: 'Welcome to Square One Rentals',
@@ -96,15 +98,25 @@ You can now start browsing listings or create your own listing by logging into y
         notificationType: 'WELCOME'
       });
       
+      console.log('Welcome email send result:', emailResult);
+      
       // Create in-app notification
-      await createNotification({
+      console.log('Creating welcome notification for user:', user._id.toString());
+      
+      const notification = await createNotification({
         userId: user._id.toString(),
         message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
         type: 'WELCOME'
       });
+      
+      console.log('Welcome notification created:', notification ? 'success' : 'failed');
     } catch (emailError) {
       // Log error but don't fail registration
       console.error('Error sending welcome email:', emailError);
+      console.error('Error details:', {
+        error: emailError instanceof Error ? emailError.message : 'Unknown error',
+        stack: emailError instanceof Error ? emailError.stack : 'No stack trace',
+      });
     }
 
     return NextResponse.json({
