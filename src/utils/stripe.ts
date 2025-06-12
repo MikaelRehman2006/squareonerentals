@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { STRIPE_CONFIG } from '@/lib/envConfig';
 
 export const PLANS = {
   BASIC: {
@@ -52,16 +53,14 @@ export const PLANS = {
 };
 
 // Initialize Stripe
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY || '';
-
-if (!stripeSecretKey) {
-  console.warn('Missing Stripe secret key');
+if (!STRIPE_CONFIG.isConfigured) {
+  console.warn('Missing Stripe configuration');
 }
 
 // Create a conditional initialization to handle build time
 const createStripeClient = () => {
   // During build or when no API key is available, return a mock client
-  if (!stripeSecretKey || process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'preview') {
+  if (!STRIPE_CONFIG.isConfigured || process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'preview') {
     // Return a mock object that won't throw during build
     return {
       checkout: {
@@ -76,14 +75,25 @@ const createStripeClient = () => {
       },
       subscriptions: {
         retrieve: async () => ({}),
+        update: async () => ({}),
+        cancel: async () => ({}),
       },
-      // Add other commonly used Stripe methods as needed
+      products: {
+        list: async () => ({ data: [] }),
+      },
+      prices: {
+        list: async () => ({ data: [] }),
+      },
+      webhooks: {
+        constructEvent: () => ({ type: 'test', data: { object: {} } }),
+      }
     } as unknown as Stripe;
   }
   
-  // Return actual Stripe instance when API key is available
-  return new Stripe(stripeSecretKey, {
-    apiVersion: '2025-04-30.basil', // Updated to match TypeScript definitions
+  // In production with proper API key, use the real Stripe client
+  return new Stripe(STRIPE_CONFIG.secretKey, {
+    apiVersion: '2025-04-30.basil',
+    typescript: true,
   });
 };
 

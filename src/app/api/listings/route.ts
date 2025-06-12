@@ -44,13 +44,69 @@ const validateImageUrls = (urls: string[] = []): string[] => {
   return urls
     .map(url => {
       try {
-        new URL(url);
-        return url;
+        // Ensure the URL is valid and only from allowed domains
+        const parsedUrl = new URL(url);
+        const allowedDomains = [
+          'res.cloudinary.com',
+          'cloudinary.com',
+          'source.unsplash.com',
+          'images.unsplash.com'
+        ];
+        
+        if (allowedDomains.some(domain => parsedUrl.hostname.includes(domain))) {
+          return url;
+        }
+        return '';
       } catch {
         return '';
       }
     })
     .filter(Boolean); // Remove any empty strings
+};
+
+// Add validation helper functions
+const sanitizeString = (str: string): string => {
+  if (!str) return '';
+  // Remove potential HTML/script tags and limit length
+  return str.replace(/<[^>]*>/g, '').substring(0, 1000);
+};
+
+const sanitizeNumber = (num: any): number => {
+  const parsed = parseFloat(num);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+const validateAddress = (address: string): string => {
+  // Simple sanitization for addresses - remove potential HTML and scripts
+  return sanitizeString(address);
+};
+
+// Sanitize listing input
+const sanitizeListingInput = (data: any): IListingInput => {
+  return {
+    title: sanitizeString(data.title || ''),
+    description: sanitizeString(data.description || ''),
+    price: sanitizeNumber(data.price),
+    location: sanitizeString(data.location || ''),
+    address: validateAddress(data.address || ''),
+    images: validateImageUrls(data.images || []),
+    bedrooms: sanitizeNumber(data.bedrooms),
+    bathrooms: sanitizeNumber(data.bathrooms),
+    squareFeet: sanitizeNumber(data.squareFeet),
+    amenities: Array.isArray(data.amenities) ? data.amenities.map(sanitizeString) : [],
+    buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities.map(sanitizeString) : [],
+    features: Array.isArray(data.features) ? data.features.map(sanitizeString) : [],
+    utilities: Array.isArray(data.utilities) ? data.utilities.map(sanitizeString) : [],
+    propertyType: sanitizeString(data.propertyType || ''),
+    listingType: sanitizeString(data.listingType || ''),
+    leaseType: sanitizeString(data.leaseType || ''),
+    availableDate: data.availableDate ? new Date(data.availableDate) : new Date(),
+    status: ['ACTIVE', 'PENDING', 'INACTIVE', 'ARCHIVED'].includes(data.status) ? data.status : 'ACTIVE',
+    featured: Boolean(data.featured),
+    userId: data.userId,
+    phoneNumber: sanitizeString(data.phoneNumber || ''),
+    facebookUrl: sanitizeString(data.facebookUrl || '')
+  };
 };
 
 export async function GET(request: NextRequest) {
@@ -268,59 +324,23 @@ export async function POST(request: NextRequest) {
       utilities: body.utilities
     });
     
-    // Better handling for images - ensure we have an array
-    const images = validateImageUrls(body.images || []);
-    console.log('Processed images:', images.length, 'valid images');
-    
-    // Better processing for features and utilities
-    const features = typeof body.features === 'string' ? safeParseJSON(body.features) : 
-                     Array.isArray(body.features) ? body.features : [];
-    
-    const utilities = typeof body.utilities === 'string' ? safeParseJSON(body.utilities) : 
-                     Array.isArray(body.utilities) ? body.utilities : [];
-    
-    // Ensure the address is captured
-    const address = body.address || '';
-    console.log('Address being saved:', address);
-
     // Check if user has Featured membership to automatically set listing as featured
     const hasFeaturedMembership = user.membership?.type === 'FEATURED' && user.membership.status === 'active';
     
-    // Create the listing with improved error handling
-    const data: IListingInput = {
-      title: body.title,
-      description: body.description,
-      price: Number(body.price) || 0,
-      location: body.location,
-      address: address, // Use our processed address value
-      images: images, // Use our processed images array
-      bedrooms: Number(body.bedrooms) || 0,
-      bathrooms: Number(body.bathrooms) || 0,
-      squareFeet: Number(body.squareFeet) || 0,
-      amenities: typeof body.amenities === 'string' ? safeParseJSON(body.amenities) : (body.amenities || []),
-      buildingAmenities: typeof body.buildingAmenities === 'string' ? safeParseJSON(body.buildingAmenities) : (body.buildingAmenities || []),
-      features: features,
-      utilities: utilities,
-      propertyType: body.propertyType,
-      listingType: body.listingType,
-      leaseType: body.leaseType,
-      availableDate: new Date(body.availableDate),
-      status: body.status || 'ACTIVE',
-      // Set featured automatically if user has Featured membership, otherwise use body value or default to false
-      featured: hasFeaturedMembership ? true : (body.featured || false),
+    // Sanitize and validate all input data
+    const sanitizedData = sanitizeListingInput({
+      ...body,
       userId: user._id,
-      phoneNumber: body.phoneNumber || '',
-      facebookUrl: body.facebookUrl || '',
-    };
+      featured: hasFeaturedMembership ? true : (body.featured || false)
+    });
     
-    console.log('Final listing data being saved:', {
-      address: data.address,
-      images: data.images.length,
-      features: data.features,
-      utilities: data.utilities
+    console.log('Sanitized listing data:', {
+      title: sanitizedData.title,
+      address: sanitizedData.address,
+      images: sanitizedData.images.length
     });
 
-    const listing = new Listing(data);
+    const listing = new Listing(sanitizedData);
 
     await listing.save();
 
@@ -331,18 +351,18 @@ export async function POST(request: NextRequest) {
         
         // Prepare message for Facebook post
         const listingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.squareonerentals.com'}/listings/${listing._id}`;
-        const message = `🏠 New Listing: ${data.title}\n\n💰 Price: $${data.price}/month\n📍 Location: ${data.location}\n\n${data.description.substring(0, 200)}${data.description.length > 200 ? '...' : ''}\n\nView full listing: ${listingUrl}`;
+        const message = `🏠 New Listing: ${sanitizedData.title}\n\n💰 Price: $${sanitizedData.price}/month\n📍 Location: ${sanitizedData.location}\n\n${sanitizedData.description.substring(0, 200)}${sanitizedData.description.length > 200 ? '...' : ''}\n\nView full listing: ${listingUrl}`;
 
         // Get the first image if available
-        const imageUrl = data.images && data.images.length > 0 ? data.images[0] : undefined;
+        const imageUrl = sanitizedData.images && sanitizedData.images.length > 0 ? sanitizedData.images[0] : undefined;
 
         const postData = {
           message,
           link: listingUrl,
           listingId: listing._id.toString(),
-          title: data.title,
-          price: data.price,
-          location: data.location,
+          title: sanitizedData.title,
+          price: sanitizedData.price,
+          location: sanitizedData.location,
           imageUrl
         };
         

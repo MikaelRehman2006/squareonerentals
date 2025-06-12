@@ -1,8 +1,36 @@
 import { NextResponse } from 'next/server';
 import { withAuth } from 'next-auth/middleware';
 
+// Define security headers
+const securityHeaders = {
+  'X-DNS-Prefetch-Control': 'on',
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'X-XSS-Protection': '1; mode=block',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  'Content-Security-Policy': 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://res.cloudinary.com https://widget.cloudinary.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "img-src 'self' data: https: blob:; " +
+    "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; " +
+    "connect-src 'self' https://api.cloudinary.com https://vitals.vercel-insights.com https://api.stripe.com; " +
+    "frame-src https://js.stripe.com https://hooks.stripe.com; " +
+    "media-src 'self' https://res.cloudinary.com;"
+};
+
 export default withAuth(
   function middleware(req) {
+    // Apply security headers to all responses
+    const response = NextResponse.next();
+    
+    // Add security headers
+    Object.entries(securityHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+    
     // Get the user's role from the token
     const userRole = req.nextauth.token?.role;
     const isAdmin = userRole === 'ADMIN' || userRole === 'admin';
@@ -17,16 +45,18 @@ export default withAuth(
           path: req.nextUrl.pathname
         });
         
-        return NextResponse.redirect(new URL('/access-denied', req.url));
+        const redirectUrl = new URL('/access-denied', req.url);
+        return NextResponse.redirect(redirectUrl);
       }
     }
     
     // Protect /submit route - requires any authenticated user
     if (req.nextUrl.pathname === '/submit' && !req.nextauth.token) {
-      return NextResponse.redirect(new URL('/auth/signin', req.url));
+      const redirectUrl = new URL('/auth/signin', req.url);
+      return NextResponse.redirect(redirectUrl);
     }
 
-    return NextResponse.next();
+    return response;
   },
   {
     callbacks: {

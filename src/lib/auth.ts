@@ -5,6 +5,35 @@ import { User } from '@/models/User';
 import { connectDB } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
 
+// Add a simple rate limiter for login attempts
+const loginAttempts = new Map<string, { count: number, lastAttempt: number }>();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+function checkLoginAttempts(email: string): boolean {
+  const now = Date.now();
+  const userAttempts = loginAttempts.get(email);
+  
+  // If no previous attempts or lockout time has passed, reset counter
+  if (!userAttempts || (now - userAttempts.lastAttempt) > LOCKOUT_TIME) {
+    loginAttempts.set(email, { count: 1, lastAttempt: now });
+    return true;
+  }
+  
+  // If too many attempts within lockout period
+  if (userAttempts.count >= MAX_LOGIN_ATTEMPTS) {
+    return false;
+  }
+  
+  // Increment attempt counter
+  loginAttempts.set(email, { 
+    count: userAttempts.count + 1, 
+    lastAttempt: now 
+  });
+  
+  return true;
+}
+
 type UserRole = 'USER' | 'ADMIN';
 
 export const authOptions: NextAuthOptions = {
@@ -24,6 +53,11 @@ export const authOptions: NextAuthOptions = {
           if (!credentials?.email || !credentials?.password) {
             throw new Error('Please enter your email and password');
           }
+          
+          // Check for too many login attempts
+          if (!checkLoginAttempts(credentials.email)) {
+            throw new Error('Too many failed login attempts. Please try again later.');
+          }
 
           await connectDB();
           const user = await User.findOne({ email: credentials.email });
@@ -37,6 +71,9 @@ export const authOptions: NextAuthOptions = {
           if (!isPasswordValid) {
             throw new Error('Invalid email or password');
           }
+          
+          // Reset login attempts on successful login
+          loginAttempts.delete(credentials.email);
 
           return {
             id: user._id.toString(),

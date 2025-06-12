@@ -5,6 +5,30 @@ import { User } from '@/models/User';
 import { sendNotificationEmail } from '@/utils/sendgrid';
 import { createNotification } from '@/lib/notification';
 
+// Add password validation helper
+function validatePassword(password: string): { valid: boolean; message: string } {
+  if (password.length < 8) {
+    return { valid: false, message: 'Password must be at least 8 characters long' };
+  }
+  
+  // Check for complexity - require at least 3 of 4 character types
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+  const criteriaCount = [hasUppercase, hasLowercase, hasNumbers, hasSpecialChars].filter(Boolean).length;
+  
+  if (criteriaCount < 3) {
+    return { 
+      valid: false, 
+      message: 'Password must contain at least 3 of the following: uppercase letters, lowercase letters, numbers, and special characters' 
+    };
+  }
+  
+  return { valid: true, message: '' };
+}
+
 export async function POST(request: Request) {
   try {
     await connectDB();
@@ -14,6 +38,15 @@ export async function POST(request: Request) {
     if (!name || !email || !password) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+    
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return NextResponse.json(
+        { error: passwordValidation.message },
         { status: 400 }
       );
     }

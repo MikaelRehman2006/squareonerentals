@@ -7,6 +7,7 @@ import { User } from '@/models/User';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
+import { CLOUDINARY_CONFIG } from '@/lib/envConfig';
 
 // Storage limits based on membership type (in bytes)
 const STORAGE_LIMITS = {
@@ -16,12 +17,7 @@ const STORAGE_LIMITS = {
 };
 
 const isCloudinaryConfigured = () => {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  const hasUrl = Boolean(process.env.CLOUDINARY_URL);
-  const hasCredentials = Boolean(cloudName && apiKey && apiSecret);
-  return hasUrl || hasCredentials;
+  return CLOUDINARY_CONFIG.isConfigured;
 };
 
 async function saveFileLocally(file: File) {
@@ -52,12 +48,54 @@ export async function GET() {
   return NextResponse.json({ message: 'Upload API is working. Use POST to upload files.' });
 }
 
+// Add better file validation
+const validateFile = async (file: File): Promise<{ valid: boolean; error?: string }> => {
+  // Check if it's actually an image
+  if (!file.type.startsWith('image/')) {
+    return { valid: false, error: 'Only image files are allowed' };
+  }
+  
+  // Check file size (5MB limit)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, error: `File size exceeds the 5MB limit` };
+  }
+  
+  // Check image dimensions to prevent unusually large images
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Simple check for image file headers
+    // JPEG starts with FF D8
+    if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
+      // It's a JPEG
+    } 
+    // PNG starts with 89 50 4E 47
+    else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+      // It's a PNG
+    }
+    // GIF starts with GIF8
+    else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
+      // It's a GIF
+    } 
+    else {
+      return { valid: false, error: 'Invalid image format' };
+    }
+    
+    return { valid: true };
+  } catch (error) {
+    console.error('Error validating file:', error);
+    return { valid: false, error: 'Failed to validate file' };
+  }
+};
+
 export async function POST(request: Request) {
   try {
     // Cloudinary config at runtime - only need cloud_name and api_key for unsigned uploads
     cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
+      cloud_name: CLOUDINARY_CONFIG.cloudName,
+      api_key: CLOUDINARY_CONFIG.apiKey,
       secure: true,
     });
 
@@ -89,8 +127,11 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Only image uploads are allowed' }, { status: 400 });
+    
+    // Enhanced file validation
+    const fileValidation = await validateFile(file);
+    if (!fileValidation.valid) {
+      return NextResponse.json({ error: fileValidation.error }, { status: 400 });
     }
 
     // Get file size

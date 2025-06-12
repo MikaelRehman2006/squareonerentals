@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { DB_CONFIG, logEnvStatus } from './envConfig';
 
 // Global is used here to maintain a cached connection across hot reloads
 // in development. This prevents connections growing exponentially
@@ -10,20 +11,8 @@ declare global {
 // Cached connection
 let cachedConnection: typeof mongoose | null = null;
 
-// Get MongoDB URI from environment variables, support both .env and .env.local
-let MONGODB_URI = process.env.MONGODB_URI;
-
 // Debug environment variables - safely log environment
-console.log('Environment check: NODE_ENV =', process.env.NODE_ENV);
-console.log('Available environment variables:', Object.keys(process.env).filter(key => !key.includes('SECRET')).join(', '));
-
-// If not found in environment variables, check if we're in development mode
-if (!MONGODB_URI) {
-  console.warn('MONGODB_URI not found in environment. Using fallback connection.');
-  
-  // Fall back to hardcoded URL for production as a last resort
-  MONGODB_URI = 'mongodb+srv://Mikael:He1enhunt@cluster0.lfya6.mongodb.net/squareonerentals?retryWrites=true&w=majority';
-}
+logEnvStatus();
 
 const options: mongoose.ConnectOptions = {
   maxPoolSize: 10,
@@ -34,6 +23,22 @@ const options: mongoose.ConnectOptions = {
   keepAliveInitialDelay: 300000, // 5 minutes
   retryWrites: true,
 };
+
+// Get MongoDB URI from environment variables, support both .env and .env.local
+let MONGODB_URI = process.env.MONGODB_URI;
+
+// If not found in environment variables, check if we're in development mode
+if (!MONGODB_URI) {
+  console.warn('MONGODB_URI not found in environment. Using fallback connection.');
+  
+  // Use a development fallback that doesn't expose credentials
+  if (process.env.NODE_ENV === 'development') {
+    MONGODB_URI = 'mongodb://localhost:27017/squareonerentals_dev';
+  } else {
+    // For production, always require proper environment configuration
+    console.error('No MongoDB connection string available. Database operations will fail.');
+  }
+}
 
 // Create the default connection
 export const connectDB = async (): Promise<typeof mongoose> => {
@@ -50,14 +55,15 @@ export const connectDB = async (): Promise<typeof mongoose> => {
     }
 
     // Check if MONGODB_URI is defined before using it
-    if (!MONGODB_URI) {
-      throw new Error('MONGODB_URI is not defined');
+    if (!DB_CONFIG.isConfigured) {
+      throw new Error('MONGODB_URI is not defined in environment variables');
     }
     
     // Safe logging of URI without password
-    console.log('MongoDB URI:', MONGODB_URI.replace(/:[^:@]+@/, ':****@'));
+    const safeUri = DB_CONFIG.uri.replace(/:[^:@]+@/, ':****@');
+    console.log('MongoDB URI:', safeUri);
 
-    const conn = await mongoose.connect(MONGODB_URI, options);
+    const conn = await mongoose.connect(DB_CONFIG.uri, options);
     
     console.log('MongoDB connection successful');
     

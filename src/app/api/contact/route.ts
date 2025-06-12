@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sendContactEmail } from '@/utils/sendgrid';
+import { contactFormRateLimit } from '@/lib/rateLimiter';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await contactFormRateLimit(request);
+  if (rateLimitResponse.status === 429) {
+    return rateLimitResponse;
+  }
+
   try {
     // Log that we received a contact form request
     console.log('Contact form submission received');
