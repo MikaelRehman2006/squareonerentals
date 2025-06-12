@@ -83,6 +83,8 @@ export async function POST(request: Request) {
     // Send welcome email
     try {
       console.log('Attempting to send welcome email to:', email);
+      console.log('EMAIL_API_KEY configured:', !!process.env.EMAIL_API_KEY);
+      console.log('EMAIL_API_KEY length:', process.env.EMAIL_API_KEY ? process.env.EMAIL_API_KEY.length : 0);
       
       const emailResult = await sendNotificationEmail({
         userEmail: email,
@@ -99,6 +101,11 @@ You can now start browsing listings or create your own listing by logging into y
       });
       
       console.log('Welcome email send result:', emailResult);
+      console.log('Welcome email details (success):', {
+        to: email,
+        from: 'squareone.rental@gmail.com',
+        subject: 'Welcome to Square One Rentals'
+      });
       
       // Create in-app notification
       console.log('Creating welcome notification for user:', user._id.toString());

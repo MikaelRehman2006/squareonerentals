@@ -139,57 +139,98 @@ interface ListingUpdateEmailParams {
  */
 export const sendNotificationEmail = async (params: NotificationEmailParams): Promise<boolean> => {
   try {
+    console.log('sendNotificationEmail called with params:', {
+      userEmail: params.userEmail,
+      userName: params.userName,
+      subject: params.subject,
+      type: params.notificationType
+    });
+    
     if (!EMAIL_CONFIG.isConfigured) {
       console.warn('Email API key not configured, skipping email sending');
+      console.warn('EMAIL_CONFIG details:', {
+        hasApiKey: !!EMAIL_CONFIG.apiKey,
+        apiKeyLength: EMAIL_CONFIG.apiKey ? EMAIL_CONFIG.apiKey.length : 0,
+        fromEmail: EMAIL_CONFIG.fromEmail,
+        isConfigured: EMAIL_CONFIG.isConfigured
+      });
       return false;
     }
 
     // Get template
-    const template = getTemplate('notification-template');
-    
-    // Prepare template data
-    const templateData = {
-      notification_title: params.notificationType === 'LISTING_UPDATE' 
-        ? 'Listing Update' 
-        : params.notificationType === 'PAYMENT'
-        ? 'Payment Notification'
-        : params.notificationType === 'WELCOME'
-        ? 'Welcome to Square One Rentals'
-        : 'Notification',
-      user_name: params.userName,
-      notification_message: params.message,
-      action_url: params.actionUrl || APP_URLS.notificationActionUrl,
-      action_text: params.actionText || 'Visit Square One Rentals',
-      unsubscribe_url: `${APP_URLS.baseUrl}/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=${params.notificationType.toLowerCase()}`,
-      preferences_url: `${APP_URLS.baseUrl}/settings#notifications`
-    };
-    
-    // Render HTML
-    const html = template(templateData);
-    
-    // Prepare email
-    const msg = {
-      to: params.userEmail,
-      from: {
-        email: EMAIL_CONFIG.fromEmail,
-        name: 'Square One Rentals'
-      },
-      subject: params.subject,
-      html,
-      trackingSettings: {
-        clickTracking: {
-          enable: true
+    try {
+      const template = getTemplate('notification-template');
+      console.log('Email template loaded successfully');
+      
+      // Prepare template data
+      const templateData = {
+        notification_title: params.notificationType === 'LISTING_UPDATE' 
+          ? 'Listing Update' 
+          : params.notificationType === 'PAYMENT'
+          ? 'Payment Notification'
+          : params.notificationType === 'WELCOME'
+          ? 'Welcome to Square One Rentals'
+          : 'Notification',
+        user_name: params.userName,
+        notification_message: params.message,
+        action_url: params.actionUrl || APP_URLS.notificationActionUrl,
+        action_text: params.actionText || 'Visit Square One Rentals',
+        unsubscribe_url: `${APP_URLS.baseUrl}/unsubscribe?email=${encodeURIComponent(params.userEmail)}&type=${params.notificationType.toLowerCase()}`,
+        preferences_url: `${APP_URLS.baseUrl}/settings#notifications`
+      };
+      
+      // Render HTML
+      const html = template(templateData);
+      
+      // Prepare email
+      const msg = {
+        to: params.userEmail,
+        from: {
+          email: EMAIL_CONFIG.fromEmail,
+          name: 'Square One Rentals'
         },
-        openTracking: {
-          enable: true
+        subject: params.subject,
+        html,
+        trackingSettings: {
+          clickTracking: {
+            enable: true
+          },
+          openTracking: {
+            enable: true
+          }
         }
+      };
+      
+      console.log('Attempting to send email with SendGrid to:', params.userEmail);
+      
+      // Send email
+      try {
+        await sgMail.send(msg);
+        console.log('Email sent successfully to:', params.userEmail);
+        return true;
+      } catch (sendError) {
+        console.error('SendGrid send error:', sendError);
+        if (sendError instanceof Error) {
+          console.error('SendGrid error details:', {
+            message: sendError.message,
+            stack: sendError.stack,
+            name: sendError.name
+          });
+          
+          // Log SendGrid API response if available
+          if ((sendError as any).response) {
+            console.error('SendGrid API response:', {
+              body: (sendError as any).response.body,
+              statusCode: (sendError as any).response.statusCode,
+            });
+          }
+        }
+        return false;
       }
-    };
-    
-    // Send email
-    await sgMail.send(msg);
-    
-    return true;
+    } catch (templateError) {
+      console.error('Template error:', templateError);
+      return false;
+    }
   } catch (error) {
     console.error('Error sending notification email:', error);
     return false;
