@@ -19,8 +19,6 @@ const nextConfig = {
   experimental: {
     // Treat query parameters separately from the path matching
     scrollRestoration: true,
-    // Ensure App Router features are enabled
-    appDir: true,
   },
   // Explicitly allow all query parameters
   async rewrites() {

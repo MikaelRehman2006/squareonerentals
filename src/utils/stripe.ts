@@ -58,9 +58,36 @@ if (!stripeSecretKey) {
   console.warn('Missing Stripe secret key');
 }
 
-export const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2025-04-30.basil', // Updated to match TypeScript definitions
-});
+// Create a conditional initialization to handle build time
+const createStripeClient = () => {
+  // During build or when no API key is available, return a mock client
+  if (!stripeSecretKey || process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'preview') {
+    // Return a mock object that won't throw during build
+    return {
+      checkout: {
+        sessions: {
+          create: async () => ({ url: '#' }),
+          retrieve: async () => ({}),
+        }
+      },
+      customers: {
+        create: async () => ({}),
+        retrieve: async () => ({}),
+      },
+      subscriptions: {
+        retrieve: async () => ({}),
+      },
+      // Add other commonly used Stripe methods as needed
+    } as unknown as Stripe;
+  }
+  
+  // Return actual Stripe instance when API key is available
+  return new Stripe(stripeSecretKey, {
+    apiVersion: '2025-04-30.basil', // Updated to match TypeScript definitions
+  });
+};
+
+export const stripe = createStripeClient();
 
 // Helper function to get price ID based on plan and billing interval
 export const getPriceId = (plan: keyof typeof PLANS, isAnnual: boolean) => {

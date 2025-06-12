@@ -4,12 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { createPaymentNotification } from '@/lib/notification';
-import Stripe from 'stripe';
-
-// Create Stripe instance with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-08-16' as any, // Using a compatible version and type assertion to avoid TS errors
-});
+import { stripe } from '@/utils/stripe';
 
 export async function POST(request: Request) {
   try {

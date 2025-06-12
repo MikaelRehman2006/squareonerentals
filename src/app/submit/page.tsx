@@ -247,20 +247,21 @@ export default function SubmitListingPage() {
   const [storageUsage, setStorageUsage] = useState(0);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
+  // Create a reusable function to fetch storage usage
+  const fetchStorageUsage = async () => {
+    try {
+      const response = await fetch('/api/users/me');
+      if (response.ok) {
+        const data = await response.json();
+        setStorageUsage(data.storageUsage?.bytes || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching storage usage:', error);
+    }
+  };
+
   // Fetch current storage usage when component mounts
   useEffect(() => {
-    const fetchStorageUsage = async () => {
-      try {
-        const response = await fetch('/api/users/me');
-        if (response.ok) {
-          const data = await response.json();
-          setStorageUsage(data.storageUsage?.bytes || 0);
-        }
-      } catch (error) {
-        console.error('Error fetching storage usage:', error);
-      }
-    };
-
     fetchStorageUsage();
   }, []);
   
