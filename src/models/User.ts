@@ -11,6 +11,11 @@ export interface IUser extends Document {
   favorites: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
+  preferences?: {
+    userTypes: string[];
+    city: string;
+    completedOnboarding: boolean;
+  };
   membership?: {
     type: 'BASIC' | 'FEATURED' | null;
     isAnnual: boolean;
@@ -30,6 +35,11 @@ const userSchema: Schema = new mongoose.Schema({
   password: { type: String },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
   favorites: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
+  preferences: {
+    userTypes: [{ type: String }],
+    city: { type: String },
+    completedOnboarding: { type: Boolean, default: false }
+  },
   membership: {
     type: { type: String, enum: ['BASIC', 'FEATURED', null], default: null },
     isAnnual: { type: Boolean, default: false },

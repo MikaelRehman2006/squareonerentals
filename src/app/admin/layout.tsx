@@ -13,15 +13,19 @@ import {
   BarChart3,
   Settings,
   Bell,
+  Home,
+  ClipboardList,
+  FileText,
 } from 'lucide-react';
 
-const navigation = [
+const adminTabs = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Users', href: '/admin/users', icon: Users },
-  { name: 'Listings', href: '/admin/listings', icon: Building2 },
+  { name: 'Listings', href: '/admin/listings', icon: Home },
+  { name: 'Survey Responses', href: '/admin/survey-responses', icon: ClipboardList },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
-  { name: 'Reports', href: '/admin/reports', icon: Flag },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Reports', href: '/admin/reports', icon: FileText },
+  { name: 'Settings', href: '/admin/settings', icon: Settings }
 ];
 
 export default function AdminLayout({
@@ -47,7 +51,7 @@ export default function AdminLayout({
         <div className="flex flex-col flex-grow border-r bg-background px-4 py-5">
           <div className="flex-1">
             <nav className="space-y-1">
-              {navigation.map((item) => {
+              {adminTabs.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
                 return (

@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { sendNotificationEmail } from '@/utils/sendgrid';
 import { createNotification } from '@/lib/notification';
+import { Notification } from '@/models/Notification';
 
 // Add password validation helper
 function validatePassword(password: string): { valid: boolean; message: string } {
@@ -79,6 +80,16 @@ export async function POST(request: Request) {
       name: user.name,
       hasPassword: !!user.password,
     });
+
+    // Clean up any old notifications for this email
+    try {
+      console.log('Cleaning up any old notifications for email:', email);
+      await Notification.deleteMany({ userId: user._id.toString() });
+      console.log('Old notifications cleaned up successfully');
+    } catch (cleanupError) {
+      console.error('Error cleaning up old notifications:', cleanupError);
+      // Don't throw the error, continue with registration
+    }
 
     // Create welcome notification first
     try {
