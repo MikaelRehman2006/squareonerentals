@@ -110,8 +110,26 @@ export async function POST(request: Request) {
         userId: user._id.toString()
       });
       
-      // Don't throw the error, but log it for debugging
-      // The registration should still succeed even if notification fails
+      // Try to reconnect to the database and create the notification again
+      try {
+        console.log('Attempting to reconnect and create welcome notification again...');
+        await connectDB();
+        const retryNotification = await createNotification({
+          userId: user._id.toString(),
+          message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
+          type: 'WELCOME'
+        });
+        
+        if (retryNotification) {
+          console.log('Welcome notification created successfully on retry:', {
+            id: retryNotification._id,
+            userId: retryNotification.userId,
+            type: retryNotification.type
+          });
+        }
+      } catch (retryError) {
+        console.error('Failed to create welcome notification on retry:', retryError);
+      }
     }
 
     // Send welcome email

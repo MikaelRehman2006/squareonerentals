@@ -59,6 +59,8 @@ export async function createNotification({
       type,
       message
     });
+    
+    // Re-throw the error to be handled by the caller
     throw error;
   }
 }

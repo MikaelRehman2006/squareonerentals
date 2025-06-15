@@ -93,8 +93,8 @@ export const connectDB = async (): Promise<typeof mongoose> => {
       name: error.name
     });
     
-    // Don't throw the error, return null instead to prevent app crashes
-    return null as any;
+    // Throw the error instead of returning null
+    throw new Error(`Failed to connect to MongoDB: ${error.message}`);
   }
 };
 
