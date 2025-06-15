@@ -269,11 +269,14 @@ export default function SubmitListingPage() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    // Convert FileList to Array for easier handling
+    const filesArray = Array.from(files);
+    
     // Update pending files for the storage bar visualization
-    setPendingFiles(Array.from(files));
+    setPendingFiles(filesArray);
     
     // Calculate total size of pending files
-    const totalPendingSize = Array.from(files).reduce((total, file) => total + file.size, 0);
+    const totalPendingSize = filesArray.reduce((total, file) => total + file.size, 0);
     console.log(`Total pending size: ${totalPendingSize} bytes`);
 
     try {
@@ -281,17 +284,17 @@ export default function SubmitListingPage() {
       
       // Check file size before upload (5MB limit per file)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-      for (let i = 0; i < files.length; i++) {
-        if (files[i].size > MAX_FILE_SIZE) {
+      for (const file of filesArray) {
+        if (file.size > MAX_FILE_SIZE) {
           toast.dismiss(loadingToast);
-          toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
+          toast.error(`File ${file.name} exceeds the 5MB size limit`);
           setPendingFiles([]); // Clear pending files on error
           return;
         }
         
-        if (!files[i].type.startsWith('image/')) {
+        if (!file.type.startsWith('image/')) {
           toast.dismiss(loadingToast);
-          toast.error(`File ${files[i].name} is not an image`);
+          toast.error(`File ${file.name} is not an image`);
           setPendingFiles([]); // Clear pending files on error
           return;
         }
@@ -346,9 +349,9 @@ export default function SubmitListingPage() {
         // Continue to image upload attempt - the upload API will also check membership status
       }
         
-      console.log('Starting image upload for', files.length, 'files');
+      console.log('Starting image upload for', filesArray.length, 'files');
       
-      const uploadPromises = Array.from(files).map(async (file) => {
+      const uploadPromises = filesArray.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
         console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
@@ -384,7 +387,6 @@ export default function SubmitListingPage() {
           throw new Error('No image URLs were returned from the upload');
         }
         
-        // This is the critical part - make sure we properly update state AND form value
         // Get the current images from the form 
         const currentFormImages = form.getValues('images') || [];
         console.log('Current form images:', currentFormImages);
@@ -799,6 +801,11 @@ export default function SubmitListingPage() {
                         className="bg-transparent text-gray-300 border-0 cursor-pointer file:mr-4 file:py-2 file:px-4
                           file:rounded-xl file:border-0 file:text-sm file:font-medium
                           file:bg-blue-600 file:text-white hover:file:bg-blue-500"
+                        onClick={(e) => {
+                          // Clear the input value when clicked to ensure onChange fires even if the same file is selected
+                          const target = e.target as HTMLInputElement;
+                          target.value = '';
+                        }}
                       />
                       <p className="text-sm text-gray-400 mt-2">
                         Drag and drop images here, or click to browse. Supported formats: JPG, PNG, WebP.
