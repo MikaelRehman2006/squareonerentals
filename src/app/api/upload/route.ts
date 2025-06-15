@@ -8,6 +8,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { existsSync } from 'fs';
 import { CLOUDINARY_CONFIG } from '@/lib/envConfig';
+import mongoose from 'mongoose';
 
 // Storage limits based on membership type (in bytes)
 const STORAGE_LIMITS = {
@@ -92,16 +93,18 @@ const validateFile = async (file: File): Promise<{ valid: boolean; error?: strin
 
 export async function POST(request: Request) {
   try {
-    // Cloudinary config at runtime - only need cloud_name and api_key for unsigned uploads
+    // Cloudinary config at runtime
     cloudinary.config({
       cloud_name: CLOUDINARY_CONFIG.cloudName,
       api_key: CLOUDINARY_CONFIG.apiKey,
+      api_secret: CLOUDINARY_CONFIG.apiSecret,
       secure: true,
     });
 
     console.log("Cloudinary ENV Check", {
       API_KEY: process.env.CLOUDINARY_API_KEY,
-      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+      HAS_SECRET: !!process.env.CLOUDINARY_API_SECRET
     });
 
     // Auth check
@@ -153,13 +156,16 @@ export async function POST(request: Request) {
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload using stream
+    // Upload using stream with signed upload
     const uploadResult = await new Promise<{ secure_url: string, public_id: string, bytes: number }>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          upload_preset: 'listings_upload',
           resource_type: 'image',
-          unsigned: true
+          folder: 'listings',
+          tags: ['listing', userId],
+          context: {
+            user_id: userId
+          }
         },
         (error, result) => {
           if (error) {
@@ -227,19 +233,39 @@ async function storeImageMetadata(metadata: {
   listingId?: string
 }) {
   try {
-    const response = await fetch('/api/images/metadata', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(metadata),
-    });
+    await connectDB();
     
-    if (!response.ok) {
-      throw new Error('Failed to store image metadata');
+    // Get or initialize the ImageMetadata model
+    let ImageMetadata: mongoose.Model<any>;
+    try {
+      ImageMetadata = mongoose.model('ImageMetadata');
+    } catch (e) {
+      const ImageMetadataSchema = new mongoose.Schema({
+        userId: { type: String, required: true, index: true },
+        url: { type: String, required: true, unique: true },
+        publicId: { type: String, required: true },
+        size: { type: Number, required: true },
+        listingId: { type: String, index: true },
+        createdAt: { type: Date, default: Date.now }
+      });
+      
+      ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
     }
-    
-    return await response.json();
+
+    // Create or update the image metadata
+    const result = await ImageMetadata.findOneAndUpdate(
+      { url: metadata.url },
+      {
+        userId: metadata.userId,
+        url: metadata.url,
+        publicId: metadata.publicId,
+        size: metadata.size,
+        listingId: metadata.listingId || null
+      },
+      { upsert: true, new: true }
+    );
+
+    return result;
   } catch (error) {
     console.error("Error storing image metadata:", error);
     throw error;
