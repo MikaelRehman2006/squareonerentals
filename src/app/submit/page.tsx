@@ -41,6 +41,8 @@ const listingSchema = z.object({
   bathrooms: z.number().min(0, 'Number of bathrooms must be positive'),
   amenities: z.array(z.string()).default([]),
   buildingAmenities: z.array(z.string()).default([]),
+  features: z.array(z.string()).default([]),
+  utilities: z.array(z.string()).default([]),
   propertyType: z.string().min(1, 'Property type is required'),
   listingType: z.string().min(1, 'Listing type is required'),
   leaseType: z.string().min(1, 'Lease type is required'),
@@ -48,36 +50,6 @@ const listingSchema = z.object({
   parking: z.string().default('None'),
   featured: z.boolean().default(false),
   status: z.string().default('ACTIVE'),
-  features: z.object({
-    wifi: z.boolean().default(false),
-    airConditioning: z.boolean().default(false),
-    laundry: z.boolean().default(false),
-    heating: z.boolean().default(false),
-    furnished: z.boolean().default(false),
-    smartHomeFeatures: z.boolean().default(false),
-    walkInCloset: z.boolean().default(false),
-  }).default({
-    wifi: false,
-    airConditioning: false,
-    laundry: false,
-    heating: false,
-    furnished: false,
-    smartHomeFeatures: false,
-    walkInCloset: false,
-  }),
-  utilities: z.object({
-    electricity: z.boolean().default(false),
-    gas: z.boolean().default(false),
-    water: z.boolean().default(false),
-    internet: z.boolean().default(false),
-    trashCollection: z.boolean().default(false),
-  }).default({
-    electricity: false,
-    gas: false,
-    water: false,
-    internet: false,
-    trashCollection: false,
-  }),
   phoneNumber: z.string().optional(),
   facebookUrl: z.string().url("Please enter a valid Facebook URL").optional(),
 });
@@ -147,6 +119,8 @@ export default function SubmitListingPage() {
       bathrooms: 0,
       amenities: [],
       buildingAmenities: [],
+      features: [],
+      utilities: [],
       propertyType: 'APARTMENT',
       listingType: 'LONG_TERM',
       leaseType: '',
@@ -154,22 +128,8 @@ export default function SubmitListingPage() {
       parking: 'None',
       featured: false,
       status: 'ACTIVE',
-      features: {
-        wifi: false,
-        airConditioning: false,
-        laundry: false,
-        heating: false,
-        furnished: false,
-        smartHomeFeatures: false,
-        walkInCloset: false,
-      },
-      utilities: {
-        electricity: false,
-        gas: false,
-        water: false,
-        internet: false,
-        trashCollection: false,
-      },
+      phoneNumber: '',
+      facebookUrl: '',
     },
   });
 
@@ -199,22 +159,8 @@ export default function SubmitListingPage() {
         ? prev.filter(a => a !== feature)
         : [...prev, feature];
       
-      // Convert feature names to object keys
-      const featureObj = {
-        wifi: false,
-        airConditioning: false,
-        laundry: false,
-        heating: false,
-        furnished: false,
-        smartHomeFeatures: false,
-        walkInCloset: false,
-        ...newFeatures.reduce((acc, curr) => ({
-          ...acc,
-          [curr.toLowerCase().replace(/\s+/g, '')]: true
-        }), {})
-      };
-      
-      form.setValue('features', featureObj);
+      // Update form state with the new features array
+      form.setValue('features', newFeatures, { shouldValidate: true });
       return newFeatures;
     });
   };
@@ -225,20 +171,8 @@ export default function SubmitListingPage() {
         ? prev.filter(a => a !== utility)
         : [...prev, utility];
       
-      // Convert utility names to object keys
-      const utilityObj = {
-        electricity: false,
-        gas: false,
-        water: false,
-        internet: false,
-        trashCollection: false,
-        ...newUtilities.reduce((acc, curr) => ({
-          ...acc,
-          [curr.toLowerCase().replace(/\s+/g, '')]: true
-        }), {})
-      };
-      
-      form.setValue('utilities', utilityObj);
+      // Update form state with the new utilities array
+      form.setValue('utilities', newUtilities, { shouldValidate: true });
       return newUtilities;
     });
   };
@@ -492,49 +426,6 @@ export default function SubmitListingPage() {
       setSubmitting(true);
       const loadingToast = toast.loading('Submitting your listing...');
 
-      // Debug any potential issues
-      console.log('Data object keys:', Object.keys(data));
-      console.log('Features data type:', typeof data.features);
-      console.log('Features value:', data.features);
-      
-      // Convert features object to array - more robust handling
-      let featureArray: string[] = [];
-      if (data.features && typeof data.features === 'object') {
-        featureArray = Object.entries(data.features)
-          .filter(([_, value]) => value === true)
-          .map(([key, _]) => {
-            // Convert camelCase to readable format (e.g., 'airConditioning' to 'Air Conditioning')
-            return key.replace(/([A-Z])/g, ' $1')
-              .replace(/^./, str => str.toUpperCase());
-          });
-      } else if (selectedFeatures.length > 0) {
-        // Fallback to selectedFeatures if form data doesn't have features
-        featureArray = selectedFeatures;
-      }
-      console.log('Final feature array:', featureArray);
-
-      // Convert utilities object to array - more robust handling
-      let utilitiesArray: string[] = [];
-      if (data.utilities && typeof data.utilities === 'object') {
-        utilitiesArray = Object.entries(data.utilities)
-          .filter(([_, value]) => value === true)
-          .map(([key, _]) => {
-            // Convert camelCase to readable format (e.g., 'trashCollection' to 'Trash Collection')
-            return key.replace(/([A-Z])/g, ' $1')
-              .replace(/^./, str => str.toUpperCase());
-          });
-      } else if (selectedUtilities.length > 0) {
-        // Fallback to selectedUtilities if form data doesn't have utilities
-        utilitiesArray = selectedUtilities;
-      }
-      console.log('Final utilities array:', utilitiesArray);
-      
-      // Log what we're submitting
-      console.log('Selected amenities before submission:', selectedAmenities);
-      console.log('Selected features before submission:', selectedFeatures);
-      console.log('Selected utilities before submission:', selectedUtilities);
-      console.log('Uploaded images before submission:', uploadedImages);
-      
       // Get the current address value from both sources
       const addressInputValue = document.querySelector('[name=address]') ? 
                              (document.querySelector('[name=address]') as HTMLInputElement).value : 
@@ -551,12 +442,11 @@ export default function SubmitListingPage() {
         address: addressInputValue,
         phoneNumber: data.phoneNumber || '',
         facebookUrl: data.facebookUrl || '',
-        // Important: Use the directly selected items for submission
         images: uploadedImages,
-        amenities: JSON.stringify(selectedAmenities),
-        buildingAmenities: JSON.stringify(selectedAmenities),
-        features: JSON.stringify(selectedFeatures),
-        utilities: JSON.stringify(selectedUtilities),
+        amenities: selectedAmenities,
+        buildingAmenities: selectedAmenities,
+        features: selectedFeatures,
+        utilities: selectedUtilities,
         squareFeet: Number(data.squareFeet) || 0,
         bedrooms: Number(data.bedrooms) || 0,
         bathrooms: Number(data.bathrooms) || 0,

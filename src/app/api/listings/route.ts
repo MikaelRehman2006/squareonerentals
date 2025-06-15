@@ -83,6 +83,22 @@ const validateAddress = (address: string): string => {
 
 // Sanitize listing input
 const sanitizeListingInput = (data: any): IListingInput => {
+  // Helper function to ensure we have an array
+  const ensureArray = (value: any): string[] => {
+    if (Array.isArray(value)) {
+      return value.map(sanitizeString);
+    }
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed.map(sanitizeString) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   return {
     title: sanitizeString(data.title || ''),
     description: sanitizeString(data.description || ''),
@@ -93,10 +109,10 @@ const sanitizeListingInput = (data: any): IListingInput => {
     bedrooms: sanitizeNumber(data.bedrooms),
     bathrooms: sanitizeNumber(data.bathrooms),
     squareFeet: sanitizeNumber(data.squareFeet),
-    amenities: Array.isArray(data.amenities) ? data.amenities.map(sanitizeString) : [],
-    buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities.map(sanitizeString) : [],
-    features: Array.isArray(data.features) ? data.features.map(sanitizeString) : [],
-    utilities: Array.isArray(data.utilities) ? data.utilities.map(sanitizeString) : [],
+    amenities: ensureArray(data.amenities),
+    buildingAmenities: ensureArray(data.buildingAmenities),
+    features: ensureArray(data.features),
+    utilities: ensureArray(data.utilities),
     propertyType: sanitizeString(data.propertyType || ''),
     listingType: sanitizeString(data.listingType || ''),
     leaseType: sanitizeString(data.leaseType || ''),
