@@ -8,6 +8,7 @@ import AuthProvider from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import dynamicImport from 'next/dynamic';
+import PostSignupSurvey from '@/components/PostSignupSurvey';
 
 // Add dynamic export to prevent prerendering issues
 export const dynamic = 'force-dynamic';
@@ -56,6 +57,7 @@ export default function RootLayout({
           <MuiThemeProvider>
             <AuthProvider>
               <NotificationBadgesRenderer />
+              <PostSignupSurvey />
               <div className="flex flex-col min-h-screen">
                 <Navbar />
                 <main className="flex-grow">

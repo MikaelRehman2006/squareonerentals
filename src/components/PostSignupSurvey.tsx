@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,10 +20,31 @@ const CANADIAN_CITIES = [
   'London', 'Victoria', 'Halifax', 'Oshawa', 'Windsor'
 ];
 
-export default function PostSignupSurvey({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function PostSignupSurvey() {
+  const { data: session } = useSession();
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [step, setStep] = useState(1);
+
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch('/api/user/preferences');
+          const data = await response.json();
+          
+          if (!data.preferences?.onboardingCompleted) {
+            setIsOpen(true);
+          }
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+        }
+      }
+    };
+
+    checkOnboardingStatus();
+  }, [session]);
 
   const handleTypeToggle = (typeId: string) => {
     setSelectedTypes(prev => 
@@ -39,7 +61,8 @@ export default function PostSignupSurvey({ isOpen, onClose }: { isOpen: boolean;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userTypes: selectedTypes,
-          city: selectedCity
+          city: selectedCity,
+          onboardingCompleted: true
         })
       });
 
@@ -48,14 +71,16 @@ export default function PostSignupSurvey({ isOpen, onClose }: { isOpen: boolean;
       }
 
       toast.success('Preferences saved successfully!');
-      onClose();
+      setIsOpen(false);
     } catch (error) {
       toast.error('Failed to save preferences. Please try again.');
     }
   };
 
+  if (!session) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">

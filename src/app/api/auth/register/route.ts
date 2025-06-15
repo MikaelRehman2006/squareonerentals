@@ -68,9 +68,14 @@ export async function POST(request: Request) {
     const user = await User.create({
       name,
       email,
-      password: hashedPassword, // Make sure this matches the User model
+      password: hashedPassword,
       role: 'USER',
       emailVerified: null,
+      preferences: {
+        userTypes: [],
+        city: '',
+        onboardingCompleted: false
+      }
     });
 
     // Log the created user for debugging
