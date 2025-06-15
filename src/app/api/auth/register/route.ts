@@ -80,6 +80,25 @@ export async function POST(request: Request) {
       hasPassword: !!user.password,
     });
 
+    // Create welcome notification first
+    try {
+      console.log('Creating welcome notification for user:', user._id.toString());
+      
+      const notification = await createNotification({
+        userId: user._id.toString(),
+        message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
+        type: 'WELCOME'
+      });
+      
+      console.log('Welcome notification created:', notification ? 'success' : 'failed');
+    } catch (notificationError) {
+      console.error('Error creating welcome notification:', notificationError);
+      console.error('Error details:', {
+        error: notificationError instanceof Error ? notificationError.message : 'Unknown error',
+        stack: notificationError instanceof Error ? notificationError.stack : 'No stack trace',
+      });
+    }
+
     // Send welcome email
     try {
       console.log('Attempting to send welcome email to:', email);
@@ -106,17 +125,6 @@ You can now start browsing listings or create your own listing by logging into y
         from: 'squareone.rental@gmail.com',
         subject: 'Welcome to Square One Rentals'
       });
-      
-      // Create in-app notification
-      console.log('Creating welcome notification for user:', user._id.toString());
-      
-      const notification = await createNotification({
-        userId: user._id.toString(),
-        message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
-        type: 'WELCOME'
-      });
-      
-      console.log('Welcome notification created:', notification ? 'success' : 'failed');
     } catch (emailError) {
       // Log error but don't fail registration
       console.error('Error sending welcome email:', emailError);
