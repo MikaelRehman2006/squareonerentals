@@ -358,24 +358,19 @@ export default function SubmitListingPage() {
           body: formData,
         });
 
-        let result;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            result = await response.json();
-          } catch (e) {
-            result = { error: 'Invalid JSON response from server.' };
-          }
-        } else {
-          result = { error: 'No JSON response from server.' };
-        }
-
         if (!response.ok) {
-          console.error(`Upload error for file ${file.name}:`, result, 'Status:', response.status, 'Method:', response.type);
-          throw new Error(result.error || `Upload failed for ${file.name}`);
+          const errorData = await response.json();
+          console.error(`Upload error for file ${file.name}:`, errorData);
+          throw new Error(errorData.error || `Upload failed for ${file.name}`);
         }
 
+        const result = await response.json();
         console.log('Upload success for file', file.name, ':', result);
+        
+        if (!result.secure_url) {
+          throw new Error(`No secure URL returned for ${file.name}`);
+        }
+        
         return result.secure_url;
       });
 
@@ -384,6 +379,36 @@ export default function SubmitListingPage() {
       try {
         newImageUrls = await Promise.all(uploadPromises);
         console.log('All uploads complete, new image URLs:', newImageUrls);
+        
+        if (!newImageUrls || newImageUrls.length === 0) {
+          throw new Error('No image URLs were returned from the upload');
+        }
+        
+        // This is the critical part - make sure we properly update state AND form value
+        // Get the current images from the form 
+        const currentFormImages = form.getValues('images') || [];
+        console.log('Current form images:', currentFormImages);
+        
+        // Combine existing with new images
+        const updatedImages = [...currentFormImages, ...newImageUrls];
+        console.log('Updated image array:', updatedImages);
+        
+        // Update state
+        setUploadedImages(updatedImages);
+        
+        // Explicitly set form value with the combined images
+        form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
+
+        toast.dismiss(loadingToast);
+        toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
+        
+        // Reset file input but keep the images in state
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        
+        // Refresh storage usage after successful upload
+        fetchStorageUsage();
       } catch (error: any) {
         toast.dismiss(loadingToast);
         
@@ -422,39 +447,6 @@ export default function SubmitListingPage() {
         setPendingFiles([]);
         return;
       }
-      
-      // If we get here and don't have newImageUrls, return early
-      if (!newImageUrls || newImageUrls.length === 0) {
-        toast.dismiss(loadingToast);
-        setPendingFiles([]);
-        return;
-      }
-      
-      // This is the critical part - make sure we properly update state AND form value
-      // Get the current images from the form 
-      const currentFormImages = form.getValues('images') || [];
-      console.log('Current form images:', currentFormImages);
-      
-      // Combine existing with new images
-      const updatedImages = [...currentFormImages, ...newImageUrls];
-      console.log('Updated image array:', updatedImages);
-      
-      // Update state
-      setUploadedImages(updatedImages);
-      
-      // Explicitly set form value with the combined images
-      form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
-
-      toast.dismiss(loadingToast);
-      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
-      
-      // Reset file input but keep the images in state
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      
-      // Refresh storage usage after successful upload
-      fetchStorageUsage();
     } catch (error) {
       console.error('Upload error:', error);
       toast.dismiss();

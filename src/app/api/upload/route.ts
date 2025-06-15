@@ -198,8 +198,10 @@ export async function POST(request: Request) {
       // Continue anyway - the image was uploaded successfully
     }
 
+    // Ensure we're sending the correct response format
     return NextResponse.json({
-      ...uploadResult,
+      secure_url: uploadResult.secure_url,
+      public_id: uploadResult.public_id,
       size: uploadResult.bytes || fileSize
     });
   } catch (error) {
