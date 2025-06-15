@@ -93,25 +93,16 @@ const validateFile = async (file: File): Promise<{ valid: boolean; error?: strin
 
 export async function POST(request: Request) {
   try {
-    // Add CORS headers to the response
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
-    };
-
-    // Cloudinary config at runtime
+    // Cloudinary config at runtime - only need cloud_name and api_key for unsigned uploads
     cloudinary.config({
       cloud_name: CLOUDINARY_CONFIG.cloudName,
       api_key: CLOUDINARY_CONFIG.apiKey,
-      api_secret: CLOUDINARY_CONFIG.apiSecret,
       secure: true,
     });
 
     console.log("Cloudinary ENV Check", {
       API_KEY: process.env.CLOUDINARY_API_KEY,
-      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
-      HAS_SECRET: !!process.env.CLOUDINARY_API_SECRET
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME
     });
 
     // Auth check
@@ -127,7 +118,6 @@ export async function POST(request: Request) {
     }
 
     // Storage check - get user's current storage usage
-    // This is an estimation based on the user's uploaded images
     const userId = user._id.toString();
     const storageUsed = await getUserStorageUsed(userId);
     
@@ -163,16 +153,14 @@ export async function POST(request: Request) {
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Upload using stream with signed upload
+    // Upload using stream with unsigned upload
     const uploadResult = await new Promise<{ secure_url: string, public_id: string, bytes: number }>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           resource_type: 'image',
           folder: 'listings',
-          tags: ['listing', userId],
-          context: {
-            user_id: userId
-          }
+          upload_preset: 'listings_upload', // Use an unsigned upload preset
+          unsigned: true
         },
         (error, result) => {
           if (error) {
@@ -210,7 +198,7 @@ export async function POST(request: Request) {
       secure_url: uploadResult.secure_url,
       public_id: uploadResult.public_id,
       size: uploadResult.bytes || fileSize
-    }, { headers });
+    });
   } catch (error) {
     console.error("Upload Failed:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });

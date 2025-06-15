@@ -416,11 +416,14 @@ export default function EditListingPage({ params }: { params: { listingId: strin
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Store the files for the storage usage bar
-    setPendingFiles(Array.from(files));
+    // Convert FileList to Array for easier handling
+    const filesArray = Array.from(files);
+    
+    // Update pending files for the storage bar visualization
+    setPendingFiles(filesArray);
     
     // Calculate total size of pending files
-    const totalPendingSize = Array.from(files).reduce((total, file) => total + file.size, 0);
+    const totalPendingSize = filesArray.reduce((total, file) => total + file.size, 0);
     console.log(`Total pending size: ${totalPendingSize} bytes`);
 
     try {
@@ -428,22 +431,22 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       
       // Check file size before upload (5MB limit per file)
       const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-      for (let i = 0; i < files.length; i++) {
-        if (files[i].size > MAX_FILE_SIZE) {
+      for (const file of filesArray) {
+        if (file.size > MAX_FILE_SIZE) {
           toast.dismiss(loadingToast);
-          toast.error(`File ${files[i].name} exceeds the 5MB size limit`);
+          toast.error(`File ${file.name} exceeds the 5MB size limit`);
           setPendingFiles([]); // Clear pending files on error
           return;
         }
         
-        if (!files[i].type.startsWith('image/')) {
+        if (!file.type.startsWith('image/')) {
           toast.dismiss(loadingToast);
-          toast.error(`File ${files[i].name} is not an image`);
+          toast.error(`File ${file.name} is not an image`);
           setPendingFiles([]); // Clear pending files on error
           return;
         }
       }
-      
+
       // Check membership status and storage limit before attempting upload
       try {
         const membershipResponse = await fetch('/api/users/me');
@@ -492,8 +495,10 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         console.error('Error checking membership status:', membershipError);
         // Continue to image upload attempt - the upload API will also check membership status
       }
-
-      const uploadPromises = Array.from(files).map(async (file) => {
+        
+      console.log('Starting image upload for', filesArray.length, 'files');
+      
+      const uploadPromises = filesArray.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
         console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
@@ -503,24 +508,19 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           body: formData,
         });
 
-        let result;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            result = await response.json();
-          } catch (e) {
-            result = { error: 'Invalid JSON response from server.' };
-          }
-        } else {
-          result = { error: 'No JSON response from server.' };
-        }
-
         if (!response.ok) {
-          console.error(`Upload error for file ${file.name}:`, result, 'Status:', response.status, 'Method:', response.type);
-          throw new Error(result.error || `Upload failed for ${file.name}`);
+          const errorData = await response.json();
+          console.error(`Upload error for file ${file.name}:`, errorData);
+          throw new Error(errorData.error || `Upload failed for ${file.name}`);
         }
 
+        const result = await response.json();
         console.log('Upload success for file', file.name, ':', result);
+        
+        if (!result.secure_url) {
+          throw new Error(`No secure URL returned for ${file.name}`);
+        }
+        
         return result.secure_url;
       });
 
@@ -529,6 +529,43 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       try {
         newImageUrls = await Promise.all(uploadPromises);
         console.log('All uploads complete, new image URLs:', newImageUrls);
+        
+        if (!newImageUrls || newImageUrls.length === 0) {
+          throw new Error('No image URLs were returned from the upload');
+        }
+        
+        // Get the current images from the form 
+        const currentFormImages = form.getValues('images') || [];
+        console.log('Current form images:', currentFormImages);
+        
+        // Combine existing with new images
+        const updatedImages = [...currentFormImages, ...newImageUrls];
+        console.log('Updated image array:', updatedImages);
+        
+        // Update state
+        setUploadedImages(updatedImages);
+        
+        // Explicitly set form value with the combined images
+        form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
+
+        toast.dismiss(loadingToast);
+        toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
+        
+        // Reset file input but keep the images in state
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        
+        // Refresh storage usage after successful upload
+        try {
+          const response = await fetch('/api/users/me');
+          if (response.ok) {
+            const data = await response.json();
+            setStorageUsage(data.storageUsage?.bytes || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching updated storage usage:', error);
+        }
       } catch (error: any) {
         toast.dismiss(loadingToast);
         
@@ -567,49 +604,6 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         setPendingFiles([]);
         return;
       }
-      
-      // If we get here and don't have newImageUrls, return early
-      if (!newImageUrls || newImageUrls.length === 0) {
-        toast.dismiss(loadingToast);
-        setPendingFiles([]);
-        return;
-      }
-      
-      // Get the current images from the form 
-      const currentFormImages = form.getValues('images') || [];
-      console.log('Current form images:', currentFormImages);
-      
-      // Combine existing with new images
-      const updatedImages = [...currentFormImages, ...newImageUrls];
-      console.log('Updated image array:', updatedImages);
-      
-      // Update state
-      setUploadedImages(updatedImages);
-      
-      // Explicitly set form value with the combined images
-      form.setValue('images', updatedImages, { shouldValidate: true, shouldDirty: true });
-
-      toast.dismiss(loadingToast);
-      toast.success(`${newImageUrls.length} image(s) uploaded successfully!`);
-      
-      // Reset file input but keep the images in state
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      
-      // Clear pending files
-      setPendingFiles([]);
-      
-      // Refresh storage usage
-      try {
-        const response = await fetch('/api/users/me');
-        if (response.ok) {
-          const data = await response.json();
-          setStorageUsage(data.storageUsage?.bytes || 0);
-        }
-      } catch (error) {
-        console.error('Error fetching updated storage usage:', error);
-      }
     } catch (error) {
       console.error('Upload error:', error);
       toast.dismiss();
@@ -619,8 +613,8 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      
-      // Clear pending files
+    } finally {
+      // Clear pending files after upload attempt
       setPendingFiles([]);
     }
   };
