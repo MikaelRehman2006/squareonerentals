@@ -93,6 +93,13 @@ const validateFile = async (file: File): Promise<{ valid: boolean; error?: strin
 
 export async function POST(request: Request) {
   try {
+    // Add CORS headers to the response
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'
+    };
+
     // Cloudinary config at runtime
     cloudinary.config({
       cloud_name: CLOUDINARY_CONFIG.cloudName,
@@ -203,7 +210,7 @@ export async function POST(request: Request) {
       secure_url: uploadResult.secure_url,
       public_id: uploadResult.public_id,
       size: uploadResult.bytes || fileSize
-    });
+    }, { headers });
   } catch (error) {
     console.error("Upload Failed:", error);
     return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
@@ -280,7 +287,8 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+      'Access-Control-Max-Age': '86400'
     }
   });
 }

@@ -14,11 +14,11 @@ const securityHeaders = {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://res.cloudinary.com https://widget.cloudinary.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "img-src 'self' data: https: blob:; " +
+    "img-src 'self' data: https: blob: https://res.cloudinary.com; " +
     "font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; " +
-    "connect-src 'self' https://api.cloudinary.com https://vitals.vercel-insights.com https://api.stripe.com; " +
+    "connect-src 'self' https://api.cloudinary.com https://vitals.vercel-insights.com https://api.stripe.com https://*.cloudinary.com; " +
     "frame-src https://js.stripe.com https://hooks.stripe.com; " +
-    "media-src 'self' https://res.cloudinary.com;"
+    "media-src 'self' https://res.cloudinary.com blob:;"
 };
 
 export default withAuth(
