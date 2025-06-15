@@ -17,8 +17,19 @@ export async function createNotification({
   try {
     console.log(`Creating ${type} notification for user ${userId}`);
     
-    await connectDB();
+    // Ensure we have a valid MongoDB connection
+    const db = await connectDB();
+    if (!db) {
+      throw new Error('Failed to connect to database');
+    }
     
+    // Validate the notification type
+    const validTypes = ['MESSAGE', 'LISTING_UPDATE', 'FAVORITE', 'SYSTEM', 'NEWSLETTER', 'MARKETING', 'PAYMENT', 'WELCOME'];
+    if (!validTypes.includes(type)) {
+      throw new Error(`Invalid notification type: ${type}`);
+    }
+    
+    // Create the notification
     const notification = await Notification.create({
       userId,
       message,
@@ -28,12 +39,26 @@ export async function createNotification({
       read: false,
     });
     
-    console.log(`Notification created successfully with ID: ${notification._id}`);
+    if (!notification) {
+      throw new Error('Failed to create notification - no notification object returned');
+    }
     
-    // Email notifications are now handled separately
+    console.log(`Notification created successfully:`, {
+      id: notification._id,
+      userId: notification.userId,
+      type: notification.type,
+      message: notification.message
+    });
+    
     return notification;
   } catch (error) {
-    console.error('Error creating notification:', error);
+    console.error('Error creating notification:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      userId,
+      type,
+      message
+    });
     throw error;
   }
 }

@@ -84,19 +84,34 @@ export async function POST(request: Request) {
     try {
       console.log('Creating welcome notification for user:', user._id.toString());
       
+      // Ensure we have a valid MongoDB connection
+      await connectDB();
+      
       const notification = await createNotification({
         userId: user._id.toString(),
         message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
         type: 'WELCOME'
       });
       
-      console.log('Welcome notification created:', notification ? 'success' : 'failed');
+      if (!notification) {
+        throw new Error('Failed to create welcome notification - no notification object returned');
+      }
+      
+      console.log('Welcome notification created successfully:', {
+        id: notification._id,
+        userId: notification.userId,
+        type: notification.type
+      });
     } catch (notificationError) {
       console.error('Error creating welcome notification:', notificationError);
       console.error('Error details:', {
         error: notificationError instanceof Error ? notificationError.message : 'Unknown error',
         stack: notificationError instanceof Error ? notificationError.stack : 'No stack trace',
+        userId: user._id.toString()
       });
+      
+      // Don't throw the error, but log it for debugging
+      // The registration should still succeed even if notification fails
     }
 
     // Send welcome email

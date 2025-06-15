@@ -179,9 +179,18 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           status: data.status || 'ACTIVE',
           phoneNumber: data.phoneNumber || '',
           facebookUrl: data.facebookUrl || '',
+          amenities: Array.isArray(data.amenities) ? data.amenities : [],
+          buildingAmenities: Array.isArray(data.buildingAmenities) ? data.buildingAmenities : [],
           features: Array.isArray(data.features) ? data.features : [],
           utilities: Array.isArray(data.utilities) ? data.utilities : [],
+          images: Array.isArray(data.images) ? data.images : [],
         });
+        
+        // Set the state for selected items
+        setSelectedAmenities(Array.isArray(data.amenities) ? data.amenities : []);
+        setSelectedFeatures(Array.isArray(data.features) ? data.features : []);
+        setSelectedUtilities(Array.isArray(data.utilities) ? data.utilities : []);
+        setUploadedImages(Array.isArray(data.images) ? data.images : []);
         
         console.log('Loaded listing data:', data);
         
@@ -249,106 +258,6 @@ export default function EditListingPage({ params }: { params: { listingId: strin
             form.trigger('description');
           }
         }, 300);
-        
-        // Set uploaded images
-        if (data.images && Array.isArray(data.images)) {
-          console.log('Loading images from listing data:', data.images);
-          setUploadedImages(data.images);
-          
-          // Ensure images are properly set in the form
-          form.setValue('images', data.images);
-        }
-        
-        // Set amenities and building amenities with better parsing
-        if (data.amenities) {
-          try {
-            const parsedAmenities = typeof data.amenities === 'string' 
-              ? JSON.parse(data.amenities) 
-              : data.amenities;
-            setSelectedAmenities(Array.isArray(parsedAmenities) ? parsedAmenities : []);
-          } catch (e) {
-            console.error('Error parsing amenities:', e);
-            setSelectedAmenities([]);
-          }
-        }
-
-        // Parse building amenities carefully
-        if (data.buildingAmenities) {
-          try {
-            let parsedBuildingAmenities;
-            if (typeof data.buildingAmenities === 'string') {
-              parsedBuildingAmenities = JSON.parse(data.buildingAmenities);
-              console.log('Parsed building amenities from string:', parsedBuildingAmenities);
-            } else if (Array.isArray(data.buildingAmenities)) {
-              parsedBuildingAmenities = data.buildingAmenities;
-              console.log('Building amenities already array:', parsedBuildingAmenities);
-            } else {
-              // If it's another format, convert to empty array
-              parsedBuildingAmenities = [];
-              console.log('Building amenities unknown format, using empty array');
-            }
-            
-            // Make sure it's definitely an array
-            const amenitiesArray = Array.isArray(parsedBuildingAmenities) ? parsedBuildingAmenities : [];
-            form.setValue('buildingAmenities', amenitiesArray);
-            console.log('Final building amenities set to:', amenitiesArray);
-          } catch (e) {
-            console.error('Error parsing building amenities:', e);
-            form.setValue('buildingAmenities', []);
-          }
-        }
-        
-        // Parse features carefully
-        if (data.features) {
-          try {
-            let parsedFeatures;
-            if (typeof data.features === 'string') {
-              parsedFeatures = JSON.parse(data.features);
-              console.log('Parsed features from string:', parsedFeatures);
-            } else if (Array.isArray(data.features)) {
-              parsedFeatures = data.features;
-              console.log('Features already array:', parsedFeatures);
-            } else {
-              parsedFeatures = [];
-              console.log('Features unknown format, using empty array');
-            }
-            
-            const featuresArray = Array.isArray(parsedFeatures) ? parsedFeatures : [];
-            form.setValue('features', featuresArray);
-            setSelectedFeatures(featuresArray);
-            console.log('Final features set to:', featuresArray);
-          } catch (e) {
-            console.error('Error parsing features:', e);
-            form.setValue('features', []);
-            setSelectedFeatures([]);
-          }
-        }
-        
-        // Parse utilities carefully
-        if (data.utilities) {
-          try {
-            let parsedUtilities;
-            if (typeof data.utilities === 'string') {
-              parsedUtilities = JSON.parse(data.utilities);
-              console.log('Parsed utilities from string:', parsedUtilities);
-            } else if (Array.isArray(data.utilities)) {
-              parsedUtilities = data.utilities;
-              console.log('Utilities already array:', parsedUtilities);
-            } else {
-              parsedUtilities = [];
-              console.log('Utilities unknown format, using empty array');
-            }
-            
-            const utilitiesArray = Array.isArray(parsedUtilities) ? parsedUtilities : [];
-            form.setValue('utilities', utilitiesArray);
-            setSelectedUtilities(utilitiesArray);
-            console.log('Final utilities set to:', utilitiesArray);
-          } catch (e) {
-            console.error('Error parsing utilities:', e);
-            form.setValue('utilities', []);
-            setSelectedUtilities([]);
-          }
-        }
         
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch listing');
