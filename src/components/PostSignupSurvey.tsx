@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
-import { CheckCircle2, Info, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { CheckCircle2, Info, ChevronsUpDown, Loader2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -105,6 +105,8 @@ export default function PostSignupSurvey() {
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openCityPopover, setOpenCityPopover] = useState(false);
+  const [cityInput, setCityInput] = useState('');
+  const [cities, setCities] = useState<string[]>([]);
   
   // Form state for each user type
   const [formData, setFormData] = useState<FormData>({
@@ -239,6 +241,29 @@ export default function PostSignupSurvey() {
     }
   };
 
+  // Add city to list
+  const handleAddCity = () => {
+    const trimmed = cityInput.trim();
+    if (trimmed && !cities.includes(trimmed)) {
+      setCities([...cities, trimmed]);
+      setCityInput('');
+      handleFormChange('city', [...cities, trimmed].join(', '));
+    }
+  };
+  // Remove city from list
+  const handleRemoveCity = (city: string) => {
+    const updated = cities.filter(c => c !== city);
+    setCities(updated);
+    handleFormChange('city', updated.join(', '));
+  };
+
+  // On mount, load from formData if present
+  useEffect(() => {
+    if (formData.city) {
+      setCities(formData.city.split(',').map(c => c.trim()).filter(Boolean));
+    }
+  }, []);
+
   if (!session) return null;
 
   return (
@@ -331,68 +356,34 @@ export default function PostSignupSurvey() {
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-black">City</Label>
-                      <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={openCityPopover}
-                            className="w-full justify-between border-black text-black bg-white"
-                          >
-                            {formData.city || formData.customCity || "Select a city..."}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0 bg-white border-black">
-                          <Command>
-                            <CommandInput 
-                              placeholder="Search city..." 
-                              value={formData.customCity}
-                              onValueChange={(value) => handleFormChange('customCity', value)}
-                              className="text-black"
-                            />
-                            <CommandEmpty>No city found.</CommandEmpty>
-                            <CommandGroup>
-                              {CANADIAN_CITIES.filter(city =>
-                                city.toLowerCase().includes((formData.customCity || '').toLowerCase())
-                              ).map((city) => (
-                                <CommandItem
-                                  key={city}
-                                  value={city}
-                                  onSelect={() => {
-                                    handleFormChange('city', city);
-                                    handleFormChange('customCity', '');
-                                    setOpenCityPopover(false);
-                                  }}
-                                  className="text-black"
-                                >
-                                  {city}
-                                </CommandItem>
-                              ))}
-                              {formData.customCity && !CANADIAN_CITIES.some(city => city.toLowerCase() === formData.customCity.toLowerCase()) && (
-                                <CommandItem
-                                  key={formData.customCity}
-                                  value={formData.customCity}
-                                  onSelect={() => {
-                                    handleFormChange('city', formData.customCity);
-                                    setOpenCityPopover(false);
-                                  }}
-                                  className="text-black"
-                                >
-                                  {formData.customCity} (Custom)
-                                </CommandItem>
-                              )}
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
+                    {/* City input as chips */}
+                    <div className="space-y-2 col-span-2">
+                      <Label className="font-semibold text-black">City/Cities</Label>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {cities.map(city => (
+                          <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm">
+                            {city}
+                            <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
+                              <X className="h-4 w-4 text-black" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={cityInput}
+                          onChange={e => setCityInput(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); }}}
+                          placeholder="Type a city and press Enter"
+                          className="text-black border-black bg-white"
+                        />
+                        <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700">Add</Button>
+                      </div>
                     </div>
 
-                    {/* Min/Max Price fields with $CAD prefix, typeable */}
+                    {/* Min/Max Price fields with $CAD prefix, typeable, and period note */}
                     <div className="space-y-2">
-                      <Label className="font-semibold text-black">Min Price</Label>
+                      <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
                       <div className="flex items-center border rounded-lg px-2 bg-white">
                         <span className="text-black font-semibold mr-1">$CAD</span>
                         <Input
@@ -406,7 +397,7 @@ export default function PostSignupSurvey() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="font-semibold text-black">Max Price</Label>
+                      <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
                       <div className="flex items-center border rounded-lg px-2 bg-white">
                         <span className="text-black font-semibold mr-1">$CAD</span>
                         <Input
@@ -456,7 +447,7 @@ export default function PostSignupSurvey() {
                     {['realtor', 'landlord'].includes(currentType) && (
                       <>
                         <div className="space-y-2 col-span-2">
-                          <Label className="font-semibold text-black">Areas Served</Label>
+                          <Label className="font-semibold text-black">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
                           <div className="flex flex-wrap gap-2">
                             {AREAS_SERVED.map(area => (
                               <Button
@@ -472,7 +463,7 @@ export default function PostSignupSurvey() {
                           </div>
                         </div>
                         <div className="space-y-2 col-span-2">
-                          <Label className="font-semibold text-black">Preferred Client Types</Label>
+                          <Label className="font-semibold text-black">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
                           <div className="flex flex-wrap gap-2">
                             {CLIENT_TYPES.map(type => (
                               <Button
