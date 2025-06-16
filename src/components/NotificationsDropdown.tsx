@@ -168,6 +168,13 @@ export function NotificationsDropdown() {
     }
   }, [open, session, fetchNotifications]);
 
+  // Fetch notifications on mount (for badge)
+  useEffect(() => {
+    if (session?.user) {
+      fetchNotifications();
+    }
+  }, [session, fetchNotifications]);
+
   // Mark a notification as read
   const markAsRead = async (notificationId: string) => {
     try {
