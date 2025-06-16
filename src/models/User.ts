@@ -36,9 +36,8 @@ const userSchema: Schema = new mongoose.Schema({
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
   favorites: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
   preferences: {
-    userTypes: [{ type: String }],
-    city: { type: String },
-    completedOnboarding: { type: Boolean, default: false }
+    type: Schema.Types.Mixed,
+    default: {}
   },
   membership: {
     type: { type: String, enum: ['BASIC', 'FEATURED', null], default: null },

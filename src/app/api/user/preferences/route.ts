@@ -51,13 +51,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userTypes, city, onboardingCompleted } = body;
+    const { userTypes, preferences, onboardingCompleted } = body;
 
-    if (!userTypes || !city) {
+    if (!userTypes || !preferences || typeof preferences !== 'object') {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+
+    // Validate that preferences has keys for each userType
+    for (const type of userTypes) {
+      if (!preferences[type]) {
+        return NextResponse.json(
+          { error: `Missing preferences for userType: ${type}` },
+          { status: 400 }
+        );
+      }
     }
 
     await connectDB();
@@ -66,8 +76,8 @@ export async function POST(request: NextRequest) {
       {
         $set: {
           preferences: {
+            ...preferences,
             userTypes,
-            city,
             onboardingCompleted: onboardingCompleted ?? true
           }
         }
