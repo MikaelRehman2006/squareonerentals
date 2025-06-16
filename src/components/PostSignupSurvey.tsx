@@ -97,6 +97,23 @@ interface FormData {
   [key: string]: any; // Add index signature for dynamic field access
 }
 
+// --- Define default form data for a role ---
+const getDefaultRoleForm = (): FormData => ({
+  city: '',
+  customCity: '',
+  bedrooms: '',
+  bathrooms: '',
+  priceRange: { min: '', max: '' },
+  propertyType: '',
+  moveInDate: '',
+  additionalRequirements: '',
+  areasServed: [] as string[],
+  clientTypes: [] as string[],
+  isAcceptingClients: false,
+  isForSelf: true,
+  isPreApproved: false,
+});
+
 export default function PostSignupSurvey() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -108,32 +125,18 @@ export default function PostSignupSurvey() {
   const [cityInput, setCityInput] = useState('');
   const [cities, setCities] = useState<string[]>([]);
   
-  // Form state for each user type
-  const [formData, setFormData] = useState<FormData>({
-    city: '',
-    customCity: '',
-    bedrooms: '',
-    bathrooms: '',
-    priceRange: { min: '', max: '' },
-    propertyType: '',
-    moveInDate: '',
-    additionalRequirements: '',
-    areasServed: [],
-    clientTypes: [],
-    isAcceptingClients: false,
-    isForSelf: true,
-    isPreApproved: false
-  });
+  // Store form data per role
+  const [roleForms, setRoleForms] = useState<Record<string, FormData>>({});
 
   // Load saved progress from localStorage
   useEffect(() => {
     if (session?.user?.email) {
       const savedProgress = localStorage.getItem(`survey_progress_${session.user.email}`);
       if (savedProgress) {
-        const { selectedTypes, currentType, formData } = JSON.parse(savedProgress);
+        const { selectedTypes, currentType, roleForms } = JSON.parse(savedProgress);
         setSelectedTypes(selectedTypes);
         setCurrentType(currentType);
-        setFormData(formData);
+        setRoleForms(roleForms);
       }
     }
   }, [session]);
@@ -144,10 +147,10 @@ export default function PostSignupSurvey() {
       localStorage.setItem(`survey_progress_${session.user.email}`, JSON.stringify({
         selectedTypes,
         currentType,
-        formData
+        roleForms
       }));
     }
-  }, [selectedTypes, currentType, formData, session]);
+  }, [selectedTypes, currentType, roleForms, session]);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -176,62 +179,95 @@ export default function PostSignupSurvey() {
     );
   };
 
-  const handleFormChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  // When switching tabs, initialize if not present
+  useEffect(() => {
+    if (currentType && !roleForms[currentType]) {
+      setRoleForms(prev => ({ ...prev, [currentType]: getDefaultRoleForm() }));
+    }
+  }, [currentType]);
+
+  // Helper to get/set current role's form
+  const currentForm = currentType ? roleForms[currentType] || getDefaultRoleForm() : getDefaultRoleForm();
+  const setCurrentForm = (form: FormData) => {
+    if (!currentType) return;
+    setRoleForms(prev => ({ ...prev, [currentType]: form }));
   };
 
+  // Add city to list for current role
+  const handleAddCity = () => {
+    const trimmed = cityInput.trim();
+    if (trimmed && !(currentForm.city.split(',').map(c => c.trim()).includes(trimmed))) {
+      const updatedCities = [...(currentForm.city ? currentForm.city.split(',').map(c => c.trim()).filter(Boolean) : []), trimmed];
+      setCurrentForm({ ...currentForm, city: updatedCities.join(', ') });
+      setCityInput('');
+    }
+  };
+  // Remove city from list for current role
+  const handleRemoveCity = (city: string) => {
+    const updated = (currentForm.city ? currentForm.city.split(',').map(c => c.trim()).filter(Boolean) : []).filter(c => c !== city);
+    setCurrentForm({ ...currentForm, city: updated.join(', ') });
+  };
+
+  // On mount or tab switch, load cities for current role
+  useEffect(() => {
+    if (currentForm.city) {
+      setCities(currentForm.city.split(',').map(c => c.trim()).filter(Boolean));
+    } else {
+      setCities([]);
+    }
+    setCityInput('');
+  }, [currentType]);
+
+  // Update a field for the current role
+  const handleFormChange = (field: string, value: any) => {
+    setCurrentForm({ ...currentForm, [field]: value });
+  };
   const handleArrayToggle = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: Array.isArray(prev[field]) && prev[field].includes(value)
-        ? prev[field].filter((item: string) => item !== value)
-        : [...prev[field], value]
-    }));
+    const arr = (currentForm[field] as string[]) || [];
+    setCurrentForm({
+      ...currentForm,
+      [field]: arr.includes(value)
+        ? arr.filter((item: string) => item !== value)
+        : [...arr, value]
+    });
   };
 
   const isStepComplete = (type: string) => {
     switch (type) {
       case 'realtor':
-        return formData.city && formData.propertyType && formData.priceRange.min && formData.areasServed.length > 0;
+        return currentForm.city && currentForm.propertyType && currentForm.priceRange.min && currentForm.areasServed.length > 0;
       case 'landlord':
-        return formData.city && formData.bedrooms && formData.bathrooms && formData.priceRange.min;
+        return currentForm.city && currentForm.bedrooms && currentForm.bathrooms && currentForm.priceRange.min;
       case 'renter':
-        return formData.city && formData.bedrooms && formData.bathrooms && formData.priceRange.max && formData.moveInDate;
+        return currentForm.city && currentForm.bedrooms && currentForm.bathrooms && currentForm.priceRange.max && currentForm.moveInDate;
       case 'buyer':
-        return formData.city && formData.bedrooms && formData.bathrooms && formData.priceRange.max;
+        return currentForm.city && currentForm.bedrooms && currentForm.bathrooms && currentForm.priceRange.max;
       default:
         return false;
     }
   };
 
+  // On submit, gather all roleForms for selectedTypes
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      const preferences: Record<string, FormData> = {};
+      selectedTypes.forEach(type => {
+        preferences[type] = roleForms[type] || getDefaultRoleForm();
+      });
       const response = await fetch('/api/user/preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userTypes: selectedTypes,
-          preferences: {
-            ...formData,
-            city: formData.customCity || formData.city
-          },
+          preferences,
           onboardingCompleted: true
         })
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to save preferences');
-      }
-
-      // Clear saved progress
+      if (!response.ok) throw new Error('Failed to save preferences');
       if (session?.user?.email) {
         localStorage.removeItem(`survey_progress_${session.user.email}`);
       }
-
       toast.success('Preferences saved successfully!');
       setIsOpen(false);
     } catch (error) {
@@ -240,29 +276,6 @@ export default function PostSignupSurvey() {
       setIsSubmitting(false);
     }
   };
-
-  // Add city to list
-  const handleAddCity = () => {
-    const trimmed = cityInput.trim();
-    if (trimmed && !cities.includes(trimmed)) {
-      setCities([...cities, trimmed]);
-      setCityInput('');
-      handleFormChange('city', [...cities, trimmed].join(', '));
-    }
-  };
-  // Remove city from list
-  const handleRemoveCity = (city: string) => {
-    const updated = cities.filter(c => c !== city);
-    setCities(updated);
-    handleFormChange('city', updated.join(', '));
-  };
-
-  // On mount, load from formData if present
-  useEffect(() => {
-    if (formData.city) {
-      setCities(formData.city.split(',').map(c => c.trim()).filter(Boolean));
-    }
-  }, []);
 
   if (!session) return null;
 
@@ -389,8 +402,8 @@ export default function PostSignupSurvey() {
                         <Input
                           type="number"
                           min={0}
-                          value={formData.priceRange.min}
-                          onChange={e => handleFormChange('priceRange', { ...formData.priceRange, min: e.target.value })}
+                          value={currentForm.priceRange.min}
+                          onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
                           className="border-0 focus:ring-0 text-black bg-white"
                           placeholder="0"
                         />
@@ -403,8 +416,8 @@ export default function PostSignupSurvey() {
                         <Input
                           type="number"
                           min={0}
-                          value={formData.priceRange.max}
-                          onChange={e => handleFormChange('priceRange', { ...formData.priceRange, max: e.target.value })}
+                          value={currentForm.priceRange.max}
+                          onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
                           className="border-0 focus:ring-0 text-black bg-white"
                           placeholder=""
                         />
@@ -414,7 +427,7 @@ export default function PostSignupSurvey() {
                     {/* Bedrooms and Bathrooms */}
                     <div className="space-y-2">
                       <Label className="font-semibold text-black">Bedrooms</Label>
-                      <Select value={formData.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
+                      <Select value={currentForm.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
                         <SelectTrigger className="text-black border-black bg-white">
                           <SelectValue placeholder="Select bedrooms" />
                         </SelectTrigger>
@@ -429,7 +442,7 @@ export default function PostSignupSurvey() {
                     </div>
                     <div className="space-y-2">
                       <Label className="font-semibold text-black">Bathrooms</Label>
-                      <Select value={formData.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
+                      <Select value={currentForm.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
                         <SelectTrigger className="text-black border-black bg-white">
                           <SelectValue placeholder="Select bathrooms" />
                         </SelectTrigger>
@@ -452,10 +465,10 @@ export default function PostSignupSurvey() {
                             {AREAS_SERVED.map(area => (
                               <Button
                                 key={area}
-                                variant={formData.areasServed.includes(area) ? "default" : "outline"}
+                                variant={currentForm.areasServed.includes(area) ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => handleArrayToggle('areasServed', area)}
-                                className={formData.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
+                                className={currentForm.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
                               >
                                 {area}
                               </Button>
@@ -468,10 +481,10 @@ export default function PostSignupSurvey() {
                             {CLIENT_TYPES.map(type => (
                               <Button
                                 key={type}
-                                variant={formData.clientTypes.includes(type) ? "default" : "outline"}
+                                variant={currentForm.clientTypes.includes(type) ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => handleArrayToggle('clientTypes', type)}
-                                className={formData.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
+                                className={currentForm.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
                               >
                                 {type}
                               </Button>
@@ -482,7 +495,7 @@ export default function PostSignupSurvey() {
                           <div className="flex items-center space-x-2">
                             <Checkbox
                               id="accepting-clients"
-                              checked={formData.isAcceptingClients}
+                              checked={currentForm.isAcceptingClients}
                               onCheckedChange={(checked) => handleFormChange('isAcceptingClients', checked)}
                               className="border-black"
                             />
@@ -499,7 +512,7 @@ export default function PostSignupSurvey() {
                           <div className="flex items-center space-x-2">
                             <Checkbox
                               id="for-self"
-                              checked={formData.isForSelf}
+                              checked={currentForm.isForSelf}
                               onCheckedChange={(checked) => handleFormChange('isForSelf', checked)}
                               className="border-black"
                             />
@@ -511,7 +524,7 @@ export default function PostSignupSurvey() {
                             <div className="flex items-center space-x-2">
                               <Checkbox
                                 id="pre-approved"
-                                checked={formData.isPreApproved}
+                                checked={currentForm.isPreApproved}
                                 onCheckedChange={(checked) => handleFormChange('isPreApproved', checked)}
                                 className="border-black"
                               />
@@ -527,7 +540,7 @@ export default function PostSignupSurvey() {
                     <Label className="font-semibold text-black">Additional Requirements</Label>
                     <Input
                       placeholder="Any specific requirements or preferences?"
-                      value={formData.additionalRequirements}
+                      value={currentForm.additionalRequirements}
                       onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
                       className="text-black border-black bg-white"
                     />
