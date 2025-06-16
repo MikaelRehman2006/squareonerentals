@@ -37,66 +37,47 @@ export function useNotifications() {
   const { data: session } = useSession();
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Fetch unread count
-  const fetchUnreadCount = async () => {
+  // Fetch notifications
+  const fetchNotifications = async () => {
     try {
       setLoading(true);
-      
-      // Create abort controller with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      const response = await fetch('/api/notifications/unread-count', {
-        cache: 'no-store',
-        signal: controller.signal
-      });
-      
-      // Clear timeout
-      clearTimeout(timeoutId);
-      
+      const response = await fetch('/api/notifications');
       if (response.ok) {
         const data = await response.json();
-        setUnreadCount(data.count || 0);
-      } else {
-        console.warn('Non-OK response from notifications API:', response.status);
+        setNotifications(data);
+        setUnreadCount(data.filter((n: Notification) => !n.read).length);
       }
     } catch (error) {
-      // Check if it's an abort error
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.warn('Notification count request timed out');
-      } else {
-        console.error('Error fetching unread notification count:', error);
-      }
-      // Don't set unread count to 0 on error, keep the previous value
+      console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch unread count on mount
-  useEffect(() => {
-    if (session?.user) {
-      fetchUnreadCount();
-      
-      // Set up polling for new notifications every minute
-      const interval = setInterval(fetchUnreadCount, 60000);
-      return () => clearInterval(interval);
-    } else {
-      // Reset count when user is not logged in
-      setUnreadCount(0);
-    }
-  }, [session]);
-
   // Mark all notifications as read
   const markAllAsRead = async () => {
     try {
+      const unreadIds = notifications
+        .filter((n: Notification) => !n.read)
+        .map((n: Notification) => n._id);
+      
+      if (unreadIds.length === 0) return;
+      
       const response = await fetch('/api/notifications/mark-all-read', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notificationIds: unreadIds }),
       });
 
       if (response.ok) {
+        // Update both notifications and unread count state
+        setNotifications((prevNotifications: Notification[]) => 
+          prevNotifications.map((n: Notification) => ({ ...n, read: true }))
+        );
         setUnreadCount(0);
         toast.success('All notifications marked as read');
       }
@@ -106,7 +87,15 @@ export function useNotifications() {
     }
   };
 
-  return { unreadCount, loading, markAllAsRead };
+  return { 
+    unreadCount, 
+    loading, 
+    markAllAsRead, 
+    notifications, 
+    setNotifications, 
+    fetchNotifications,
+    setUnreadCount 
+  };
 }
 
 // Render notifications badge on the profile icon
@@ -161,9 +150,15 @@ export function renderNotificationBadges() {
 
 export function NotificationsDropdown() {
   const { data: session } = useSession();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { 
+    unreadCount, 
+    loading, 
+    markAllAsRead, 
+    notifications, 
+    setNotifications, 
+    fetchNotifications,
+    setUnreadCount 
+  } = useNotifications();
   const [open, setOpen] = useState(false);
 
   // Fetch notifications when the dropdown is opened
@@ -171,54 +166,7 @@ export function NotificationsDropdown() {
     if (open && session?.user) {
       fetchNotifications();
     }
-  }, [open, session]);
-
-  // Fetch notifications from the API
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/notifications');
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
-        setUnreadCount(data.filter((n: Notification) => !n.read).length);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Mark all notifications as read
-  const markAllAsRead = async () => {
-    try {
-      const unreadIds = notifications
-        .filter(n => !n.read)
-        .map(n => n._id);
-      
-      if (unreadIds.length === 0) return;
-      
-      const response = await fetch('/api/notifications/mark-all-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ notificationIds: unreadIds }),
-      });
-
-      if (response.ok) {
-        setNotifications(
-          notifications.map((n) => ({ ...n, read: true }))
-        );
-        setUnreadCount(0);
-        toast.success('All notifications marked as read');
-      }
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      toast.error('Failed to mark notifications as read');
-    }
-  };
+  }, [open, session, fetchNotifications]);
 
   // Mark a notification as read
   const markAsRead = async (notificationId: string) => {
@@ -339,7 +287,7 @@ export function NotificationsDropdown() {
           )}
         </div>
         <Separator />
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-[400px] overflow-y-auto">
           {loading ? (
             <div className="flex justify-center p-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
