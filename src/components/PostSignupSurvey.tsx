@@ -36,6 +36,11 @@ const USER_TYPES = [
     id: 'buyer', 
     label: 'Looking to Buy',
     description: 'I want to purchase a property'
+  },
+  {
+    id: 'none',
+    label: 'None',
+    description: 'Skip the survey (not recommended)'
   }
 ];
 
@@ -298,6 +303,32 @@ export default function PostSignupSurvey() {
     }
   };
 
+  // When 'None' is selected and user clicks Continue, skip the survey and mark onboarding as complete
+  const handleNone = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userTypes: [],
+          preferences: {},
+          onboardingCompleted: true
+        })
+      });
+      if (!response.ok) throw new Error('Failed to skip survey');
+      if (session?.user?.email) {
+        localStorage.removeItem(`survey_progress_${session.user.email}`);
+      }
+      toast.success('Onboarding complete!');
+      setIsOpen(false);
+    } catch (error) {
+      toast.error('Failed to skip survey. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (!session) return null;
 
   return (
@@ -313,7 +344,8 @@ export default function PostSignupSurvey() {
               Complete Your Profile
             </DialogTitle>
             <DialogDescription className="text-center mt-4 text-black">
-              Help us match you with the right properties and clients
+              Help us match you with the right properties and clients<br />
+              <span className="block mt-2 text-sm text-blue-700 font-semibold">All questions are optional, but highly recommended! The more you share, the better we can help you reach your goal.</span>
             </DialogDescription>
           </DialogHeader>
 
@@ -376,10 +408,22 @@ export default function PostSignupSurvey() {
                         toast.error('Please select at least one option');
                         return;
                       }
+                      if (selectedTypes.includes('none')) {
+                        handleNone();
+                        return;
+                      }
                       setCurrentType(selectedTypes[0]);
                     }}
+                    disabled={isSubmitting}
                   >
-                    Continue
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Continue'
+                    )}
                   </Button>
                 </motion.div>
               ) : (
@@ -584,16 +628,12 @@ export default function PostSignupSurvey() {
                     </Button>
                     <Button
                       onClick={() => {
-                        if (isStepComplete(currentType)) {
-                          setCompletedSteps(prev => ({ ...prev, [currentType]: true }));
-                          const currentIndex = selectedTypes.indexOf(currentType);
-                          if (currentIndex < selectedTypes.length - 1) {
-                            setCurrentType(selectedTypes[currentIndex + 1]);
-                          } else {
-                            handleSubmit();
-                          }
+                        setCompletedSteps(prev => ({ ...prev, [currentType]: true }));
+                        const currentIndex = selectedTypes.indexOf(currentType);
+                        if (currentIndex < selectedTypes.length - 1) {
+                          setCurrentType(selectedTypes[currentIndex + 1]);
                         } else {
-                          toast.error('Please fill in all required fields');
+                          handleSubmit();
                         }
                       }}
                       disabled={isSubmitting}

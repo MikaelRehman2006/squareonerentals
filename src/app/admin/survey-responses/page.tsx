@@ -14,8 +14,8 @@ interface UserPreference {
   email: string;
   preferences: {
     userTypes: string[];
-    city: string;
-    completedOnboarding: boolean;
+    onboardingCompleted: boolean;
+    [role: string]: any;
   };
   createdAt: string;
 }
@@ -25,6 +25,7 @@ export default function SurveyResponsesPage() {
   const [users, setUsers] = useState<UserPreference[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -92,28 +93,55 @@ export default function SurveyResponsesPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>User Types</TableHead>
-                    <TableHead>City</TableHead>
                     <TableHead>Sign Up Date</TableHead>
+                    <TableHead>Details</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
-                      <TableRow key={user._id}>
-                        <TableCell>{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2 flex-wrap">
-                            {user.preferences?.userTypes?.map((type) => (
-                              getUserTypeBadge(type)
-                            ))}
-                          </div>
-                        </TableCell>
-                        <TableCell>{user.preferences?.city}</TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
+                      <>
+                        <TableRow key={user._id}>
+                          <TableCell>{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2 flex-wrap">
+                              {user.preferences?.userTypes?.map((type) => (
+                                getUserTypeBadge(type)
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <button
+                              className="text-blue-600 underline"
+                              onClick={() => setExpandedUser(expandedUser === user._id ? null : user._id)}
+                            >
+                              {expandedUser === user._id ? 'Hide' : 'Show'}
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                        {expandedUser === user._id && (
+                          <TableRow>
+                            <TableCell colSpan={5} className="bg-gray-50">
+                              <div className="space-y-4">
+                                {user.preferences.userTypes.map((role: string) => (
+                                  <div key={role} className="mb-4">
+                                    <div className="font-semibold mb-2">{role.charAt(0).toUpperCase() + role.slice(1)} Info</div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {Object.entries(user.preferences[role] || {}).map(([key, value]) => (
+                                        <div key={key} className="text-sm">
+                                          <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span> {Array.isArray(value) ? value.join(', ') : String(value)}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
                     ))
                   ) : (
                     <TableRow>
