@@ -218,6 +218,7 @@ export default function PostSignupSurvey() {
     if (trimmed && !(currentForm.city.split(',').map(c => c.trim()).includes(trimmed))) {
       const updatedCities = [...(currentForm.city ? currentForm.city.split(',').map(c => c.trim()).filter(Boolean) : []), trimmed];
       setCurrentForm({ ...currentForm, city: updatedCities.join(', ') });
+      setCities(updatedCities);
       setCityInput('');
     }
   };
@@ -225,6 +226,7 @@ export default function PostSignupSurvey() {
   const handleRemoveCity = (city: string) => {
     const updated = (currentForm.city ? currentForm.city.split(',').map(c => c.trim()).filter(Boolean) : []).filter(c => c !== city);
     setCurrentForm({ ...currentForm, city: updated.join(', ') });
+    setCities(updated);
   };
 
   // On mount or tab switch, load cities for current role
@@ -448,11 +450,11 @@ export default function PostSignupSurvey() {
                       <Label className="font-semibold text-black">Bedrooms</Label>
                       <Select value={currentForm.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
                         <SelectTrigger className="text-black border-black bg-white">
-                          <SelectValue placeholder="Select bedrooms" />
+                          <SelectValue placeholder="Select bedrooms" className="text-black bg-white" />
                         </SelectTrigger>
                         <SelectContent className="text-black bg-white border-black">
                           {BEDROOM_OPTIONS.map(bed => (
-                            <SelectItem key={bed} value={bed} className="text-black">
+                            <SelectItem key={bed} value={bed} className="text-black bg-white">
                               {bed}
                             </SelectItem>
                           ))}
@@ -463,11 +465,11 @@ export default function PostSignupSurvey() {
                       <Label className="font-semibold text-black">Bathrooms</Label>
                       <Select value={currentForm.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
                         <SelectTrigger className="text-black border-black bg-white">
-                          <SelectValue placeholder="Select bathrooms" />
+                          <SelectValue placeholder="Select bathrooms" className="text-black bg-white" />
                         </SelectTrigger>
                         <SelectContent className="text-black bg-white border-black">
                           {BATHROOM_OPTIONS.map(bath => (
-                            <SelectItem key={bath} value={bath} className="text-black">
+                            <SelectItem key={bath} value={bath} className="text-black bg-white">
                               {bath}
                             </SelectItem>
                           ))}
