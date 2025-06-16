@@ -186,6 +186,25 @@ export default function PostSignupSurvey() {
     }
   }, [currentType]);
 
+  // When a user selects a role, initialize its form state if not present
+  useEffect(() => {
+    setRoleForms(prev => {
+      let updated = { ...prev };
+      selectedTypes.forEach(type => {
+        if (!updated[type]) {
+          updated[type] = getDefaultRoleForm();
+        }
+      });
+      // Optionally, remove forms for unselected types
+      Object.keys(updated).forEach(type => {
+        if (!selectedTypes.includes(type)) {
+          delete updated[type];
+        }
+      });
+      return updated;
+    });
+  }, [selectedTypes]);
+
   // Helper to get/set current role's form
   const currentForm = currentType ? roleForms[currentType] || getDefaultRoleForm() : getDefaultRoleForm();
   const setCurrentForm = (form: FormData) => {
