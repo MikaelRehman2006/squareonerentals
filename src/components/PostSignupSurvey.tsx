@@ -6,8 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { CheckCircle2 } from 'lucide-react';
 
 const USER_TYPES = [
   { id: 'realtor', label: 'Realtor' },
@@ -22,12 +25,35 @@ const CANADIAN_CITIES = [
   'London', 'Victoria', 'Halifax', 'Oshawa', 'Windsor'
 ];
 
+const BEDROOM_OPTIONS = ['1', '2', '3', '4', '5+'];
+const BATHROOM_OPTIONS = ['1', '2', '3', '4+'];
+const PRICE_RANGES = [
+  { min: 0, max: 500000, label: 'Under $500,000' },
+  { min: 500000, max: 1000000, label: '$500,000 - $1,000,000' },
+  { min: 1000000, max: 2000000, label: '$1,000,000 - $2,000,000' },
+  { min: 2000000, max: 5000000, label: '$2,000,000 - $5,000,000' },
+  { min: 5000000, max: Infinity, label: 'Over $5,000,000' }
+];
+
 export default function PostSignupSurvey() {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [currentType, setCurrentType] = useState<string>('');
   const [step, setStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
+  
+  // Form state for each user type
+  const [formData, setFormData] = useState({
+    city: '',
+    customCity: '',
+    bedrooms: '',
+    bathrooms: '',
+    priceRange: { min: '', max: '' },
+    propertyType: '',
+    moveInDate: '',
+    additionalRequirements: ''
+  });
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -56,6 +82,28 @@ export default function PostSignupSurvey() {
     );
   };
 
+  const handleFormChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const isStepComplete = (type: string) => {
+    switch (type) {
+      case 'realtor':
+        return formData.city && formData.propertyType && formData.priceRange.min;
+      case 'landlord':
+        return formData.city && formData.bedrooms && formData.bathrooms && formData.priceRange.min;
+      case 'renter':
+        return formData.city && formData.bedrooms && formData.bathrooms && formData.priceRange.max && formData.moveInDate;
+      case 'buyer':
+        return formData.city && formData.bedrooms && formData.bathrooms && formData.priceRange.max;
+      default:
+        return false;
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const response = await fetch('/api/user/preferences', {
@@ -63,7 +111,10 @@ export default function PostSignupSurvey() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userTypes: selectedTypes,
-          city: selectedCity,
+          preferences: {
+            ...formData,
+            city: formData.customCity || formData.city
+          },
           onboardingCompleted: true
         })
       });
@@ -82,83 +133,241 @@ export default function PostSignupSurvey() {
   if (!session) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
-            {step === 1 ? 'Tell us about yourself' : 'Where are you looking?'}
+            Complete Your Profile
           </DialogTitle>
           <DialogDescription className="text-center mt-4">
-            This helps us match you with what you need.
+            Help us match you with the right properties and clients
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {step === 1 ? (
-            <div className="space-y-4">
-              <Label>Are you a realtor, landlord, looking to rent, or looking to buy?</Label>
-              <div className="space-y-2">
-                {USER_TYPES.map(type => (
-                  <div key={type.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={type.id}
-                      checked={selectedTypes.includes(type.id)}
-                      onCheckedChange={() => handleTypeToggle(type.id)}
-                    />
-                    <Label htmlFor={type.id}>{type.label}</Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Label>Which city in Canada are you looking in?</Label>
-              <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a city" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CANADIAN_CITIES.map(city => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div className="flex justify-between pt-4">
-            {step === 2 && (
-              <Button
-                variant="outline"
-                onClick={() => setStep(1)}
+        <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
+          <TabsList className="grid grid-cols-4 mb-4">
+            {USER_TYPES.map((type, index) => (
+              <TabsTrigger
+                key={type.id}
+                value={type.id}
+                className="flex items-center gap-2"
+                disabled={!selectedTypes.includes(type.id)}
               >
-                Back
-              </Button>
+                {index + 1}. {type.label}
+                {completedSteps[type.id] && (
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <div className="space-y-6 py-4">
+            {!currentType ? (
+              <div className="space-y-4">
+                <Label>What best describes you? (Select all that apply)</Label>
+                <div className="space-y-2">
+                  {USER_TYPES.map(type => (
+                    <div key={type.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={type.id}
+                        checked={selectedTypes.includes(type.id)}
+                        onCheckedChange={() => handleTypeToggle(type.id)}
+                      />
+                      <Label htmlFor={type.id}>{type.label}</Label>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  className="w-full mt-4"
+                  onClick={() => {
+                    if (selectedTypes.length === 0) {
+                      toast.error('Please select at least one option');
+                      return;
+                    }
+                    setCurrentType(selectedTypes[0]);
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>City</Label>
+                    <Select value={formData.city} onValueChange={(value) => handleFormChange('city', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a city" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CANADIAN_CITIES.map(city => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      placeholder="Or type your city"
+                      value={formData.customCity}
+                      onChange={(e) => handleFormChange('customCity', e.target.value)}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  {currentType === 'realtor' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Property Type</Label>
+                        <Select value={formData.propertyType} onValueChange={(value) => handleFormChange('propertyType', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select property type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="residential">Residential</SelectItem>
+                            <SelectItem value="commercial">Commercial</SelectItem>
+                            <SelectItem value="both">Both</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
+                  {(currentType === 'landlord' || currentType === 'renter' || currentType === 'buyer') && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Bedrooms</Label>
+                        <Select value={formData.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select bedrooms" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BEDROOM_OPTIONS.map(bed => (
+                              <SelectItem key={bed} value={bed}>
+                                {bed}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Bathrooms</Label>
+                        <Select value={formData.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select bathrooms" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BATHROOM_OPTIONS.map(bath => (
+                              <SelectItem key={bath} value={bath}>
+                                {bath}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
+                  {(currentType === 'renter' || currentType === 'buyer') && (
+                    <div className="space-y-2">
+                      <Label>Maximum Price</Label>
+                      <Select 
+                        value={formData.priceRange.max} 
+                        onValueChange={(value) => handleFormChange('priceRange', { ...formData.priceRange, max: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select max price" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PRICE_RANGES.map(range => (
+                            <SelectItem key={range.label} value={range.max.toString()}>
+                              {range.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {currentType === 'renter' && (
+                    <div className="space-y-2">
+                      <Label>Desired Move-in Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.moveInDate}
+                        onChange={(e) => handleFormChange('moveInDate', e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {currentType === 'landlord' && (
+                    <div className="space-y-2">
+                      <Label>Minimum Price</Label>
+                      <Select 
+                        value={formData.priceRange.min} 
+                        onValueChange={(value) => handleFormChange('priceRange', { ...formData.priceRange, min: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select min price" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PRICE_RANGES.map(range => (
+                            <SelectItem key={range.label} value={range.min.toString()}>
+                              {range.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Additional Requirements</Label>
+                  <Input
+                    placeholder="Any specific requirements or preferences?"
+                    value={formData.additionalRequirements}
+                    onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
+                  />
+                </div>
+
+                <div className="flex justify-between pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const currentIndex = selectedTypes.indexOf(currentType);
+                      if (currentIndex > 0) {
+                        setCurrentType(selectedTypes[currentIndex - 1]);
+                      } else {
+                        setCurrentType('');
+                      }
+                    }}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (isStepComplete(currentType)) {
+                        setCompletedSteps(prev => ({ ...prev, [currentType]: true }));
+                        const currentIndex = selectedTypes.indexOf(currentType);
+                        if (currentIndex < selectedTypes.length - 1) {
+                          setCurrentType(selectedTypes[currentIndex + 1]);
+                        } else {
+                          handleSubmit();
+                        }
+                      } else {
+                        toast.error('Please fill in all required fields');
+                      }
+                    }}
+                  >
+                    {selectedTypes.indexOf(currentType) === selectedTypes.length - 1 ? 'Submit' : 'Next'}
+                  </Button>
+                </div>
+              </div>
             )}
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => {
-                if (step === 1) {
-                  if (selectedTypes.length === 0) {
-                    toast.error('Please select at least one option');
-                    return;
-                  }
-                  setStep(2);
-                } else {
-                  if (!selectedCity) {
-                    toast.error('Please select a city');
-                    return;
-                  }
-                  handleSubmit();
-                }
-              }}
-            >
-              {step === 1 ? 'Next' : 'Submit'}
-            </Button>
           </div>
-        </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
