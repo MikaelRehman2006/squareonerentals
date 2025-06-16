@@ -40,9 +40,16 @@ const USER_TYPES = [
 ];
 
 const CANADIAN_CITIES = [
-  'Toronto', 'Vancouver', 'Montreal', 'Calgary', 'Edmonton',
-  'Ottawa', 'Winnipeg', 'Quebec City', 'Hamilton', 'Kitchener',
-  'London', 'Victoria', 'Halifax', 'Oshawa', 'Windsor'
+  'Toronto', 'Montreal', 'Vancouver', 'Calgary', 'Edmonton',
+  'Ottawa', 'Mississauga', 'Winnipeg', 'Quebec City', 'Hamilton',
+  'Brampton', 'Surrey', 'Kitchener', 'London', 'Windsor', 'Victoria',
+  'Halifax', 'Oshawa', 'Gatineau', 'Saskatoon', 'Regina', "St. John's",
+  'Barrie', 'Kelowna', 'Abbotsford', 'Sherbrooke', 'Guelph', 'Markham',
+  'Kingston', 'Vaughan', 'Burlington', 'Oakville', 'Richmond Hill',
+  'Waterloo', 'Ajax', 'Cambridge', 'Whitby', 'Milton', 'Pickering',
+  'Thunder Bay', 'Brantford', 'Lethbridge', 'St. Catharines', 'Niagara Falls',
+  'Coquitlam', 'Scarborough', 'Etobicoke', 'North York', 'Burnaby', 'Richmond',
+  'Laval', 'Longueuil', 'Delta', 'Squamish', 'Whistler', 'Muskoka'
 ];
 
 const BEDROOM_OPTIONS = ['1', '2', '3', '4', '5+'];
@@ -236,32 +243,34 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
+            <DialogTitle className="text-2xl font-bold text-center text-black">
               Complete Your Profile
             </DialogTitle>
-            <DialogDescription className="text-center mt-4">
+            <DialogDescription className="text-center mt-4 text-black">
               Help us match you with the right properties and clients
             </DialogDescription>
           </DialogHeader>
 
           <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-4">
+            <TabsList className="grid grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
               {USER_TYPES.map((type, index) => (
                 <TabsTrigger
                   key={type.id}
                   value={type.id}
                   className={cn(
-                    "flex items-center gap-2 group relative",
-                    !selectedTypes.includes(type.id) && "opacity-50"
+                    "flex items-center gap-2 group relative text-black font-semibold transition-all",
+                    !selectedTypes.includes(type.id) && "opacity-50",
+                    currentType === type.id && "bg-gradient-to-r from-blue-100 to-blue-200 shadow-md border border-blue-300"
                   )}
                   disabled={!selectedTypes.includes(type.id)}
+                  style={{ boxShadow: currentType === type.id ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined }}
                 >
                   <span className="flex items-center gap-2">
                     {index + 1}. {type.label}
@@ -269,7 +278,7 @@ export default function PostSignupSurvey() {
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     )}
                   </span>
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                     {type.description}
                   </div>
                 </TabsTrigger>
@@ -284,25 +293,25 @@ export default function PostSignupSurvey() {
                   exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  <Label className="text-lg font-semibold">What best describes you? (Select all that apply)</Label>
+                  <Label className="text-lg font-semibold text-black">What best describes you? (Select all that apply)</Label>
                   <div className="space-y-3">
                     {USER_TYPES.map(type => (
-                      <div key={type.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div key={type.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-blue-50 transition-colors">
                         <Checkbox
                           id={type.id}
                           checked={selectedTypes.includes(type.id)}
                           onCheckedChange={() => handleTypeToggle(type.id)}
-                          className="mt-1"
+                          className="mt-1 border-black"
                         />
                         <div className="space-y-1">
-                          <Label htmlFor={type.id} className="font-medium">{type.label}</Label>
-                          <p className="text-sm text-gray-500">{type.description}</p>
+                          <Label htmlFor={type.id} className="font-medium text-black">{type.label}</Label>
+                          <p className="text-sm text-gray-700">{type.description}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                   <Button
-                    className="w-full mt-4"
+                    className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700"
                     onClick={() => {
                       if (selectedTypes.length === 0) {
                         toast.error('Please select at least one option');
@@ -323,29 +332,32 @@ export default function PostSignupSurvey() {
                 >
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="font-semibold">City</Label>
+                      <Label className="font-semibold text-black">City</Label>
                       <Popover open={openCityPopover} onOpenChange={setOpenCityPopover}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             role="combobox"
                             aria-expanded={openCityPopover}
-                            className="w-full justify-between"
+                            className="w-full justify-between border-black text-black bg-white"
                           >
                             {formData.city || formData.customCity || "Select a city..."}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
+                        <PopoverContent className="w-full p-0 bg-white border-black">
                           <Command>
                             <CommandInput 
                               placeholder="Search city..." 
                               value={formData.customCity}
                               onValueChange={(value) => handleFormChange('customCity', value)}
+                              className="text-black"
                             />
                             <CommandEmpty>No city found.</CommandEmpty>
                             <CommandGroup>
-                              {CANADIAN_CITIES.map((city) => (
+                              {CANADIAN_CITIES.filter(city =>
+                                city.toLowerCase().includes((formData.customCity || '').toLowerCase())
+                              ).map((city) => (
                                 <CommandItem
                                   key={city}
                                   value={city}
@@ -354,34 +366,97 @@ export default function PostSignupSurvey() {
                                     handleFormChange('customCity', '');
                                     setOpenCityPopover(false);
                                   }}
+                                  className="text-black"
                                 >
                                   {city}
                                 </CommandItem>
                               ))}
+                              {formData.customCity && !CANADIAN_CITIES.some(city => city.toLowerCase() === formData.customCity.toLowerCase()) && (
+                                <CommandItem
+                                  key={formData.customCity}
+                                  value={formData.customCity}
+                                  onSelect={() => {
+                                    handleFormChange('city', formData.customCity);
+                                    setOpenCityPopover(false);
+                                  }}
+                                  className="text-black"
+                                >
+                                  {formData.customCity} (Custom)
+                                </CommandItem>
+                              )}
                             </CommandGroup>
                           </Command>
                         </PopoverContent>
                       </Popover>
                     </div>
 
-                    {currentType === 'realtor' && (
-                      <>
-                        <div className="space-y-2">
-                          <Label className="font-semibold">Property Type</Label>
-                          <Select value={formData.propertyType} onValueChange={(value) => handleFormChange('propertyType', value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select property type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="residential">Residential</SelectItem>
-                              <SelectItem value="commercial">Commercial</SelectItem>
-                              <SelectItem value="both">Both</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                    {/* Min/Max Price fields with $CAD prefix, typeable */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-black">Min Price</Label>
+                      <div className="flex items-center border rounded-lg px-2 bg-white">
+                        <span className="text-black font-semibold mr-1">$CAD</span>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={formData.priceRange.min}
+                          onChange={e => handleFormChange('priceRange', { ...formData.priceRange, min: e.target.value })}
+                          className="border-0 focus:ring-0 text-black bg-white"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-black">Max Price</Label>
+                      <div className="flex items-center border rounded-lg px-2 bg-white">
+                        <span className="text-black font-semibold mr-1">$CAD</span>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={formData.priceRange.max}
+                          onChange={e => handleFormChange('priceRange', { ...formData.priceRange, max: e.target.value })}
+                          className="border-0 focus:ring-0 text-black bg-white"
+                          placeholder=""
+                        />
+                      </div>
+                    </div>
 
+                    {/* Bedrooms and Bathrooms */}
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-black">Bedrooms</Label>
+                      <Select value={formData.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
+                        <SelectTrigger className="text-black border-black bg-white">
+                          <SelectValue placeholder="Select bedrooms" />
+                        </SelectTrigger>
+                        <SelectContent className="text-black bg-white border-black">
+                          {BEDROOM_OPTIONS.map(bed => (
+                            <SelectItem key={bed} value={bed} className="text-black">
+                              {bed}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-semibold text-black">Bathrooms</Label>
+                      <Select value={formData.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
+                        <SelectTrigger className="text-black border-black bg-white">
+                          <SelectValue placeholder="Select bathrooms" />
+                        </SelectTrigger>
+                        <SelectContent className="text-black bg-white border-black">
+                          {BATHROOM_OPTIONS.map(bath => (
+                            <SelectItem key={bath} value={bath} className="text-black">
+                              {bath}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Realtor/Landlord specific fields */}
+                    {['realtor', 'landlord'].includes(currentType) && (
+                      <>
                         <div className="space-y-2 col-span-2">
-                          <Label className="font-semibold">Areas Served</Label>
+                          <Label className="font-semibold text-black">Areas Served</Label>
                           <div className="flex flex-wrap gap-2">
                             {AREAS_SERVED.map(area => (
                               <Button
@@ -389,15 +464,15 @@ export default function PostSignupSurvey() {
                                 variant={formData.areasServed.includes(area) ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => handleArrayToggle('areasServed', area)}
+                                className={formData.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
                               >
                                 {area}
                               </Button>
                             ))}
                           </div>
                         </div>
-
                         <div className="space-y-2 col-span-2">
-                          <Label className="font-semibold">Preferred Client Types</Label>
+                          <Label className="font-semibold text-black">Preferred Client Types</Label>
                           <div className="flex flex-wrap gap-2">
                             {CLIENT_TYPES.map(type => (
                               <Button
@@ -405,148 +480,65 @@ export default function PostSignupSurvey() {
                                 variant={formData.clientTypes.includes(type) ? "default" : "outline"}
                                 size="sm"
                                 onClick={() => handleArrayToggle('clientTypes', type)}
+                                className={formData.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
                               >
                                 {type}
                               </Button>
                             ))}
                           </div>
                         </div>
-
                         <div className="col-span-2">
                           <div className="flex items-center space-x-2">
                             <Checkbox
                               id="accepting-clients"
                               checked={formData.isAcceptingClients}
                               onCheckedChange={(checked) => handleFormChange('isAcceptingClients', checked)}
+                              className="border-black"
                             />
-                            <Label htmlFor="accepting-clients">I am currently accepting new clients</Label>
+                            <Label htmlFor="accepting-clients" className="text-black">I am currently accepting new clients</Label>
                           </div>
                         </div>
                       </>
                     )}
 
-                    {(currentType === 'landlord' || currentType === 'renter' || currentType === 'buyer') && (
+                    {/* Renter/Buyer specific fields */}
+                    {['renter', 'buyer'].includes(currentType) && (
                       <>
-                        <div className="space-y-2">
-                          <Label className="font-semibold">Bedrooms</Label>
-                          <Select value={formData.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select bedrooms" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {BEDROOM_OPTIONS.map(bed => (
-                                <SelectItem key={bed} value={bed}>
-                                  {bed}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <div className="col-span-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="for-self"
+                              checked={formData.isForSelf}
+                              onCheckedChange={(checked) => handleFormChange('isForSelf', checked)}
+                              className="border-black"
+                            />
+                            <Label htmlFor="for-self" className="text-black">This is for myself</Label>
+                          </div>
                         </div>
-
-                        <div className="space-y-2">
-                          <Label className="font-semibold">Bathrooms</Label>
-                          <Select value={formData.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select bathrooms" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {BATHROOM_OPTIONS.map(bath => (
-                                <SelectItem key={bath} value={bath}>
-                                  {bath}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {currentType === 'buyer' && (
+                          <div className="col-span-2">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="pre-approved"
+                                checked={formData.isPreApproved}
+                                onCheckedChange={(checked) => handleFormChange('isPreApproved', checked)}
+                                className="border-black"
+                              />
+                              <Label htmlFor="pre-approved" className="text-black">I am pre-approved for a mortgage</Label>
+                            </div>
+                          </div>
+                        )}
                       </>
-                    )}
-
-                    {(currentType === 'renter' || currentType === 'buyer') && (
-                      <div className="space-y-2">
-                        <Label className="font-semibold">Maximum Price</Label>
-                        <Select 
-                          value={formData.priceRange.max} 
-                          onValueChange={(value) => handleFormChange('priceRange', { ...formData.priceRange, max: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select max price" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PRICE_RANGES.map(range => (
-                              <SelectItem key={range.label} value={range.max.toString()}>
-                                {range.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {currentType === 'renter' && (
-                      <div className="space-y-2">
-                        <Label className="font-semibold">Desired Move-in Date</Label>
-                        <Input
-                          type="date"
-                          value={formData.moveInDate}
-                          onChange={(e) => handleFormChange('moveInDate', e.target.value)}
-                        />
-                      </div>
-                    )}
-
-                    {currentType === 'landlord' && (
-                      <div className="space-y-2">
-                        <Label className="font-semibold">Minimum Price</Label>
-                        <Select 
-                          value={formData.priceRange.min} 
-                          onValueChange={(value) => handleFormChange('priceRange', { ...formData.priceRange, min: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select min price" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PRICE_RANGES.map(range => (
-                              <SelectItem key={range.label} value={range.min.toString()}>
-                                {range.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-
-                    {(currentType === 'renter' || currentType === 'buyer') && (
-                      <div className="col-span-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="for-self"
-                            checked={formData.isForSelf}
-                            onCheckedChange={(checked) => handleFormChange('isForSelf', checked)}
-                          />
-                          <Label htmlFor="for-self">This is for myself</Label>
-                        </div>
-                      </div>
-                    )}
-
-                    {currentType === 'buyer' && (
-                      <div className="col-span-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="pre-approved"
-                            checked={formData.isPreApproved}
-                            onCheckedChange={(checked) => handleFormChange('isPreApproved', checked)}
-                          />
-                          <Label htmlFor="pre-approved">I am pre-approved for a mortgage</Label>
-                        </div>
-                      </div>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="font-semibold">Additional Requirements</Label>
+                    <Label className="font-semibold text-black">Additional Requirements</Label>
                     <Input
                       placeholder="Any specific requirements or preferences?"
                       value={formData.additionalRequirements}
                       onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
+                      className="text-black border-black bg-white"
                     />
                   </div>
 
@@ -561,6 +553,7 @@ export default function PostSignupSurvey() {
                           setCurrentType('');
                         }
                       }}
+                      className="border-black text-black hover:bg-gray-200"
                     >
                       Back
                     </Button>
@@ -579,6 +572,7 @@ export default function PostSignupSurvey() {
                         }
                       }}
                       disabled={isSubmitting}
+                      className="bg-blue-600 text-white hover:bg-blue-700"
                     >
                       {isSubmitting ? (
                         <>
