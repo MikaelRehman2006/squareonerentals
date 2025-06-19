@@ -437,6 +437,11 @@ export default function PostSignupSurvey() {
     }
   };
 
+  // Ensure switching user types resets stepper and form state:
+  useEffect(() => {
+    setRealtorStep(0);
+  }, [currentType]);
+
   if (!session) return null;
 
   return (
@@ -664,9 +669,8 @@ export default function PostSignupSurvey() {
                                       </Button>
                                     </div>
                                   </div>
-
                                   {/* Grid layout for all six fields: price, bedrooms, bathrooms */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto">
                                     {/* Min Price */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD total)</span></Label>
@@ -682,7 +686,6 @@ export default function PostSignupSurvey() {
                                         />
                                       </div>
                                     </div>
-
                                     {/* Max Price */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD total)</span></Label>
@@ -698,7 +701,6 @@ export default function PostSignupSurvey() {
                                         />
                                       </div>
                                     </div>
-
                                     {/* Min Bedrooms */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Min Bedrooms</Label>
@@ -715,7 +717,6 @@ export default function PostSignupSurvey() {
                                         </SelectContent>
                                       </Select>
                                     </div>
-
                                     {/* Max Bedrooms */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Max Bedrooms</Label>
@@ -732,7 +733,6 @@ export default function PostSignupSurvey() {
                                         </SelectContent>
                                       </Select>
                                     </div>
-
                                     {/* Min Bathrooms */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Min Bathrooms</Label>
@@ -749,7 +749,6 @@ export default function PostSignupSurvey() {
                                         </SelectContent>
                                       </Select>
                                     </div>
-
                                     {/* Max Bathrooms */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Max Bathrooms</Label>
