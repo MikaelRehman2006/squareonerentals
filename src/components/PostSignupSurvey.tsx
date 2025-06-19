@@ -57,8 +57,8 @@ const CANADIAN_CITIES = [
   'Laval', 'Longueuil', 'Delta', 'Squamish', 'Whistler', 'Muskoka'
 ];
 
-const BEDROOM_OPTIONS = ['1', '2', '3', '4', '5+'];
-const BATHROOM_OPTIONS = ['1', '2', '3', '4+'];
+const BEDROOM_OPTIONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '10+'];
+const BATHROOM_OPTIONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '10+'];
 const PRICE_RANGES = [
   { min: 0, max: 500000, label: 'Under $500,000' },
   { min: 500000, max: 1000000, label: '$500,000 - $1,000,000' },
@@ -85,8 +85,12 @@ const CLIENT_TYPES = [
 interface FormData {
   city: string;
   customCity: string;
-  bedrooms: string;
-  bathrooms: string;
+  bedrooms: string; // for renter/buyer
+  bathrooms: string; // for renter/buyer
+  bedroomsMin?: string; // for realtor/landlord
+  bedroomsMax?: string; // for realtor/landlord
+  bathroomsMin?: string; // for realtor/landlord
+  bathroomsMax?: string; // for realtor/landlord
   priceRange: {
     min: string;
     max: string;
@@ -108,6 +112,10 @@ const getDefaultRoleForm = (): FormData => ({
   customCity: '',
   bedrooms: '',
   bathrooms: '',
+  bedroomsMin: '',
+  bedroomsMax: '',
+  bathroomsMin: '',
+  bathroomsMax: '',
   priceRange: { min: '', max: '' },
   propertyType: '',
   moveInDate: '',
@@ -333,9 +341,42 @@ export default function PostSignupSurvey() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const preferences: Record<string, FormData> = {};
+      const preferences: Record<string, any> = {};
       selectedTypes.forEach(type => {
-        preferences[type] = roleForms[type] || getDefaultRoleForm();
+        const form = roleForms[type] || getDefaultRoleForm();
+        if (["realtor", "landlord"].includes(type)) {
+          preferences[type] = {
+            ...form,
+            bedroomsMin: form.bedroomsMin,
+            bedroomsMax: form.bedroomsMax,
+            bathroomsMin: form.bathroomsMin,
+            bathroomsMax: form.bathroomsMax,
+            // Only include relevant fields
+            city: form.city,
+            customCity: form.customCity,
+            priceRange: form.priceRange,
+            propertyType: form.propertyType,
+            additionalRequirements: form.additionalRequirements,
+            areasServed: form.areasServed,
+            clientTypes: form.clientTypes,
+            isAcceptingClients: form.isAcceptingClients,
+          };
+        } else {
+          preferences[type] = {
+            ...form,
+            bedrooms: form.bedrooms,
+            bathrooms: form.bathrooms,
+            // Only include relevant fields
+            city: form.city,
+            customCity: form.customCity,
+            priceRange: form.priceRange,
+            propertyType: form.propertyType,
+            moveInDate: form.moveInDate,
+            additionalRequirements: form.additionalRequirements,
+            isForSelf: form.isForSelf,
+            isPreApproved: form.isPreApproved,
+          };
+        }
       });
       const response = await fetch('/api/user/preferences', {
         method: 'POST',
@@ -546,36 +587,103 @@ export default function PostSignupSurvey() {
                     </div>
 
                     {/* Bedrooms and Bathrooms */}
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-black">Bedrooms</Label>
-                      <Select value={currentForm.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
-                        <SelectTrigger className="text-black border-black bg-white">
-                          <SelectValue placeholder="Select bedrooms" className="text-black bg-white" />
-                        </SelectTrigger>
-                        <SelectContent className="text-black bg-white border-black">
-                          {BEDROOM_OPTIONS.map(bed => (
-                            <SelectItem key={bed} value={bed} className="text-black bg-white">
-                              {bed}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-black">Bathrooms</Label>
-                      <Select value={currentForm.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
-                        <SelectTrigger className="text-black border-black bg-white">
-                          <SelectValue placeholder="Select bathrooms" className="text-black bg-white" />
-                        </SelectTrigger>
-                        <SelectContent className="text-black bg-white border-black">
-                          {BATHROOM_OPTIONS.map(bath => (
-                            <SelectItem key={bath} value={bath} className="text-black bg-white">
-                              {bath}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {['realtor', 'landlord'].includes(currentType) ? (
+                      <>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-black">Minimum number of bedrooms in any of your properties</Label>
+                          <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
+                            <SelectTrigger className="text-black border-black bg-white">
+                              <SelectValue placeholder="Select min bedrooms" className="text-black bg-white" />
+                            </SelectTrigger>
+                            <SelectContent className="text-black bg-white border-black">
+                              {BEDROOM_OPTIONS.map(bed => (
+                                <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                  {bed}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-black">Maximum number of bedrooms in any of your properties</Label>
+                          <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
+                            <SelectTrigger className="text-black border-black bg-white">
+                              <SelectValue placeholder="Select max bedrooms" className="text-black bg-white" />
+                            </SelectTrigger>
+                            <SelectContent className="text-black bg-white border-black">
+                              {BEDROOM_OPTIONS.map(bed => (
+                                <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                  {bed}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-black">Minimum number of bathrooms in any of your properties</Label>
+                          <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
+                            <SelectTrigger className="text-black border-black bg-white">
+                              <SelectValue placeholder="Select min bathrooms" className="text-black bg-white" />
+                            </SelectTrigger>
+                            <SelectContent className="text-black bg-white border-black">
+                              {BATHROOM_OPTIONS.map(bath => (
+                                <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                  {bath}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-black">Maximum number of bathrooms in any of your properties</Label>
+                          <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
+                            <SelectTrigger className="text-black border-black bg-white">
+                              <SelectValue placeholder="Select max bathrooms" className="text-black bg-white" />
+                            </SelectTrigger>
+                            <SelectContent className="text-black bg-white border-black">
+                              {BATHROOM_OPTIONS.map(bath => (
+                                <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                  {bath}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-black">Bedrooms</Label>
+                          <Select value={currentForm.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
+                            <SelectTrigger className="text-black border-black bg-white">
+                              <SelectValue placeholder="Select bedrooms" className="text-black bg-white" />
+                            </SelectTrigger>
+                            <SelectContent className="text-black bg-white border-black">
+                              {BEDROOM_OPTIONS.map(bed => (
+                                <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                  {bed}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-black">Bathrooms</Label>
+                          <Select value={currentForm.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
+                            <SelectTrigger className="text-black border-black bg-white">
+                              <SelectValue placeholder="Select bathrooms" className="text-black bg-white" />
+                            </SelectTrigger>
+                            <SelectContent className="text-black bg-white border-black">
+                              {BATHROOM_OPTIONS.map(bath => (
+                                <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                  {bath}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
 
                     {/* Realtor/Landlord specific fields */}
                     {['realtor', 'landlord'].includes(currentType) && (
