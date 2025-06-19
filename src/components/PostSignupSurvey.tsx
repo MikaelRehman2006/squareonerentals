@@ -614,7 +614,7 @@ export default function PostSignupSurvey() {
                           <div className="text-lg font-semibold text-blue-700 mb-1">{REALTOR_STEPS[realtorStep]}</div>
                           <div className="text-sm text-gray-500 mb-2">{realtorStep === 0 ? 'Tell us about your properties!' : realtorStep === 1 ? 'Where do you serve clients?' : realtorStep === 2 ? 'Who do you work with?' : 'Anything else you want to share?'}</div>
                         </div>
-                        <div className="bg-white rounded-xl shadow p-6 w-full max-w-2xl mx-auto mb-4">
+                        <div className="bg-white rounded-xl shadow p-6 w-full max-w-3xl mx-auto mb-4">
                           <AnimatePresence mode="wait" initial={false}>
                             <motion.div
                               key={realtorStep}
@@ -626,40 +626,47 @@ export default function PostSignupSurvey() {
                               {realtorStep === 0 && (
                                 <>
                                   {/* Property Details Step */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div className="space-y-2">
-                                      <Label className="font-semibold text-black">City/Cities</Label>
-                                      <div className="flex flex-wrap gap-2 mb-2">
-                                        <AnimatePresence>
-                                          {cities.map(city => (
-                                            <motion.span
-                                              key={city}
-                                              initial={{ opacity: 0, scale: 0.8 }}
-                                              animate={{ opacity: 1, scale: 1 }}
-                                              exit={{ opacity: 0, scale: 0.8 }}
-                                              transition={{ duration: 0.2 }}
-                                              className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm"
-                                            >
-                                              {city}
-                                              <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                                                <X className="h-4 w-4 text-black" />
-                                              </button>
-                                            </motion.span>
-                                          ))}
-                                        </AnimatePresence>
+                                  <div className="flex flex-col items-center mb-4">
+                                    <UserCircle className="w-12 h-12 text-blue-500 mb-2" />
+                                    <div className="text-lg font-semibold text-blue-700 mb-1">Property Details</div>
+                                    <div className="text-sm text-gray-500 mb-2">Tell us about your properties!</div>
+                                  </div>
+                                  <div className="bg-white rounded-xl shadow p-6 w-full max-w-3xl mx-auto mb-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                      {/* City input and Add button spanning both columns */}
+                                      <div className="md:col-span-2 flex flex-col md:flex-row gap-2 items-start md:items-end mb-2">
+                                        <div className="flex-1">
+                                          <Label className="font-semibold text-black">City/Cities</Label>
+                                          <div className="flex flex-wrap gap-2 mb-2">
+                                            <AnimatePresence>
+                                              {cities.map(city => (
+                                                <motion.span
+                                                  key={city}
+                                                  initial={{ opacity: 0, scale: 0.8 }}
+                                                  animate={{ opacity: 1, scale: 1 }}
+                                                  exit={{ opacity: 0, scale: 0.8 }}
+                                                  transition={{ duration: 0.2 }}
+                                                  className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm"
+                                                >
+                                                  {city}
+                                                  <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
+                                                    <X className="h-4 w-4 text-black" />
+                                                  </button>
+                                                </motion.span>
+                                              ))}
+                                            </AnimatePresence>
+                                          </div>
+                                          <Input
+                                            value={cityInput}
+                                            onChange={e => setCityInput(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); }}}
+                                            placeholder="Type a city and press Enter"
+                                            className="text-black border-black bg-white"
+                                          />
+                                        </div>
+                                        <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700 font-bold h-10 md:ml-2 mt-2 md:mt-0">Add</Button>
                                       </div>
-                                      <div className="flex gap-2">
-                                        <Input
-                                          value={cityInput}
-                                          onChange={e => setCityInput(e.target.value)}
-                                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); }}}
-                                          placeholder="Type a city and press Enter"
-                                          className="text-black border-black bg-white"
-                                        />
-                                        <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700 font-bold">Add</Button>
-                                      </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                      {/* Min/Max Price */}
                                       <div className="space-y-2">
                                         <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD total)</span></Label>
                                         <div className="flex items-center border rounded-lg px-2 bg-white">
@@ -688,6 +695,7 @@ export default function PostSignupSurvey() {
                                           />
                                         </div>
                                       </div>
+                                      {/* Min/Max Bedrooms */}
                                       <div className="space-y-2">
                                         <Label className="font-semibold text-black">Min Bedrooms</Label>
                                         <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
@@ -718,6 +726,7 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
+                                      {/* Min/Max Bathrooms */}
                                       <div className="space-y-2">
                                         <Label className="font-semibold text-black">Min Bathrooms</Label>
                                         <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
