@@ -542,60 +542,64 @@ export default function PostSignupSurvey() {
                   className="space-y-4"
                 >
                   <div className="grid grid-cols-2 gap-4">
-                    {/* City input as chips */}
-                    <div className="space-y-2 col-span-2">
-                      <Label className="font-semibold text-black">City/Cities</Label>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {cities.map(city => (
-                          <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm">
-                            {city}
-                            <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                              <X className="h-4 w-4 text-black" />
-                            </button>
-                          </span>
-                        ))}
+                    {!['realtor', 'landlord'].includes(currentType) && (
+                      <div className="space-y-2 col-span-2">
+                        <Label className="font-semibold text-black">City/Cities</Label>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {cities.map(city => (
+                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm">
+                              {city}
+                              <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
+                                <X className="h-4 w-4 text-black" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            value={cityInput}
+                            onChange={e => setCityInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); }}}
+                            placeholder="Type a city and press Enter"
+                            className="text-black border-black bg-white"
+                          />
+                          <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700">Add</Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Input
-                          value={cityInput}
-                          onChange={e => setCityInput(e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); }}}
-                          placeholder="Type a city and press Enter"
-                          className="text-black border-black bg-white"
-                        />
-                        <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700">Add</Button>
-                      </div>
-                    </div>
+                    )}
 
-                    {/* Min/Max Price fields with $CAD prefix, typeable, and period note */}
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
-                      <div className="flex items-center border rounded-lg px-2 bg-white">
-                        <span className="text-black font-semibold mr-1">$CAD</span>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={currentForm.priceRange.min}
-                          onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                          className="border-0 focus:ring-0 text-black bg-white"
-                          placeholder="0"
-                        />
+                    {!['realtor', 'landlord'].includes(currentType) && (
+                      <div className="space-y-2">
+                        <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
+                        <div className="flex items-center border rounded-lg px-2 bg-white">
+                          <span className="text-black font-semibold mr-1">$CAD</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={currentForm.priceRange.min}
+                            onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
+                            className="border-0 focus:ring-0 text-black bg-white"
+                            placeholder="0"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
-                      <div className="flex items-center border rounded-lg px-2 bg-white">
-                        <span className="text-black font-semibold mr-1">$CAD</span>
-                        <Input
-                          type="number"
-                          min={0}
-                          value={currentForm.priceRange.max}
-                          onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                          className="border-0 focus:ring-0 text-black bg-white"
-                          placeholder=""
-                        />
+                    )}
+                    {!['realtor', 'landlord'].includes(currentType) && (
+                      <div className="space-y-2">
+                        <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
+                        <div className="flex items-center border rounded-lg px-2 bg-white">
+                          <span className="text-black font-semibold mr-1">$CAD</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={currentForm.priceRange.max}
+                            onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
+                            className="border-0 focus:ring-0 text-black bg-white"
+                            placeholder=""
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Bedrooms and Bathrooms */}
                     {['realtor', 'landlord'].includes(currentType) ? (
