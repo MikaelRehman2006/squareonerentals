@@ -625,15 +625,24 @@ export default function PostSignupSurvey() {
                             >
                               {realtorStep === 0 && (
                                 <div className="w-full flex justify-center items-center overflow-y-auto p-4">
-                                  <div className="max-w-2xl w-full bg-white rounded-xl shadow-md p-6 space-y-6">
+                                  <div className="max-w-4xl w-full bg-white rounded-xl shadow-md p-8 space-y-8">
+                                    {/* Stepper Progress Bar */}
+                                    <div className="flex items-center justify-center mb-4">
+                                      {REALTOR_STEPS.map((step, idx) => (
+                                        <div key={step} className="flex items-center">
+                                          <div className={`rounded-full w-8 h-8 flex items-center justify-center font-bold text-white ${idx === realtorStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
+                                          {idx < REALTOR_STEPS.length - 1 && <div className="w-8 h-1 bg-gray-300 mx-2" />}
+                                        </div>
+                                      ))}
+                                    </div>
                                     {/* Property Details Title */}
                                     <div className="flex flex-col items-center">
                                       <UserCircle className="w-12 h-12 text-blue-500 mb-2" />
-                                      <div className="text-lg font-semibold text-blue-700 mb-1 text-center">Property Details</div>
+                                      <div className="text-2xl font-bold text-blue-700 mb-1 text-center">Property Details</div>
                                       <div className="text-base sm:text-sm md:text-base text-gray-500 mb-2 text-center">Tell us about your properties!</div>
                                     </div>
                                     {/* Form Fields */}
-                                    <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col gap-6">
                                       {/* City input and Add button */}
                                       <div className="flex flex-col md:flex-row gap-2 items-start md:items-end">
                                         <div className="flex-1 w-full">
