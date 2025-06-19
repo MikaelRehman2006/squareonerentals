@@ -633,7 +633,7 @@ export default function PostSignupSurvey() {
                               transition={{ duration: 0.3 }}
                             >
                               {realtorStep === 0 && (
-                                <div className="space-y-6">
+                                <div className="space-y-6 max-w-4xl mx-auto">
                                   {/* City/Cities input and chips */}
                                   <div className="space-y-2">
                                     <Label className="font-semibold text-black">City/Cities</Label>
@@ -669,8 +669,8 @@ export default function PostSignupSurvey() {
                                       </Button>
                                     </div>
                                   </div>
-                                  {/* Grid layout for all six fields: price, bedrooms, bathrooms */}
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto">
+                                  {/* Improved grid layout for price, bedrooms, bathrooms */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full gap-y-8">
                                     {/* Min Price */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD total)</span></Label>
@@ -706,7 +706,7 @@ export default function PostSignupSurvey() {
                                       <Label className="font-semibold text-black">Min Bedrooms</Label>
                                       <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
                                         <SelectTrigger className="text-black border-black bg-white w-full">
-                                          <SelectValue placeholder="Select min bedrooms" />
+                                          <SelectValue placeholder="Select min bedrooms" className="text-black" />
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BEDROOM_OPTIONS.map(bed => (
@@ -722,7 +722,7 @@ export default function PostSignupSurvey() {
                                       <Label className="font-semibold text-black">Max Bedrooms</Label>
                                       <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
                                         <SelectTrigger className="text-black border-black bg-white w-full">
-                                          <SelectValue placeholder="Select max bedrooms" />
+                                          <SelectValue placeholder="Select max bedrooms" className="text-black" />
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BEDROOM_OPTIONS.map(bed => (
@@ -738,7 +738,7 @@ export default function PostSignupSurvey() {
                                       <Label className="font-semibold text-black">Min Bathrooms</Label>
                                       <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
                                         <SelectTrigger className="text-black border-black bg-white w-full">
-                                          <SelectValue placeholder="Select min bathrooms" />
+                                          <SelectValue placeholder="Select min bathrooms" className="text-black" />
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BATHROOM_OPTIONS.map(bath => (
@@ -754,7 +754,7 @@ export default function PostSignupSurvey() {
                                       <Label className="font-semibold text-black">Max Bathrooms</Label>
                                       <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
                                         <SelectTrigger className="text-black border-black bg-white w-full">
-                                          <SelectValue placeholder="Select max bathrooms" />
+                                          <SelectValue placeholder="Select max bathrooms" className="text-black" />
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BATHROOM_OPTIONS.map(bath => (
