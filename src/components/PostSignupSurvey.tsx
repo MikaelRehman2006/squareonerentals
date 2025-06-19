@@ -626,15 +626,6 @@ export default function PostSignupSurvey() {
                               {realtorStep === 0 && (
                                 <div className="w-full flex justify-center items-center overflow-y-auto p-4">
                                   <div className="max-w-2xl w-full bg-white rounded-xl shadow-md p-6 space-y-6">
-                                    {/* Stepper Progress Bar */}
-                                    <div className="flex items-center justify-center mb-4">
-                                      {REALTOR_STEPS.map((step, idx) => (
-                                        <div key={step} className="flex items-center">
-                                          <div className={`rounded-full w-8 h-8 flex items-center justify-center font-bold text-white ${idx === realtorStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
-                                          {idx < REALTOR_STEPS.length - 1 && <div className="w-8 h-1 bg-gray-300 mx-2" />}
-                                        </div>
-                                      ))}
-                                    </div>
                                     {/* Property Details Title */}
                                     <div className="flex flex-col items-center">
                                       <UserCircle className="w-12 h-12 text-blue-500 mb-2" />
@@ -910,55 +901,6 @@ export default function PostSignupSurvey() {
                         </div>
                       </>
                     )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="font-semibold text-black">Additional Requirements</Label>
-                    <Input
-                      placeholder="Any specific requirements or preferences?"
-                      value={currentForm.additionalRequirements}
-                      onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
-                      className="text-black border-black bg-white"
-                    />
-                  </div>
-
-                  <div className="flex justify-between pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        const currentIndex = selectedTypes.indexOf(currentType);
-                        if (currentIndex > 0) {
-                          setCurrentType(selectedTypes[currentIndex - 1]);
-                        } else {
-                          setCurrentType('');
-                        }
-                      }}
-                      className="border-black text-white hover:bg-gray-200"
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setCompletedSteps(prev => ({ ...prev, [currentType]: true }));
-                        const currentIndex = selectedTypes.indexOf(currentType);
-                        if (currentIndex < selectedTypes.length - 1) {
-                          setCurrentType(selectedTypes[currentIndex + 1]);
-                        } else {
-                          handleSubmit();
-                        }
-                      }}
-                      disabled={isSubmitting}
-                      className="bg-blue-600 text-white hover:bg-blue-700"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        selectedTypes.indexOf(currentType) === selectedTypes.length - 1 ? 'Submit' : 'Next'
-                      )}
-                    </Button>
                   </div>
                 </motion.div>
               )}
