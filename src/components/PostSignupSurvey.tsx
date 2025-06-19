@@ -710,7 +710,7 @@ export default function PostSignupSurvey() {
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BEDROOM_OPTIONS.map(bed => (
-                                            <SelectItem key={bed} value={bed}>
+                                            <SelectItem key={bed} value={bed} className="text-black bg-white">
                                               {bed}
                                             </SelectItem>
                                           ))}
@@ -726,7 +726,7 @@ export default function PostSignupSurvey() {
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BEDROOM_OPTIONS.map(bed => (
-                                            <SelectItem key={bed} value={bed}>
+                                            <SelectItem key={bed} value={bed} className="text-black bg-white">
                                               {bed}
                                             </SelectItem>
                                           ))}
@@ -742,7 +742,7 @@ export default function PostSignupSurvey() {
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BATHROOM_OPTIONS.map(bath => (
-                                            <SelectItem key={bath} value={bath}>
+                                            <SelectItem key={bath} value={bath} className="text-black bg-white">
                                               {bath}
                                             </SelectItem>
                                           ))}
@@ -758,7 +758,7 @@ export default function PostSignupSurvey() {
                                         </SelectTrigger>
                                         <SelectContent className="text-black bg-white border-black">
                                           {BATHROOM_OPTIONS.map(bath => (
-                                            <SelectItem key={bath} value={bath}>
+                                            <SelectItem key={bath} value={bath} className="text-black bg-white">
                                               {bath}
                                             </SelectItem>
                                           ))}
@@ -896,6 +896,24 @@ export default function PostSignupSurvey() {
                       </>
                     )}
                   </div>
+                  {!['realtor', 'landlord'].includes(currentType) && (
+                    <div className="flex justify-between mt-6 w-full max-w-4xl mx-auto">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCurrentType('')}
+                        className="border-black text-white hover:bg-gray-200"
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        onClick={handleSubmit}
+                        className="bg-blue-600 text-white hover:bg-blue-700"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>) : 'Submit'}
+                      </Button>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
