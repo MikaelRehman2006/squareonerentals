@@ -133,15 +133,68 @@ export default function PostSignupSurvey() {
   // Store form data per role
   const [roleForms, setRoleForms] = useState<Record<string, FormData>>({});
 
+  // Clear any existing localStorage data when session changes
+  useEffect(() => {
+    if (session?.user?.email) {
+      // Clear any localStorage data that doesn't belong to the current user
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('survey_progress_') && key !== `survey_progress_${session.user.email}`) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+  }, [session?.user?.email]);
+
+  // Cleanup function to clear all survey localStorage data
+  const clearAllSurveyData = () => {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('survey_progress_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  };
+
+  // Clear all survey data when component unmounts or user changes
+  useEffect(() => {
+    return () => {
+      clearAllSurveyData();
+    };
+  }, [session?.user?.email]);
+
+  // Reset component state when user changes
+  useEffect(() => {
+    if (session?.user?.email) {
+      setSelectedTypes([]);
+      setCurrentType('');
+      setCompletedSteps({});
+      setRoleForms({});
+      setCityInput('');
+      setCities([]);
+    }
+  }, [session?.user?.email]);
+
   // Load saved progress from localStorage
   useEffect(() => {
     if (session?.user?.email) {
       const savedProgress = localStorage.getItem(`survey_progress_${session.user.email}`);
       if (savedProgress) {
-        const { selectedTypes, currentType, roleForms } = JSON.parse(savedProgress);
-        setSelectedTypes(selectedTypes);
-        setCurrentType(currentType);
-        setRoleForms(roleForms);
+        try {
+          const { selectedTypes, currentType, roleForms, savedEmail } = JSON.parse(savedProgress);
+          // Only load the progress if it belongs to the current user
+          if (savedEmail === session.user.email) {
+            setSelectedTypes(selectedTypes);
+            setCurrentType(currentType);
+            setRoleForms(roleForms);
+          } else {
+            // Clear stale data
+            localStorage.removeItem(`survey_progress_${session.user.email}`);
+          }
+        } catch (error) {
+          // If parsing fails, clear the corrupted data
+          localStorage.removeItem(`survey_progress_${session.user.email}`);
+        }
       }
     }
   }, [session]);
@@ -152,7 +205,8 @@ export default function PostSignupSurvey() {
       localStorage.setItem(`survey_progress_${session.user.email}`, JSON.stringify({
         selectedTypes,
         currentType,
-        roleForms
+        roleForms,
+        savedEmail: session.user.email // Add email to the saved data for verification
       }));
     }
   }, [selectedTypes, currentType, roleForms, session]);
@@ -165,6 +219,8 @@ export default function PostSignupSurvey() {
           const data = await response.json();
           
           if (!data.preferences?.onboardingCompleted) {
+            // Clear any existing localStorage data before opening the survey
+            clearAllSurveyData();
             setIsOpen(true);
           }
         } catch (error) {
@@ -333,7 +389,7 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0">
+      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

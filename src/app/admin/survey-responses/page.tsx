@@ -124,14 +124,14 @@ export default function SurveyResponsesPage() {
                         {expandedUser === user._id && (
                           <TableRow>
                             <TableCell colSpan={5} className="bg-gray-50">
-                              <div className="space-y-4">
+                              <div className="space-y-6">
                                 {user.preferences.userTypes.map((role: string) => (
-                                  <div key={role} className="mb-4">
-                                    <div className="font-semibold mb-2">{role.charAt(0).toUpperCase() + role.slice(1)} Info</div>
-                                    <div className="grid grid-cols-2 gap-2">
+                                  <div key={role} className="mb-4 p-4 rounded-lg border border-gray-200 bg-white">
+                                    <div className="font-bold text-lg mb-2 text-blue-700 border-b border-blue-100 pb-1">{role.charAt(0).toUpperCase() + role.slice(1)} Info</div>
+                                    <div className="grid grid-cols-2 gap-2 text-gray-900">
                                       {Object.entries(user.preferences[role] || {}).map(([key, value]) => (
                                         <div key={key} className="text-sm">
-                                          <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span> {Array.isArray(value) ? value.join(', ') : String(value)}
+                                          <span className="font-medium capitalize text-gray-700">{key.replace(/([A-Z])/g, ' $1')}:</span> {Array.isArray(value) ? value.join(', ') : String(value)}
                                         </div>
                                       ))}
                                     </div>

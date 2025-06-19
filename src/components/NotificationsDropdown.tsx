@@ -108,7 +108,7 @@ export function renderNotificationBadges() {
       const userBadgeContainer = document.getElementById('notification-badge');
       if (userBadgeContainer && unreadCount > 0) {
         userBadgeContainer.innerHTML = `
-          <span class="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+          <span class="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold z-10" style={{ minWidth: '1.25rem', minHeight: '1.25rem' }}>
             ${unreadCount > 9 ? '9+' : unreadCount}
           </span>
         `;
@@ -120,7 +120,7 @@ export function renderNotificationBadges() {
       const menuBadgeContainer = document.getElementById('notification-menu-badge');
       if (menuBadgeContainer && unreadCount > 0) {
         menuBadgeContainer.innerHTML = `
-          <span class="absolute right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+          <span class="absolute right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold z-10" style={{ minWidth: '1.25rem', minHeight: '1.25rem' }}>
             ${unreadCount > 9 ? '9+' : unreadCount}
           </span>
         `;
@@ -132,7 +132,7 @@ export function renderNotificationBadges() {
       const mobileBadgeContainer = document.getElementById('mobile-notification-badge');
       if (mobileBadgeContainer && unreadCount > 0) {
         mobileBadgeContainer.innerHTML = `
-          <span class="h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-xs text-white">
+          <span class="h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold z-10" style={{ minWidth: '1.25rem', minHeight: '1.25rem' }}>
             ${unreadCount > 9 ? '9+' : unreadCount}
           </span>
         `;
@@ -270,12 +270,12 @@ export function NotificationsDropdown() {
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -right-1 -top-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+            <span
+              className="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold z-10"
+              style={{ minWidth: '1.25rem', minHeight: '1.25rem' }}
             >
               {unreadCount > 9 ? '9+' : unreadCount}
-            </Badge>
+            </span>
           )}
         </Button>
       </PopoverTrigger>
