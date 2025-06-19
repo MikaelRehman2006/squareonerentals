@@ -624,161 +624,143 @@ export default function PostSignupSurvey() {
                               transition={{ duration: 0.3 }}
                             >
                               {realtorStep === 0 && (
-                                <div className="w-full flex justify-center items-center overflow-y-auto p-4">
-                                  <div className="max-w-4xl w-full bg-white rounded-xl shadow-md p-8 space-y-8">
-                                    {/* Stepper Progress Bar */}
-                                    <div className="flex items-center justify-center mb-4">
-                                      {REALTOR_STEPS.map((step, idx) => (
-                                        <div key={step} className="flex items-center">
-                                          <div className={`rounded-full w-8 h-8 flex items-center justify-center font-bold text-white ${idx === realtorStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
-                                          {idx < REALTOR_STEPS.length - 1 && <div className="w-8 h-1 bg-gray-300 mx-2" />}
-                                        </div>
+                                <div className="space-y-6">
+                                  {/* City/Cities input and chips */}
+                                  <div className="space-y-2">
+                                    <Label className="font-semibold text-black">City/Cities</Label>
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                      {cities.map(city => (
+                                        <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm">
+                                          {city}
+                                          <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
+                                            <X className="h-4 w-4 text-black" />
+                                          </button>
+                                        </span>
                                       ))}
                                     </div>
-                                    {/* Property Details Title */}
-                                    <div className="flex flex-col items-center">
-                                      <UserCircle className="w-12 h-12 text-blue-500 mb-2" />
-                                      <div className="text-2xl font-bold text-blue-700 mb-1 text-center">Property Details</div>
-                                      <div className="text-base sm:text-sm md:text-base text-gray-500 mb-2 text-center">Tell us about your properties!</div>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        value={cityInput}
+                                        onChange={e => setCityInput(e.target.value)}
+                                        onKeyDown={e => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleAddCity();
+                                          }
+                                        }}
+                                        placeholder="Type a city and press Enter"
+                                        className="text-black border-black bg-white w-full"
+                                      />
+                                      <Button
+                                        type="button"
+                                        onClick={handleAddCity}
+                                        className="bg-blue-600 text-white hover:bg-blue-700"
+                                      >
+                                        Add
+                                      </Button>
                                     </div>
-                                    {/* Form Fields */}
-                                    <div className="flex flex-col gap-6">
-                                      {/* City input and Add button */}
-                                      <div className="flex flex-col md:flex-row gap-2 items-start md:items-end">
-                                        <div className="flex-1 w-full">
-                                          <Label className="font-semibold text-black">City/Cities</Label>
-                                          <div className="flex flex-wrap gap-2 mb-2">
-                                            <AnimatePresence>
-                                              {cities.map(city => (
-                                                <motion.span
-                                                  key={city}
-                                                  initial={{ opacity: 0, scale: 0.8 }}
-                                                  animate={{ opacity: 1, scale: 1 }}
-                                                  exit={{ opacity: 0, scale: 0.8 }}
-                                                  transition={{ duration: 0.2 }}
-                                                  className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm"
-                                                >
-                                                  {city}
-                                                  <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                                                    <X className="h-4 w-4 text-black" />
-                                                  </button>
-                                                </motion.span>
-                                              ))}
-                                            </AnimatePresence>
-                                          </div>
-                                          <Input
-                                            value={cityInput}
-                                            onChange={e => setCityInput(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); } }}
-                                            placeholder="Type a city and press Enter"
-                                            className="text-black border-black bg-white w-full"
-                                          />
-                                        </div>
-                                        <Button
-                                          type="button"
-                                          onClick={handleAddCity}
-                                          className="bg-blue-600 text-white hover:bg-blue-700 font-bold h-10 md:ml-2 mt-2 md:mt-0 w-full md:w-auto"
-                                        >
-                                          Add
-                                        </Button>
+                                  </div>
+
+                                  {/* Grid layout for all six fields: price, bedrooms, bathrooms */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {/* Min Price */}
+                                    <div className="space-y-1">
+                                      <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD total)</span></Label>
+                                      <div className="flex items-center border rounded-lg px-2 bg-white">
+                                        <span className="text-black font-semibold mr-1">$CAD</span>
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          value={currentForm.priceRange.min}
+                                          onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
+                                          className="border-0 focus:ring-0 text-black bg-white w-full"
+                                          placeholder="0"
+                                        />
                                       </div>
-                                      {/* Horizontal Row for Price, Bedrooms, Bathrooms */}
-                                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 w-full">
-                                        {/* Min Price */}
-                                        <div className="space-y-2 w-full">
-                                          <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD total)</span></Label>
-                                          <div className="flex items-center border rounded-lg px-2 bg-white w-full">
-                                            <span className="text-black font-semibold mr-1">$CAD</span>
-                                            <Input
-                                              type="number"
-                                              min={0}
-                                              value={currentForm.priceRange.min}
-                                              onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                                              className="border-0 focus:ring-0 text-black bg-white w-full"
-                                              placeholder="0"
-                                            />
-                                          </div>
-                                        </div>
-                                        {/* Max Price */}
-                                        <div className="space-y-2 w-full">
-                                          <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD total)</span></Label>
-                                          <div className="flex items-center border rounded-lg px-2 bg-white w-full">
-                                            <span className="text-black font-semibold mr-1">$CAD</span>
-                                            <Input
-                                              type="number"
-                                              min={0}
-                                              value={currentForm.priceRange.max}
-                                              onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                                              className="border-0 focus:ring-0 text-black bg-white w-full"
-                                              placeholder=""
-                                            />
-                                          </div>
-                                        </div>
-                                        {/* Min Bedrooms */}
-                                        <div className="space-y-2 w-full">
-                                          <Label className="font-semibold text-black">Min Bedrooms</Label>
-                                          <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
-                                              <SelectValue placeholder="Select min bedrooms" className="text-black bg-white" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BEDROOM_OPTIONS.map(bed => (
-                                                <SelectItem key={bed} value={bed} className="text-black bg-white">
-                                                  {bed}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        {/* Max Bedrooms */}
-                                        <div className="space-y-2 w-full">
-                                          <Label className="font-semibold text-black">Max Bedrooms</Label>
-                                          <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
-                                              <SelectValue placeholder="Select max bedrooms" className="text-black bg-white" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BEDROOM_OPTIONS.map(bed => (
-                                                <SelectItem key={bed} value={bed} className="text-black bg-white">
-                                                  {bed}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        {/* Min Bathrooms */}
-                                        <div className="space-y-2 w-full">
-                                          <Label className="font-semibold text-black">Min Bathrooms</Label>
-                                          <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
-                                              <SelectValue placeholder="Select min bathrooms" className="text-black bg-white" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BATHROOM_OPTIONS.map(bath => (
-                                                <SelectItem key={bath} value={bath} className="text-black bg-white">
-                                                  {bath}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        {/* Max Bathrooms */}
-                                        <div className="space-y-2 w-full">
-                                          <Label className="font-semibold text-black">Max Bathrooms</Label>
-                                          <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
-                                              <SelectValue placeholder="Select max bathrooms" className="text-black bg-white" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BATHROOM_OPTIONS.map(bath => (
-                                                <SelectItem key={bath} value={bath} className="text-black bg-white">
-                                                  {bath}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
+                                    </div>
+
+                                    {/* Max Price */}
+                                    <div className="space-y-1">
+                                      <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD total)</span></Label>
+                                      <div className="flex items-center border rounded-lg px-2 bg-white">
+                                        <span className="text-black font-semibold mr-1">$CAD</span>
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          value={currentForm.priceRange.max}
+                                          onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
+                                          className="border-0 focus:ring-0 text-black bg-white w-full"
+                                          placeholder=""
+                                        />
                                       </div>
+                                    </div>
+
+                                    {/* Min Bedrooms */}
+                                    <div className="space-y-1">
+                                      <Label className="font-semibold text-black">Min Bedrooms</Label>
+                                      <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
+                                        <SelectTrigger className="text-black border-black bg-white w-full">
+                                          <SelectValue placeholder="Select min bedrooms" />
+                                        </SelectTrigger>
+                                        <SelectContent className="text-black bg-white border-black">
+                                          {BEDROOM_OPTIONS.map(bed => (
+                                            <SelectItem key={bed} value={bed}>
+                                              {bed}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    {/* Max Bedrooms */}
+                                    <div className="space-y-1">
+                                      <Label className="font-semibold text-black">Max Bedrooms</Label>
+                                      <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
+                                        <SelectTrigger className="text-black border-black bg-white w-full">
+                                          <SelectValue placeholder="Select max bedrooms" />
+                                        </SelectTrigger>
+                                        <SelectContent className="text-black bg-white border-black">
+                                          {BEDROOM_OPTIONS.map(bed => (
+                                            <SelectItem key={bed} value={bed}>
+                                              {bed}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    {/* Min Bathrooms */}
+                                    <div className="space-y-1">
+                                      <Label className="font-semibold text-black">Min Bathrooms</Label>
+                                      <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
+                                        <SelectTrigger className="text-black border-black bg-white w-full">
+                                          <SelectValue placeholder="Select min bathrooms" />
+                                        </SelectTrigger>
+                                        <SelectContent className="text-black bg-white border-black">
+                                          {BATHROOM_OPTIONS.map(bath => (
+                                            <SelectItem key={bath} value={bath}>
+                                              {bath}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    {/* Max Bathrooms */}
+                                    <div className="space-y-1">
+                                      <Label className="font-semibold text-black">Max Bathrooms</Label>
+                                      <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
+                                        <SelectTrigger className="text-black border-black bg-white w-full">
+                                          <SelectValue placeholder="Select max bathrooms" />
+                                        </SelectTrigger>
+                                        <SelectContent className="text-black bg-white border-black">
+                                          {BATHROOM_OPTIONS.map(bath => (
+                                            <SelectItem key={bath} value={bath}>
+                                              {bath}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
                                     </div>
                                   </div>
                                 </div>
