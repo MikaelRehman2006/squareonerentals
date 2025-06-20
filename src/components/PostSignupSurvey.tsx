@@ -673,7 +673,7 @@ export default function PostSignupSurvey() {
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full gap-y-8">
                                     {/* Min Price */}
                                     <div className="space-y-1">
-                                      <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD total)</span></Label>
+                                      <Label className="font-semibold text-black">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
                                       <div className="flex items-center border rounded-lg px-2 bg-white">
                                         <span className="text-black font-semibold mr-1">$CAD</span>
                                         <Input
@@ -688,7 +688,7 @@ export default function PostSignupSurvey() {
                                     </div>
                                     {/* Max Price */}
                                     <div className="space-y-1">
-                                      <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD total)</span></Label>
+                                      <Label className="font-semibold text-black">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
                                       <div className="flex items-center border rounded-lg px-2 bg-white">
                                         <span className="text-black font-semibold mr-1">$CAD</span>
                                         <Input
@@ -700,6 +700,14 @@ export default function PostSignupSurvey() {
                                           placeholder=""
                                         />
                                       </div>
+                                    </div>
+                                    {/* Price range description */}
+                                    <div className="md:col-span-2 -mt-6">
+                                      <p className="text-xs text-gray-500 italic">
+                                        {currentType === 'landlord' 
+                                          ? 'Enter the monthly rent range for your properties, from lowest to highest.'
+                                          : 'Enter the price range of properties you represent, from lowest to highest.'}
+                                      </p>
                                     </div>
                                     {/* Min Bedrooms */}
                                     <div className="space-y-1">
@@ -733,6 +741,12 @@ export default function PostSignupSurvey() {
                                         </SelectContent>
                                       </Select>
                                     </div>
+                                    {/* Bedrooms range description */}
+                                    <div className="md:col-span-2 -mt-6">
+                                      <p className="text-xs text-gray-500 italic">
+                                      Provide the range of bedrooms in your properties, from the lowest to the highest count.
+                                      </p>
+                                    </div>
                                     {/* Min Bathrooms */}
                                     <div className="space-y-1">
                                       <Label className="font-semibold text-black">Min Bathrooms</Label>
@@ -764,6 +778,12 @@ export default function PostSignupSurvey() {
                                           ))}
                                         </SelectContent>
                                       </Select>
+                                    </div>
+                                    {/* Bathrooms range description */}
+                                    <div className="md:col-span-2 -mt-6">
+                                      <p className="text-xs text-gray-500 italic">
+                                      Provide the range of bathrooms in your properties, from the lowest to the highest count.
+                                      </p>
                                     </div>
                                   </div>
                                 </div>
