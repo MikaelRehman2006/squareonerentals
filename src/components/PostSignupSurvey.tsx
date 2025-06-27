@@ -461,15 +461,19 @@ export default function PostSignupSurvey() {
             <DialogTitle className="text-2xl font-bold text-center text-black">
               Complete Your Profile
             </DialogTitle>
-            {/* Welcome message */}
-            <div className="text-center mt-4 text-black text-base font-medium">
-              Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
-            </div>
-            <DialogDescription className="text-center mt-4 text-black">
-              <span className="block mt-2 text-sm text-blue-700 font-semibold">
-                This quick step is optional—but the more we know, the better we can help you!
-              </span>
-            </DialogDescription>
+            {/* Only show welcome and optionality messages on initial role selection */}
+            {!currentType && (
+              <>
+                <div className="text-center mt-4 text-black text-base font-medium">
+                  Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
+                </div>
+                <DialogDescription className="text-center mt-4 text-black">
+                  <span className="block mt-2 text-sm text-blue-700 font-semibold">
+                    This quick step is optional—but the more we know, the better we can help you!
+                  </span>
+                </DialogDescription>
+              </>
+            )}
           </DialogHeader>
 
           <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
