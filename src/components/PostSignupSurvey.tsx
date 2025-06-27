@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
-import { CheckCircle2, Info, ChevronsUpDown, Loader2, X, UserCircle } from 'lucide-react';
+import { CheckCircle2, Info, ChevronsUpDown, Loader2, X, UserCircle, Home, Search, DollarSign, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -20,27 +20,32 @@ const USER_TYPES = [
   { 
     id: 'realtor', 
     label: 'Realtor',
-    description: 'I help clients buy, sell, or rent properties'
+    description: "I'm a realtor helping people buy, sell, or rent homes.",
+    icon: <UserCircle className="h-6 w-6 text-blue-500" />,
   },
   { 
     id: 'landlord', 
     label: 'Landlord',
-    description: 'I own and rent out properties'
+    description: "I own a property and want to rent it out.",
+    icon: <Home className="h-6 w-6 text-green-500" />,
   },
   { 
     id: 'renter', 
     label: 'Looking to Rent',
-    description: 'I want to find a place to rent'
+    description: "I'm searching for a great place to live.",
+    icon: <Search className="h-6 w-6 text-purple-500" />,
   },
   { 
     id: 'buyer', 
     label: 'Looking to Buy',
-    description: 'I want to purchase a property'
+    description: "I'm looking to buy my next home.",
+    icon: <DollarSign className="h-6 w-6 text-orange-500" />,
   },
   {
     id: 'none',
     label: 'None',
-    description: 'Skip the survey (not recommended)'
+    description: 'Skip this step for now (not recommended)',
+    icon: <XCircle className="h-6 w-6 text-gray-400" />,
   }
 ];
 
@@ -456,9 +461,14 @@ export default function PostSignupSurvey() {
             <DialogTitle className="text-2xl font-bold text-center text-black">
               Complete Your Profile
             </DialogTitle>
+            {/* Welcome message */}
+            <div className="text-center mt-4 text-black text-base font-medium">
+              Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
+            </div>
             <DialogDescription className="text-center mt-4 text-black">
-              Help us match you with the right properties and clients<br />
-              <span className="block mt-2 text-sm text-blue-700 font-semibold">All questions are optional, but highly recommended! The more you share, the better we can help you reach your goal.</span>
+              <span className="block mt-2 text-sm text-blue-700 font-semibold">
+                This quick step is optional—but the more we know, the better we can help you!
+              </span>
             </DialogDescription>
           </DialogHeader>
 
@@ -497,7 +507,9 @@ export default function PostSignupSurvey() {
                   exit={{ opacity: 0 }}
                   className="space-y-4"
                 >
-                  <Label className="text-lg font-semibold text-black">What best describes you? (Select all that apply)</Label>
+                  <Label className="text-lg font-semibold text-black">
+                    Tell us more about what you're looking for! <span className="text-base font-normal">(Pick all that apply)</span>
+                  </Label>
                   <div className="space-y-3">
                     {USER_TYPES.map(type => (
                       <div key={type.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-blue-50 transition-colors">
@@ -507,6 +519,8 @@ export default function PostSignupSurvey() {
                           onCheckedChange={() => handleTypeToggle(type.id)}
                           className="mt-1 border-black"
                         />
+                        {/* Icon for each role */}
+                        <div className="mt-1">{type.icon}</div>
                         <div className="space-y-1">
                           <Label htmlFor={type.id} className="font-medium text-black">{type.label}</Label>
                           <p className="text-sm text-gray-700">{type.description}</p>
