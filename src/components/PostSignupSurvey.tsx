@@ -653,9 +653,9 @@ export default function PostSignupSurvey() {
                                 transition={{ duration: 0.3 }}
                               >
                                 {realtorStep === 0 && (
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                  <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto items-center">
                                     {/* City/Cities input and chips */}
-                                    <div>
+                                    <div className="w-full">
                                       <Label className="font-semibold text-black mb-1 block">City/Cities</Label>
                                       <div className="flex flex-wrap gap-2 mb-2">
                                         {cities.map(city => (
@@ -690,9 +690,9 @@ export default function PostSignupSurvey() {
                                       </div>
                                     </div>
                                     {/* Grouped grid for price, bedrooms, bathrooms */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full place-items-center">
                                       {/* Min/Max Price */}
-                                      <div className="flex flex-col gap-2">
+                                      <div className="flex flex-col gap-2 w-full">
                                         <Label className="font-semibold text-black">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
                                         <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
                                           <span className="text-black font-semibold mr-1">$CAD</span>
@@ -706,7 +706,7 @@ export default function PostSignupSurvey() {
                                           />
                                         </div>
                                       </div>
-                                      <div className="flex flex-col gap-2">
+                                      <div className="flex flex-col gap-2 w-full">
                                         <Label className="font-semibold text-black">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
                                         <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
                                           <span className="text-black font-semibold mr-1">$CAD</span>
@@ -720,15 +720,15 @@ export default function PostSignupSurvey() {
                                           />
                                         </div>
                                       </div>
-                                      <div className="md:col-span-2 -mt-4">
-                                        <p className="text-xs text-gray-500 italic text-center">
+                                      <div className="md:col-span-2 -mt-4 w-full">
+                                        <p className="text-xs text-gray-500 italic text-center w-full">
                                           {currentType === 'landlord' 
                                             ? 'Enter the monthly rent range for your properties, from lowest to highest.'
                                             : 'Enter the price range of properties you represent, from lowest to highest.'}
                                         </p>
                                       </div>
                                       {/* Min/Max Bedrooms */}
-                                      <div className="flex flex-col gap-2">
+                                      <div className="flex flex-col gap-2 w-full">
                                         <Label className="font-semibold text-black">Min Bedrooms</Label>
                                         <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
                                           <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
@@ -743,7 +743,7 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                      <div className="flex flex-col gap-2">
+                                      <div className="flex flex-col gap-2 w-full">
                                         <Label className="font-semibold text-black">Max Bedrooms</Label>
                                         <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
                                           <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
@@ -758,13 +758,13 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                      <div className="md:col-span-2 -mt-4">
-                                        <p className="text-xs text-gray-500 italic text-center">
+                                      <div className="md:col-span-2 -mt-4 w-full">
+                                        <p className="text-xs text-gray-500 italic text-center w-full">
                                           Provide the range of bedrooms in your properties, from the lowest to the highest count.
                                         </p>
                                       </div>
                                       {/* Min/Max Bathrooms */}
-                                      <div className="flex flex-col gap-2">
+                                      <div className="flex flex-col gap-2 w-full">
                                         <Label className="font-semibold text-black">Min Bathrooms</Label>
                                         <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
                                           <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
@@ -779,7 +779,7 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                      <div className="flex flex-col gap-2">
+                                      <div className="flex flex-col gap-2 w-full">
                                         <Label className="font-semibold text-black">Max Bathrooms</Label>
                                         <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
                                           <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
@@ -794,8 +794,8 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                      <div className="md:col-span-2 -mt-4">
-                                        <p className="text-xs text-gray-500 italic text-center">
+                                      <div className="md:col-span-2 -mt-4 w-full">
+                                        <p className="text-xs text-gray-500 italic text-center w-full">
                                           Provide the range of bathrooms in your properties, from the lowest to the highest count.
                                         </p>
                                       </div>
