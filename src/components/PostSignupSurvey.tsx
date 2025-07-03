@@ -654,13 +654,13 @@ export default function PostSignupSurvey() {
                                   transition={{ duration: 0.3 }}
                                 >
                                   {realtorStep === 0 && (
-                                    <div className="space-y-6 max-w-4xl mx-auto">
+                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
                                       {/* City/Cities input and chips */}
-                                      <div className="space-y-2">
-                                        <Label className="font-semibold text-black">City/Cities</Label>
+                                      <div>
+                                        <Label className="font-semibold text-black mb-1 block">City/Cities</Label>
                                         <div className="flex flex-wrap gap-2 mb-2">
                                           {cities.map(city => (
-                                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm">
+                                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm shadow-sm">
                                               {city}
                                               <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
                                                 <X className="h-4 w-4 text-black" />
@@ -679,23 +679,23 @@ export default function PostSignupSurvey() {
                                               }
                                             }}
                                             placeholder="Type a city and press Enter"
-                                            className="text-black border-black bg-white w-full"
+                                            className="text-black border-black bg-white w-full rounded-lg shadow-sm"
                                           />
                                           <Button
                                             type="button"
                                             onClick={handleAddCity}
-                                            className="bg-blue-600 text-white hover:bg-blue-700"
+                                            className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm"
                                           >
                                             Add
                                           </Button>
                                         </div>
                                       </div>
-                                      {/* Improved grid layout for price, bedrooms, bathrooms */}
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full gap-y-8">
-                                        {/* Min Price */}
-                                        <div className="space-y-1">
+                                      {/* Grouped grid for price, bedrooms, bathrooms */}
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                                        {/* Min/Max Price */}
+                                        <div className="flex flex-col gap-2">
                                           <Label className="font-semibold text-black">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                          <div className="flex items-center border rounded-lg px-2 bg-white">
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
                                             <span className="text-black font-semibold mr-1">$CAD</span>
                                             <Input
                                               type="number"
@@ -707,10 +707,9 @@ export default function PostSignupSurvey() {
                                             />
                                           </div>
                                         </div>
-                                        {/* Max Price */}
-                                        <div className="space-y-1">
+                                        <div className="flex flex-col gap-2">
                                           <Label className="font-semibold text-black">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                          <div className="flex items-center border rounded-lg px-2 bg-white">
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
                                             <span className="text-black font-semibold mr-1">$CAD</span>
                                             <Input
                                               type="number"
@@ -722,19 +721,18 @@ export default function PostSignupSurvey() {
                                             />
                                           </div>
                                         </div>
-                                        {/* Price range description */}
-                                        <div className="md:col-span-2 -mt-6">
-                                          <p className="text-xs text-gray-500 italic">
+                                        <div className="md:col-span-2 -mt-4">
+                                          <p className="text-xs text-gray-500 italic text-center">
                                             {currentType === 'landlord' 
                                               ? 'Enter the monthly rent range for your properties, from lowest to highest.'
                                               : 'Enter the price range of properties you represent, from lowest to highest.'}
                                           </p>
                                         </div>
-                                        {/* Min Bedrooms */}
-                                        <div className="space-y-1">
+                                        {/* Min/Max Bedrooms */}
+                                        <div className="flex flex-col gap-2">
                                           <Label className="font-semibold text-black">Min Bedrooms</Label>
                                           <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
+                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
                                               <SelectValue placeholder="Select min bedrooms" className="text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -746,11 +744,10 @@ export default function PostSignupSurvey() {
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                        {/* Max Bedrooms */}
-                                        <div className="space-y-1">
+                                        <div className="flex flex-col gap-2">
                                           <Label className="font-semibold text-black">Max Bedrooms</Label>
                                           <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
+                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
                                               <SelectValue placeholder="Select max bedrooms" className="text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -762,17 +759,16 @@ export default function PostSignupSurvey() {
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                        {/* Bedrooms range description */}
-                                        <div className="md:col-span-2 -mt-6">
-                                          <p className="text-xs text-gray-500 italic">
-                                          Provide the range of bedrooms in your properties, from the lowest to the highest count.
+                                        <div className="md:col-span-2 -mt-4">
+                                          <p className="text-xs text-gray-500 italic text-center">
+                                            Provide the range of bedrooms in your properties, from the lowest to the highest count.
                                           </p>
                                         </div>
-                                        {/* Min Bathrooms */}
-                                        <div className="space-y-1">
+                                        {/* Min/Max Bathrooms */}
+                                        <div className="flex flex-col gap-2">
                                           <Label className="font-semibold text-black">Min Bathrooms</Label>
                                           <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
+                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
                                               <SelectValue placeholder="Select min bathrooms" className="text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -784,11 +780,10 @@ export default function PostSignupSurvey() {
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                        {/* Max Bathrooms */}
-                                        <div className="space-y-1">
+                                        <div className="flex flex-col gap-2">
                                           <Label className="font-semibold text-black">Max Bathrooms</Label>
                                           <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full">
+                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
                                               <SelectValue placeholder="Select max bathrooms" className="text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -800,19 +795,17 @@ export default function PostSignupSurvey() {
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                        {/* Bathrooms range description */}
-                                        <div className="md:col-span-2 -mt-6">
-                                          <p className="text-xs text-gray-500 italic">
-                                          Provide the range of bathrooms in your properties, from the lowest to the highest count.
+                                        <div className="md:col-span-2 -mt-4">
+                                          <p className="text-xs text-gray-500 italic text-center">
+                                            Provide the range of bathrooms in your properties, from the lowest to the highest count.
                                           </p>
                                         </div>
                                       </div>
                                     </div>
                                   )}
                                   {realtorStep === 1 && (
-                                    <>
-                                      {/* Areas Served Step */}
-                                      <Label className="font-semibold text-black">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
+                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                      <Label className="font-semibold text-black mb-1">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
                                       <div className="flex flex-wrap gap-2 mt-2">
                                         {AREAS_SERVED.map(area => (
                                           <Button
@@ -826,12 +819,12 @@ export default function PostSignupSurvey() {
                                           </Button>
                                         ))}
                                       </div>
-                                    </>
+                                      <p className="text-xs text-gray-500 italic mt-2">Select all the areas where you actively serve clients.</p>
+                                    </div>
                                   )}
                                   {realtorStep === 2 && (
-                                    <>
-                                      {/* Preferred Client Types Step */}
-                                      <Label className="font-semibold text-black">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
+                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                      <Label className="font-semibold text-black mb-1">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
                                       <div className="flex flex-wrap gap-2 mt-2">
                                         {CLIENT_TYPES.map(type => (
                                           <Button
@@ -845,12 +838,12 @@ export default function PostSignupSurvey() {
                                           </Button>
                                         ))}
                                       </div>
-                                    </>
+                                      <p className="text-xs text-gray-500 italic mt-2">Let us know which types of clients you prefer to work with.</p>
+                                    </div>
                                   )}
                                   {realtorStep === 3 && (
-                                    <>
-                                      {/* Additional Info Step */}
-                                      <div className="flex items-center space-x-2 mb-4">
+                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                      <div className="flex items-center space-x-2 mb-2">
                                         <Checkbox
                                           id="accepting-clients"
                                           checked={currentForm.isAcceptingClients}
@@ -859,14 +852,17 @@ export default function PostSignupSurvey() {
                                         />
                                         <Label htmlFor="accepting-clients" className="text-black">I am currently accepting new clients</Label>
                                       </div>
-                                      <Label className="font-semibold text-black">Additional Requirements</Label>
-                                      <Input
-                                        placeholder="Any specific requirements or preferences?"
-                                        value={currentForm.additionalRequirements}
-                                        onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
-                                        className="text-black border-black bg-white"
-                                      />
-                                    </>
+                                      <div>
+                                        <Label className="font-semibold text-black mb-1">Additional Requirements</Label>
+                                        <Input
+                                          placeholder="Any specific requirements or preferences?"
+                                          value={currentForm.additionalRequirements}
+                                          onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
+                                          className="text-black border-black bg-white rounded-lg shadow-sm"
+                                        />
+                                        <p className="text-xs text-gray-500 italic mt-2">Share any special requirements or preferences you have for new clients.</p>
+                                      </div>
+                                    </div>
                                   )}
                                 </motion.div>
                               </AnimatePresence>
