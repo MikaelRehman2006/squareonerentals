@@ -644,7 +644,7 @@ export default function PostSignupSurvey() {
                           </div>
                           {/* Center the form card/content */}
                           <div className="w-full max-w-xl flex flex-col items-center">
-                          <div className="bg-white rounded-xl shadow p-6 w-full max-w-5xl mx-auto mb-4">
+                          <div className="bg-white rounded-xl shadow p-6 w-full max-w-[900px] mx-auto mb-4">
                               <AnimatePresence mode="wait" initial={false}>
                                 <motion.div
                                   key={realtorStep}
