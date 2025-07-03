@@ -643,260 +643,258 @@ export default function PostSignupSurvey() {
                             <div className="text-sm text-gray-500 mb-2">{realtorStep === 0 ? 'Tell us about your properties!' : realtorStep === 1 ? 'Where do you serve clients?' : realtorStep === 2 ? 'Who do you work with?' : 'Anything else you want to share?'}</div>
                           </div>
                           {/* Center the form card/content */}
-                          <div className="w-full max-w-xl flex flex-col items-center">
-                          <div className="bg-white rounded-xl shadow p-6 w-full max-w-[900px] mx-auto mb-4">
-                              <AnimatePresence mode="wait" initial={false}>
-                                <motion.div
-                                  key={realtorStep}
-                                  initial={{ opacity: 0, x: 40 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: -40 }}
-                                  transition={{ duration: 0.3 }}
-                                >
-                                  {realtorStep === 0 && (
-                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
-                                      {/* City/Cities input and chips */}
-                                      <div>
-                                        <Label className="font-semibold text-black mb-1 block">City/Cities</Label>
-                                        <div className="flex flex-wrap gap-2 mb-2">
-                                          {cities.map(city => (
-                                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm shadow-sm">
-                                              {city}
-                                              <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                                                <X className="h-4 w-4 text-black" />
-                                              </button>
-                                            </span>
-                                          ))}
-                                        </div>
-                                        <div className="flex gap-2">
-                                          <Input
-                                            value={cityInput}
-                                            onChange={e => setCityInput(e.target.value)}
-                                            onKeyDown={e => {
-                                              if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                handleAddCity();
-                                              }
-                                            }}
-                                            placeholder="Type a city and press Enter"
-                                            className="text-black border-black bg-white w-full rounded-lg shadow-sm"
-                                          />
-                                          <Button
-                                            type="button"
-                                            onClick={handleAddCity}
-                                            className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm"
-                                          >
-                                            Add
-                                          </Button>
-                                        </div>
-                                      </div>
-                                      {/* Grouped grid for price, bedrooms, bathrooms */}
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                                        {/* Min/Max Price */}
-                                        <div className="flex flex-col gap-2">
-                                          <Label className="font-semibold text-black">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
-                                            <span className="text-black font-semibold mr-1">$CAD</span>
-                                            <Input
-                                              type="number"
-                                              min={0}
-                                              value={currentForm.priceRange.min}
-                                              onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                                              className="border-0 focus:ring-0 text-black bg-white w-full"
-                                              placeholder="0"
-                                            />
-                                          </div>
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                          <Label className="font-semibold text-black">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
-                                            <span className="text-black font-semibold mr-1">$CAD</span>
-                                            <Input
-                                              type="number"
-                                              min={0}
-                                              value={currentForm.priceRange.max}
-                                              onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                                              className="border-0 focus:ring-0 text-black bg-white w-full"
-                                              placeholder=""
-                                            />
-                                          </div>
-                                        </div>
-                                        <div className="md:col-span-2 -mt-4">
-                                          <p className="text-xs text-gray-500 italic text-center">
-                                            {currentType === 'landlord' 
-                                              ? 'Enter the monthly rent range for your properties, from lowest to highest.'
-                                              : 'Enter the price range of properties you represent, from lowest to highest.'}
-                                          </p>
-                                        </div>
-                                        {/* Min/Max Bedrooms */}
-                                        <div className="flex flex-col gap-2">
-                                          <Label className="font-semibold text-black">Min Bedrooms</Label>
-                                          <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
-                                              <SelectValue placeholder="Select min bedrooms" className="text-black" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BEDROOM_OPTIONS.map(bed => (
-                                                <SelectItem key={bed} value={bed} className="text-black bg-white">
-                                                  {bed}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                          <Label className="font-semibold text-black">Max Bedrooms</Label>
-                                          <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
-                                              <SelectValue placeholder="Select max bedrooms" className="text-black" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BEDROOM_OPTIONS.map(bed => (
-                                                <SelectItem key={bed} value={bed} className="text-black bg-white">
-                                                  {bed}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="md:col-span-2 -mt-4">
-                                          <p className="text-xs text-gray-500 italic text-center">
-                                            Provide the range of bedrooms in your properties, from the lowest to the highest count.
-                                          </p>
-                                        </div>
-                                        {/* Min/Max Bathrooms */}
-                                        <div className="flex flex-col gap-2">
-                                          <Label className="font-semibold text-black">Min Bathrooms</Label>
-                                          <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
-                                              <SelectValue placeholder="Select min bathrooms" className="text-black" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BATHROOM_OPTIONS.map(bath => (
-                                                <SelectItem key={bath} value={bath} className="text-black bg-white">
-                                                  {bath}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="flex flex-col gap-2">
-                                          <Label className="font-semibold text-black">Max Bathrooms</Label>
-                                          <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
-                                              <SelectValue placeholder="Select max bathrooms" className="text-black" />
-                                            </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-black">
-                                              {BATHROOM_OPTIONS.map(bath => (
-                                                <SelectItem key={bath} value={bath} className="text-black bg-white">
-                                                  {bath}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="md:col-span-2 -mt-4">
-                                          <p className="text-xs text-gray-500 italic text-center">
-                                            Provide the range of bathrooms in your properties, from the lowest to the highest count.
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {realtorStep === 1 && (
-                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
-                                      <Label className="font-semibold text-black mb-1">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
-                                      <div className="flex flex-wrap gap-2 mt-2">
-                                        {AREAS_SERVED.map(area => (
-                                          <Button
-                                            key={area}
-                                            variant={currentForm.areasServed.includes(area) ? "default" : "outline"}
-                                            size="sm"
-                                            onClick={() => handleArrayToggle('areasServed', area)}
-                                            className={currentForm.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
-                                          >
-                                            {area}
-                                          </Button>
+                          <div className="w-full max-w-[900px] mx-auto mb-4">
+                            <AnimatePresence mode="wait" initial={false}>
+                              <motion.div
+                                key={realtorStep}
+                                initial={{ opacity: 0, x: 40 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -40 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                {realtorStep === 0 && (
+                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                    {/* City/Cities input and chips */}
+                                    <div>
+                                      <Label className="font-semibold text-black mb-1 block">City/Cities</Label>
+                                      <div className="flex flex-wrap gap-2 mb-2">
+                                        {cities.map(city => (
+                                          <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm shadow-sm">
+                                            {city}
+                                            <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
+                                              <X className="h-4 w-4 text-black" />
+                                            </button>
+                                          </span>
                                         ))}
                                       </div>
-                                      <p className="text-xs text-gray-500 italic mt-2">Select all the areas where you actively serve clients.</p>
-                                    </div>
-                                  )}
-                                  {realtorStep === 2 && (
-                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
-                                      <Label className="font-semibold text-black mb-1">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
-                                      <div className="flex flex-wrap gap-2 mt-2">
-                                        {CLIENT_TYPES.map(type => (
-                                          <Button
-                                            key={type}
-                                            variant={currentForm.clientTypes.includes(type) ? "default" : "outline"}
-                                            size="sm"
-                                            onClick={() => handleArrayToggle('clientTypes', type)}
-                                            className={currentForm.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
-                                          >
-                                            {type}
-                                          </Button>
-                                        ))}
-                                      </div>
-                                      <p className="text-xs text-gray-500 italic mt-2">Let us know which types of clients you prefer to work with.</p>
-                                    </div>
-                                  )}
-                                  {realtorStep === 3 && (
-                                    <div className="flex flex-col gap-8 max-w-2xl mx-auto">
-                                      <div className="flex items-center space-x-2 mb-2">
-                                        <Checkbox
-                                          id="accepting-clients"
-                                          checked={currentForm.isAcceptingClients}
-                                          onCheckedChange={(checked) => handleFormChange('isAcceptingClients', checked)}
-                                          className="border-black"
-                                        />
-                                        <Label htmlFor="accepting-clients" className="text-black">I am currently accepting new clients</Label>
-                                      </div>
-                                      <div>
-                                        <Label className="font-semibold text-black mb-1">Additional Requirements</Label>
+                                      <div className="flex gap-2">
                                         <Input
-                                          placeholder="Any specific requirements or preferences?"
-                                          value={currentForm.additionalRequirements}
-                                          onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
-                                          className="text-black border-black bg-white rounded-lg shadow-sm"
+                                          value={cityInput}
+                                          onChange={e => setCityInput(e.target.value)}
+                                          onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault();
+                                              handleAddCity();
+                                            }
+                                          }}
+                                          placeholder="Type a city and press Enter"
+                                          className="text-black border-black bg-white w-full rounded-lg shadow-sm"
                                         />
-                                        <p className="text-xs text-gray-500 italic mt-2">Share any special requirements or preferences you have for new clients.</p>
+                                        <Button
+                                          type="button"
+                                          onClick={handleAddCity}
+                                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm"
+                                        >
+                                          Add
+                                        </Button>
                                       </div>
                                     </div>
-                                  )}
-                                </motion.div>
-                              </AnimatePresence>
-                            </div>
-                            <div className="flex justify-between mt-4">
-                              <Button
-                                variant="outline"
-                                onClick={() => {
-                                  if (realtorStep > 0) setRealtorStep(realtorStep - 1);
-                                  else setCurrentType('');
-                                }}
-                                className="border-black text-white hover:bg-gray-200"
-                              >
-                                Back
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  if (realtorStep < REALTOR_STEPS.length - 1) setRealtorStep(realtorStep + 1);
-                                  else {
-                                    setCompletedSteps(prev => ({ ...prev, [currentType]: true }));
-                                    const currentIndex = selectedTypes.indexOf(currentType);
-                                    if (currentIndex < selectedTypes.length - 1) {
-                                      setCurrentType(selectedTypes[currentIndex + 1]);
-                                      setRealtorStep(0);
-                                    } else {
-                                      handleSubmit();
-                                    }
+                                    {/* Grouped grid for price, bedrooms, bathrooms */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                                      {/* Min/Max Price */}
+                                      <div className="flex flex-col gap-2">
+                                        <Label className="font-semibold text-black">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
+                                          <span className="text-black font-semibold mr-1">$CAD</span>
+                                          <Input
+                                            type="number"
+                                            min={0}
+                                            value={currentForm.priceRange.min}
+                                            onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
+                                            className="border-0 focus:ring-0 text-black bg-white w-full"
+                                            placeholder="0"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                        <Label className="font-semibold text-black">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
+                                          <span className="text-black font-semibold mr-1">$CAD</span>
+                                          <Input
+                                            type="number"
+                                            min={0}
+                                            value={currentForm.priceRange.max}
+                                            onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
+                                            className="border-0 focus:ring-0 text-black bg-white w-full"
+                                            placeholder=""
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="md:col-span-2 -mt-4">
+                                        <p className="text-xs text-gray-500 italic text-center">
+                                          {currentType === 'landlord' 
+                                            ? 'Enter the monthly rent range for your properties, from lowest to highest.'
+                                            : 'Enter the price range of properties you represent, from lowest to highest.'}
+                                        </p>
+                                      </div>
+                                      {/* Min/Max Bedrooms */}
+                                      <div className="flex flex-col gap-2">
+                                        <Label className="font-semibold text-black">Min Bedrooms</Label>
+                                        <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
+                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                            <SelectValue placeholder="Select min bedrooms" className="text-black" />
+                                          </SelectTrigger>
+                                          <SelectContent className="text-black bg-white border-black">
+                                            {BEDROOM_OPTIONS.map(bed => (
+                                              <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                                {bed}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                        <Label className="font-semibold text-black">Max Bedrooms</Label>
+                                        <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
+                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                            <SelectValue placeholder="Select max bedrooms" className="text-black" />
+                                          </SelectTrigger>
+                                          <SelectContent className="text-black bg-white border-black">
+                                            {BEDROOM_OPTIONS.map(bed => (
+                                              <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                                {bed}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="md:col-span-2 -mt-4">
+                                        <p className="text-xs text-gray-500 italic text-center">
+                                          Provide the range of bedrooms in your properties, from the lowest to the highest count.
+                                        </p>
+                                      </div>
+                                      {/* Min/Max Bathrooms */}
+                                      <div className="flex flex-col gap-2">
+                                        <Label className="font-semibold text-black">Min Bathrooms</Label>
+                                        <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
+                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                            <SelectValue placeholder="Select min bathrooms" className="text-black" />
+                                          </SelectTrigger>
+                                          <SelectContent className="text-black bg-white border-black">
+                                            {BATHROOM_OPTIONS.map(bath => (
+                                              <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                                {bath}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                        <Label className="font-semibold text-black">Max Bathrooms</Label>
+                                        <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
+                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                            <SelectValue placeholder="Select max bathrooms" className="text-black" />
+                                          </SelectTrigger>
+                                          <SelectContent className="text-black bg-white border-black">
+                                            {BATHROOM_OPTIONS.map(bath => (
+                                              <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                                {bath}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      <div className="md:col-span-2 -mt-4">
+                                        <p className="text-xs text-gray-500 italic text-center">
+                                          Provide the range of bathrooms in your properties, from the lowest to the highest count.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                                {realtorStep === 1 && (
+                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                    <Label className="font-semibold text-black mb-1">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {AREAS_SERVED.map(area => (
+                                        <Button
+                                          key={area}
+                                          variant={currentForm.areasServed.includes(area) ? "default" : "outline"}
+                                          size="sm"
+                                          onClick={() => handleArrayToggle('areasServed', area)}
+                                          className={currentForm.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
+                                        >
+                                          {area}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 italic mt-2">Select all the areas where you actively serve clients.</p>
+                                  </div>
+                                )}
+                                {realtorStep === 2 && (
+                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                    <Label className="font-semibold text-black mb-1">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {CLIENT_TYPES.map(type => (
+                                        <Button
+                                          key={type}
+                                          variant={currentForm.clientTypes.includes(type) ? "default" : "outline"}
+                                          size="sm"
+                                          onClick={() => handleArrayToggle('clientTypes', type)}
+                                          className={currentForm.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
+                                        >
+                                          {type}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 italic mt-2">Let us know which types of clients you prefer to work with.</p>
+                                  </div>
+                                )}
+                                {realtorStep === 3 && (
+                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                      <Checkbox
+                                        id="accepting-clients"
+                                        checked={currentForm.isAcceptingClients}
+                                        onCheckedChange={(checked) => handleFormChange('isAcceptingClients', checked)}
+                                        className="border-black"
+                                      />
+                                      <Label htmlFor="accepting-clients" className="text-black">I am currently accepting new clients</Label>
+                                    </div>
+                                    <div>
+                                      <Label className="font-semibold text-black mb-1">Additional Requirements</Label>
+                                      <Input
+                                        placeholder="Any specific requirements or preferences?"
+                                        value={currentForm.additionalRequirements}
+                                        onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
+                                        className="text-black border-black bg-white rounded-lg shadow-sm"
+                                      />
+                                      <p className="text-xs text-gray-500 italic mt-2">Share any special requirements or preferences you have for new clients.</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </motion.div>
+                            </AnimatePresence>
+                          </div>
+                          <div className="flex justify-between mt-4">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                if (realtorStep > 0) setRealtorStep(realtorStep - 1);
+                                else setCurrentType('');
+                              }}
+                              className="border-black text-white hover:bg-gray-200"
+                            >
+                              Back
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                if (realtorStep < REALTOR_STEPS.length - 1) setRealtorStep(realtorStep + 1);
+                                else {
+                                  setCompletedSteps(prev => ({ ...prev, [currentType]: true }));
+                                  const currentIndex = selectedTypes.indexOf(currentType);
+                                  if (currentIndex < selectedTypes.length - 1) {
+                                    setCurrentType(selectedTypes[currentIndex + 1]);
+                                    setRealtorStep(0);
+                                  } else {
+                                    handleSubmit();
                                   }
-                                }}
-                                className="bg-blue-600 text-white hover:bg-blue-700"
-                              >
-                                {realtorStep < REALTOR_STEPS.length - 1 ? 'Next' : isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>) : 'Submit'}
-                              </Button>
-                            </div>
+                                }
+                              }}
+                              className="bg-blue-600 text-white hover:bg-blue-700"
+                            >
+                              {realtorStep < REALTOR_STEPS.length - 1 ? 'Next' : isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>) : 'Submit'}
+                            </Button>
                           </div>
                         </div>
                       ) : (
