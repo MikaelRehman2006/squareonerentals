@@ -653,7 +653,7 @@ export default function PostSignupSurvey() {
                                 transition={{ duration: 0.3 }}
                               >
                                 {realtorStep === 0 && (
-                                  <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto items-center">
+                                  <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto items-center">
                                     {/* City/Cities input and chips */}
                                     <div className="w-full">
                                       <Label className="font-semibold text-black mb-1 block">City/Cities</Label>
@@ -667,7 +667,7 @@ export default function PostSignupSurvey() {
                                           </span>
                                         ))}
                                       </div>
-                                      <div className="flex gap-2">
+                                      <div className="flex gap-2 w-full">
                                         <Input
                                           value={cityInput}
                                           onChange={e => setCityInput(e.target.value)}
@@ -678,12 +678,12 @@ export default function PostSignupSurvey() {
                                             }
                                           }}
                                           placeholder="Type a city and press Enter"
-                                          className="text-black border-black bg-white w-full rounded-lg shadow-sm"
+                                          className="text-black border-black bg-white w-full rounded-lg shadow-sm text-base px-4 py-3"
                                         />
                                         <Button
                                           type="button"
                                           onClick={handleAddCity}
-                                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm"
+                                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm text-base px-6 py-3"
                                         >
                                           Add
                                         </Button>
@@ -692,30 +692,30 @@ export default function PostSignupSurvey() {
                                     {/* Grouped grid for price, bedrooms, bathrooms */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full place-items-center">
                                       {/* Min/Max Price */}
-                                      <div className="flex flex-col gap-2 w-full">
-                                        <Label className="font-semibold text-black">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
+                                      <div className="flex flex-col gap-2 w-full items-center">
+                                        <Label className="font-semibold text-black text-center">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full max-w-sm">
                                           <span className="text-black font-semibold mr-1">$CAD</span>
                                           <Input
                                             type="number"
                                             min={0}
                                             value={currentForm.priceRange.min}
                                             onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                                            className="border-0 focus:ring-0 text-black bg-white w-full"
+                                            className="border-0 focus:ring-0 text-black bg-white w-full text-base px-4 py-3"
                                             placeholder="0"
                                           />
                                         </div>
                                       </div>
-                                      <div className="flex flex-col gap-2 w-full">
-                                        <Label className="font-semibold text-black">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm">
+                                      <div className="flex flex-col gap-2 w-full items-center">
+                                        <Label className="font-semibold text-black text-center">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full max-w-sm">
                                           <span className="text-black font-semibold mr-1">$CAD</span>
                                           <Input
                                             type="number"
                                             min={0}
                                             value={currentForm.priceRange.max}
                                             onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                                            className="border-0 focus:ring-0 text-black bg-white w-full"
+                                            className="border-0 focus:ring-0 text-black bg-white w-full text-base px-4 py-3"
                                             placeholder=""
                                           />
                                         </div>
@@ -728,10 +728,10 @@ export default function PostSignupSurvey() {
                                         </p>
                                       </div>
                                       {/* Min/Max Bedrooms */}
-                                      <div className="flex flex-col gap-2 w-full">
-                                        <Label className="font-semibold text-black">Min Bedrooms</Label>
+                                      <div className="flex flex-col gap-2 w-full items-center">
+                                        <Label className="font-semibold text-black text-center">Min Bedrooms</Label>
                                         <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                          <SelectTrigger className="text-black border-black bg-white w-full max-w-sm rounded-lg shadow-sm text-base px-4 py-3">
                                             <SelectValue placeholder="Select min bedrooms" className="text-black" />
                                           </SelectTrigger>
                                           <SelectContent className="text-black bg-white border-black">
@@ -743,10 +743,10 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                      <div className="flex flex-col gap-2 w-full">
-                                        <Label className="font-semibold text-black">Max Bedrooms</Label>
+                                      <div className="flex flex-col gap-2 w-full items-center">
+                                        <Label className="font-semibold text-black text-center">Max Bedrooms</Label>
                                         <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                          <SelectTrigger className="text-black border-black bg-white w-full max-w-sm rounded-lg shadow-sm text-base px-4 py-3">
                                             <SelectValue placeholder="Select max bedrooms" className="text-black" />
                                           </SelectTrigger>
                                           <SelectContent className="text-black bg-white border-black">
@@ -764,10 +764,10 @@ export default function PostSignupSurvey() {
                                         </p>
                                       </div>
                                       {/* Min/Max Bathrooms */}
-                                      <div className="flex flex-col gap-2 w-full">
-                                        <Label className="font-semibold text-black">Min Bathrooms</Label>
+                                      <div className="flex flex-col gap-2 w-full items-center">
+                                        <Label className="font-semibold text-black text-center">Min Bathrooms</Label>
                                         <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                          <SelectTrigger className="text-black border-black bg-white w-full max-w-sm rounded-lg shadow-sm text-base px-4 py-3">
                                             <SelectValue placeholder="Select min bathrooms" className="text-black" />
                                           </SelectTrigger>
                                           <SelectContent className="text-black bg-white border-black">
@@ -779,10 +779,10 @@ export default function PostSignupSurvey() {
                                           </SelectContent>
                                         </Select>
                                       </div>
-                                      <div className="flex flex-col gap-2 w-full">
-                                        <Label className="font-semibold text-black">Max Bathrooms</Label>
+                                      <div className="flex flex-col gap-2 w-full items-center">
+                                        <Label className="font-semibold text-black text-center">Max Bathrooms</Label>
                                         <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white w-full rounded-lg shadow-sm">
+                                          <SelectTrigger className="text-black border-black bg-white w-full max-w-sm rounded-lg shadow-sm text-base px-4 py-3">
                                             <SelectValue placeholder="Select max bathrooms" className="text-black" />
                                           </SelectTrigger>
                                           <SelectContent className="text-black bg-white border-black">
