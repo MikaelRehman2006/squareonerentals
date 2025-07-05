@@ -214,7 +214,13 @@ export default function DashboardPage() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your property listings</p>
+          <p className="text-gray-600 mt-2">Manage your property listings, subscription, saved properties, and update your preferences. Use your dashboard to:</p>
+          <ul className="list-disc ml-6 mt-2 text-gray-700 text-sm">
+            <li>Manage and create property listings</li>
+            <li>View and manage your subscription</li>
+            <li>Access and edit your saved properties</li>
+            <li>Edit your onboarding survey and preferences</li>
+          </ul>
         </div>
 
         {/* Quick Stats and Actions */}
@@ -481,20 +487,17 @@ export default function DashboardPage() {
 
             <Card className="border border-gray-200">
               <CardHeader>
-                <CardTitle className="text-lg">Saved Properties</CardTitle>
+                <CardTitle className="text-lg">Edit Preferences</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 mb-4">
-                  View properties you've saved and bookmarked for later.
+                  Update your onboarding survey and preferences at any time.
                 </p>
               </CardContent>
               <CardFooter>
-                <Link href="/favorites" className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <Heart className="h-4 w-4 mr-2" />
-                    View Favorites
-                  </Button>
-                </Link>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => window.dispatchEvent(new CustomEvent('openSurvey'))}>
+                  Edit Preferences
+                </Button>
               </CardFooter>
             </Card>
           </div>
