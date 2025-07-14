@@ -663,149 +663,158 @@ export default function PostSignupSurvey() {
                                 transition={{ duration: 0.3 }}
                               >
                                 {realtorStep === 0 && (
-                                  <div className="flex flex-col gap-8 w-full max-w-lg mx-auto items-center">
-                                    {/* City/Cities input and chips */}
-                                    <div className="w-full flex flex-col items-center">
-                                      <Label className="font-semibold text-black mb-1 block text-center">City/Cities</Label>
-                                      <div className="flex flex-wrap gap-2 mb-2 justify-center">
-                                        {cities.map(city => (
-                                          <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm shadow-sm">
-                                            {city}
-                                            <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                                              <X className="h-4 w-4 text-black" />
-                                            </button>
-                                          </span>
-                                        ))}
-                                      </div>
-                                      <div className="flex gap-2 w-full justify-center">
-                                        <Input
-                                          value={cityInput}
-                                          onChange={e => setCityInput(e.target.value)}
-                                          onKeyDown={e => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              handleAddCity();
-                                            }
-                                          }}
-                                          placeholder="Type a city and press Enter"
-                                          className="text-black border-black bg-white max-w-md rounded-lg shadow-sm text-base px-4 py-3"
-                                        />
-                                        <Button
-                                          type="button"
-                                          onClick={handleAddCity}
-                                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm text-base px-6 py-3 max-w-[120px]"
-                                        >
-                                          Add
-                                        </Button>
-                                      </div>
-                                    </div>
-                                    {/* Single column for all fields */}
-                                    <div className="flex flex-col gap-6 w-full items-center">
-                                      {/* Min Price */}
+                                  <div className="flex flex-col w-full max-w-lg mx-auto items-center">
+                                    <div
+                                      className="flex flex-col gap-8 w-full"
+                                      style={{
+                                        maxHeight: '60vh',
+                                        overflowY: 'auto',
+                                        paddingRight: '8px',
+                                      }}
+                                    >
+                                      {/* City/Cities input and chips */}
                                       <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black text-center">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full">
-                                          <span className="text-black font-semibold mr-1">$CAD</span>
+                                        <Label className="font-semibold text-black mb-1 block text-center">City/Cities</Label>
+                                        <div className="flex flex-wrap gap-2 mb-2 justify-center">
+                                          {cities.map(city => (
+                                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm shadow-sm">
+                                              {city}
+                                              <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
+                                                <X className="h-4 w-4 text-black" />
+                                              </button>
+                                            </span>
+                                          ))}
+                                        </div>
+                                        <div className="flex gap-2 w-full justify-center">
                                           <Input
-                                            type="number"
-                                            min={0}
-                                            value={currentForm.priceRange.min}
-                                            onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                                            className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3"
-                                            placeholder="0"
+                                            value={cityInput}
+                                            onChange={e => setCityInput(e.target.value)}
+                                            onKeyDown={e => {
+                                              if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                handleAddCity();
+                                              }
+                                            }}
+                                            placeholder="Type a city and press Enter"
+                                            className="text-black border-black bg-white max-w-md rounded-lg shadow-sm text-base px-4 py-3"
                                           />
+                                          <Button
+                                            type="button"
+                                            onClick={handleAddCity}
+                                            className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm text-base px-6 py-3 max-w-[120px]"
+                                          >
+                                            Add
+                                          </Button>
                                         </div>
                                       </div>
-                                      {/* Max Price */}
-                                      <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black text-center">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
-                                        <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full">
-                                          <span className="text-black font-semibold mr-1">$CAD</span>
-                                          <Input
-                                            type="number"
-                                            min={0}
-                                            value={currentForm.priceRange.max}
-                                            onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                                            className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3"
-                                            placeholder=""
-                                          />
+                                      {/* Single column for all fields */}
+                                      <div className="flex flex-col gap-6 w-full items-center">
+                                        {/* Min Price */}
+                                        <div className="w-full flex flex-col items-center">
+                                          <Label className="font-semibold text-black text-center">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full">
+                                            <span className="text-black font-semibold mr-1">$CAD</span>
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              value={currentForm.priceRange.min}
+                                              onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
+                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3"
+                                              placeholder="0"
+                                            />
+                                          </div>
                                         </div>
+                                        {/* Max Price */}
+                                        <div className="w-full flex flex-col items-center">
+                                          <Label className="font-semibold text-black text-center">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full">
+                                            <span className="text-black font-semibold mr-1">$CAD</span>
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              value={currentForm.priceRange.max}
+                                              onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
+                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3"
+                                              placeholder=""
+                                            />
+                                          </div>
+                                        </div>
+                                        <p className="text-xs text-gray-500 italic text-center w-full">
+                                          {currentType === 'landlord' 
+                                            ? 'Enter the monthly rent range for your properties, from lowest to highest.'
+                                            : 'Enter the price range of properties you represent, from lowest to highest.'}
+                                        </p>
+                                        {/* Min Bedrooms */}
+                                        <div className="w-full flex flex-col items-center">
+                                          <Label className="font-semibold text-black text-center">Min Bedrooms</Label>
+                                          <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
+                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select min bedrooms" className="text-black" />
+                                            </SelectTrigger>
+                                            <SelectContent className="text-black bg-white border-black">
+                                              {BEDROOM_OPTIONS.map(bed => (
+                                                <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                                  {bed}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        {/* Max Bedrooms */}
+                                        <div className="w-full flex flex-col items-center">
+                                          <Label className="font-semibold text-black text-center">Max Bedrooms</Label>
+                                          <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
+                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select max bedrooms" className="text-black" />
+                                            </SelectTrigger>
+                                            <SelectContent className="text-black bg-white border-black">
+                                              {BEDROOM_OPTIONS.map(bed => (
+                                                <SelectItem key={bed} value={bed} className="text-black bg-white">
+                                                  {bed}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <p className="text-xs text-gray-500 italic text-center w-full">
+                                          Provide the range of bedrooms in your properties, from the lowest to the highest count.
+                                        </p>
+                                        {/* Min Bathrooms */}
+                                        <div className="w-full flex flex-col items-center">
+                                          <Label className="font-semibold text-black text-center">Min Bathrooms</Label>
+                                          <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
+                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select min bathrooms" className="text-black" />
+                                            </SelectTrigger>
+                                            <SelectContent className="text-black bg-white border-black">
+                                              {BATHROOM_OPTIONS.map(bath => (
+                                                <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                                  {bath}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        {/* Max Bathrooms */}
+                                        <div className="w-full flex flex-col items-center">
+                                          <Label className="font-semibold text-black text-center">Max Bathrooms</Label>
+                                          <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
+                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select max bathrooms" className="text-black" />
+                                            </SelectTrigger>
+                                            <SelectContent className="text-black bg-white border-black">
+                                              {BATHROOM_OPTIONS.map(bath => (
+                                                <SelectItem key={bath} value={bath} className="text-black bg-white">
+                                                  {bath}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <p className="text-xs text-gray-500 italic text-center w-full">
+                                          Provide the range of bathrooms in your properties, from the lowest to the highest count.
+                                        </p>
                                       </div>
-                                      <p className="text-xs text-gray-500 italic text-center w-full">
-                                        {currentType === 'landlord' 
-                                          ? 'Enter the monthly rent range for your properties, from lowest to highest.'
-                                          : 'Enter the price range of properties you represent, from lowest to highest.'}
-                                      </p>
-                                      {/* Min Bedrooms */}
-                                      <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black text-center">Min Bedrooms</Label>
-                                        <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                            <SelectValue placeholder="Select min bedrooms" className="text-black" />
-                                          </SelectTrigger>
-                                          <SelectContent className="text-black bg-white border-black">
-                                            {BEDROOM_OPTIONS.map(bed => (
-                                              <SelectItem key={bed} value={bed} className="text-black bg-white">
-                                                {bed}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      {/* Max Bedrooms */}
-                                      <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black text-center">Max Bedrooms</Label>
-                                        <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                            <SelectValue placeholder="Select max bedrooms" className="text-black" />
-                                          </SelectTrigger>
-                                          <SelectContent className="text-black bg-white border-black">
-                                            {BEDROOM_OPTIONS.map(bed => (
-                                              <SelectItem key={bed} value={bed} className="text-black bg-white">
-                                                {bed}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <p className="text-xs text-gray-500 italic text-center w-full">
-                                        Provide the range of bedrooms in your properties, from the lowest to the highest count.
-                                      </p>
-                                      {/* Min Bathrooms */}
-                                      <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black text-center">Min Bathrooms</Label>
-                                        <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                            <SelectValue placeholder="Select min bathrooms" className="text-black" />
-                                          </SelectTrigger>
-                                          <SelectContent className="text-black bg-white border-black">
-                                            {BATHROOM_OPTIONS.map(bath => (
-                                              <SelectItem key={bath} value={bath} className="text-black bg-white">
-                                                {bath}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      {/* Max Bathrooms */}
-                                      <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black text-center">Max Bathrooms</Label>
-                                        <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                          <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                            <SelectValue placeholder="Select max bathrooms" className="text-black" />
-                                          </SelectTrigger>
-                                          <SelectContent className="text-black bg-white border-black">
-                                            {BATHROOM_OPTIONS.map(bath => (
-                                              <SelectItem key={bath} value={bath} className="text-black bg-white">
-                                                {bath}
-                                              </SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      <p className="text-xs text-gray-500 italic text-center w-full">
-                                        Provide the range of bathrooms in your properties, from the lowest to the highest count.
-                                      </p>
                                     </div>
                                   </div>
                                 )}
