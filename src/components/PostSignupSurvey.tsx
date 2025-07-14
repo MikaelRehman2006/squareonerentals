@@ -748,8 +748,8 @@ export default function PostSignupSurvey() {
                                         <div className="w-full flex flex-col items-center">
                                           <Label className="font-semibold text-black text-center">Min Bedrooms</Label>
                                           <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                              <SelectValue placeholder="Select min bedrooms" className="text-black" />
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select min bedrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
                                               {BEDROOM_OPTIONS.map(bed => (
@@ -764,8 +764,8 @@ export default function PostSignupSurvey() {
                                         <div className="w-full flex flex-col items-center">
                                           <Label className="font-semibold text-black text-center">Max Bedrooms</Label>
                                           <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                              <SelectValue placeholder="Select max bedrooms" className="text-black" />
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select max bedrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
                                               {BEDROOM_OPTIONS.map(bed => (
@@ -783,8 +783,8 @@ export default function PostSignupSurvey() {
                                         <div className="w-full flex flex-col items-center">
                                           <Label className="font-semibold text-black text-center">Min Bathrooms</Label>
                                           <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                              <SelectValue placeholder="Select min bathrooms" className="text-black" />
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select min bathrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
                                               {BATHROOM_OPTIONS.map(bath => (
@@ -799,8 +799,8 @@ export default function PostSignupSurvey() {
                                         <div className="w-full flex flex-col items-center">
                                           <Label className="font-semibold text-black text-center">Max Bathrooms</Label>
                                           <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                            <SelectTrigger className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
-                                              <SelectValue placeholder="Select max bathrooms" className="text-black" />
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                              <SelectValue placeholder="Select max bathrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
                                               {BATHROOM_OPTIONS.map(bath => (
