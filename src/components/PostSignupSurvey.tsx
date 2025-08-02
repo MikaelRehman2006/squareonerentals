@@ -586,6 +586,8 @@ export default function PostSignupSurvey() {
                         'Continue'
                       )}
                     </Button>
+                    {/* Extra space below Continue button for mobile scroll bounce */}
+                    <div className="h-20 sm:h-0"></div>
                   </motion.div>
                 ) : (
                   <motion.div
