@@ -460,54 +460,63 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
-        <div className="w-full flex flex-col items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-center text-black">
-                Complete Your Profile
-              </DialogTitle>
-              {/* Only show welcome and optionality messages on initial role selection */}
-              {!currentType && (
-                <>
-                  <div className="text-center mt-4 text-black text-base font-medium">
-                    Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
-                  </div>
-                  <DialogDescription className="text-center mt-4 text-black">
-                    <span className="block mt-2 text-sm text-blue-700 font-semibold">
-                      This quick step is optional—but the more we know, the better we can help you!<br/>
-                      <span className="text-gray-700">If you skip, you can always return to your dashboard and change your preferences later.</span>
-                    </span>
-                  </DialogDescription>
-                </>
-              )}
-            </DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0 p-0">
+        <div className="flex flex-col h-full">
+          {/* Header - Fixed */}
+          <div className="flex-shrink-0 p-6 pb-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <DialogHeader>
+                <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-black">
+                  Complete Your Profile
+                </DialogTitle>
+                {/* Only show welcome and optionality messages on initial role selection */}
+                {!currentType && (
+                  <>
+                    <div className="text-center mt-3 sm:mt-4 text-black text-sm sm:text-base font-medium">
+                      Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
+                    </div>
+                    <DialogDescription className="text-center mt-3 sm:mt-4 text-black">
+                      <span className="block mt-2 text-xs sm:text-sm text-blue-700 font-semibold">
+                        This quick step is optional—but the more we know, the better we can help you!<br/>
+                        <span className="text-gray-700">If you skip, you can always return to your dashboard and change your preferences later.</span>
+                      </span>
+                    </DialogDescription>
+                  </>
+                )}
+              </DialogHeader>
+            </motion.div>
+          </div>
 
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
-              <TabsList className="grid grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
                 {USER_TYPES.map((type, index) => (
                   <TabsTrigger
                     key={type.id}
                     value={type.id}
                     className={cn(
-                      "flex items-center gap-2 group relative text-black font-semibold transition-all",
+                      "flex items-center gap-1 sm:gap-2 group relative text-black font-semibold transition-all text-xs sm:text-sm",
                       !selectedTypes.includes(type.id) && "opacity-50",
                       currentType === type.id && "bg-gradient-to-r from-blue-100 to-blue-200 shadow-md border border-blue-300"
                     )}
                     disabled={!selectedTypes.includes(type.id)}
                     style={{ boxShadow: currentType === type.id ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined }}
                   >
-                    <span className="flex items-center gap-2">
-                      {index + 1}. {type.label}
+                    <span className="flex items-center gap-1 sm:gap-2">
+                      <span className="hidden sm:inline">{index + 1}.</span>
+                      <span className="sm:hidden">{index + 1}</span>
+                      <span className="hidden sm:inline">{type.label}</span>
+                      <span className="sm:hidden">{type.label.length > 8 ? type.label.substring(0, 8) + '...' : type.label}</span>
                       {completedSteps[type.id] && (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                       )}
                     </span>
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                       {type.description}
                     </div>
                   </TabsTrigger>
@@ -522,8 +531,8 @@ export default function PostSignupSurvey() {
                     exit={{ opacity: 0 }}
                     className="space-y-4"
                   >
-                    <Label className="text-lg font-semibold text-black">
-                      Tell us more about what you're looking for! <span className="text-base font-normal">(Pick all that apply)</span>
+                    <Label className="text-base sm:text-lg font-semibold text-black">
+                      Tell us more about what you're looking for! <span className="text-sm sm:text-base font-normal">(Pick all that apply)</span>
                     </Label>
                     <div className="space-y-3">
                       {USER_TYPES.map(type => (
@@ -536,9 +545,9 @@ export default function PostSignupSurvey() {
                           />
                           {/* Icon for each role */}
                           <div className="mt-1">{type.icon}</div>
-                          <div className="space-y-1">
-                            <Label htmlFor={type.id} className="font-medium text-black">{type.label}</Label>
-                            <p className="text-sm text-gray-700">{type.description}</p>
+                          <div className="space-y-1 flex-1">
+                            <Label htmlFor={type.id} className="font-medium text-black text-sm sm:text-base">{type.label}</Label>
+                            <p className="text-xs sm:text-sm text-gray-700">{type.description}</p>
                           </div>
                         </div>
                       ))}
@@ -575,16 +584,16 @@ export default function PostSignupSurvey() {
                     exit={{ opacity: 0, x: -20 }}
                     className="space-y-4"
                   >
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {!['realtor', 'landlord'].includes(currentType) && (
-                        <div className="space-y-2 col-span-2">
+                        <div className="space-y-2 col-span-1 sm:col-span-2">
                           <Label className="font-semibold text-black">City/Cities</Label>
                           <div className="flex flex-wrap gap-2 mb-2">
                             {cities.map(city => (
-                              <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm">
+                              <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm">
                                 {city}
                                 <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                                  <X className="h-4 w-4 text-black" />
+                                  <X className="h-3 w-3 sm:h-4 sm:w-4 text-black" />
                                 </button>
                               </span>
                             ))}
@@ -595,24 +604,24 @@ export default function PostSignupSurvey() {
                               onChange={e => setCityInput(e.target.value)}
                               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCity(); }}}
                               placeholder="Type a city and press Enter"
-                              className="text-black border-black bg-white"
+                              className="text-black border-black bg-white text-sm sm:text-base"
                             />
-                            <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700">Add</Button>
+                            <Button type="button" onClick={handleAddCity} className="bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base px-3 sm:px-4">Add</Button>
                           </div>
                         </div>
                       )}
 
                       {!['realtor', 'landlord'].includes(currentType) && (
                         <div className="space-y-2">
-                          <Label className="font-semibold text-black">Min Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
+                          <Label className="font-semibold text-black text-sm sm:text-base">Min Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
                           <div className="flex items-center border rounded-lg px-2 bg-white">
-                            <span className="text-black font-semibold mr-1">$CAD</span>
+                            <span className="text-black font-semibold mr-1 text-sm sm:text-base">$CAD</span>
                             <Input
                               type="number"
                               min={0}
                               value={currentForm.priceRange.min}
                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                              className="border-0 focus:ring-0 text-black bg-white"
+                              className="border-0 focus:ring-0 text-black bg-white text-sm sm:text-base"
                               placeholder="0"
                             />
                           </div>
@@ -620,15 +629,15 @@ export default function PostSignupSurvey() {
                       )}
                       {!['realtor', 'landlord'].includes(currentType) && (
                         <div className="space-y-2">
-                          <Label className="font-semibold text-black">Max Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
+                          <Label className="font-semibold text-black text-sm sm:text-base">Max Price <span className="text-xs font-normal">($CAD {['renter','landlord'].includes(currentType) ? 'per month' : 'total'})</span></Label>
                           <div className="flex items-center border rounded-lg px-2 bg-white">
-                            <span className="text-black font-semibold mr-1">$CAD</span>
+                            <span className="text-black font-semibold mr-1 text-sm sm:text-base">$CAD</span>
                             <Input
                               type="number"
                               min={0}
                               value={currentForm.priceRange.max}
                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                              className="border-0 focus:ring-0 text-black bg-white"
+                              className="border-0 focus:ring-0 text-black bg-white text-sm sm:text-base"
                               placeholder=""
                             />
                           </div>
@@ -639,18 +648,18 @@ export default function PostSignupSurvey() {
                       {['realtor', 'landlord'].includes(currentType) ? (
                         <div className="w-full flex flex-col items-center">
                           {/* Stepper Progress Bar */}
-                          <div className="flex items-center justify-center mb-6">
+                          <div className="flex items-center justify-center mb-4 sm:mb-6">
                             {REALTOR_STEPS.map((step, idx) => (
                               <div key={step} className="flex items-center">
-                                <div className={`rounded-full w-8 h-8 flex items-center justify-center font-bold text-white ${idx === realtorStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
-                                {idx < REALTOR_STEPS.length - 1 && <div className="w-8 h-1 bg-gray-300 mx-2" />}
+                                <div className={`rounded-full w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center font-bold text-white text-xs sm:text-sm ${idx === realtorStep ? 'bg-blue-600' : 'bg-gray-300'}`}>{idx + 1}</div>
+                                {idx < REALTOR_STEPS.length - 1 && <div className="w-4 h-1 sm:w-8 bg-gray-300 mx-1 sm:mx-2" />}
                               </div>
                             ))}
                           </div>
                           <div className="flex flex-col items-center mb-4">
-                            <UserCircle className="w-12 h-12 text-blue-500 mb-2" />
-                            <div className="text-lg font-semibold text-blue-700 mb-1">{REALTOR_STEPS[realtorStep]}</div>
-                            <div className="text-sm text-gray-500 mb-2">{realtorStep === 0 ? 'Tell us about your properties!' : realtorStep === 1 ? 'Where do you serve clients?' : realtorStep === 2 ? 'Who do you work with?' : 'Anything else you want to share?'}</div>
+                            <UserCircle className="w-8 h-8 sm:w-12 sm:h-12 text-blue-500 mb-2" />
+                            <div className="text-base sm:text-lg font-semibold text-blue-700 mb-1 text-center">{REALTOR_STEPS[realtorStep]}</div>
+                            <div className="text-xs sm:text-sm text-gray-500 mb-2 text-center">{realtorStep === 0 ? 'Tell us about your properties!' : realtorStep === 1 ? 'Where do you serve clients?' : realtorStep === 2 ? 'Who do you work with?' : 'Anything else you want to share?'}</div>
                           </div>
                           {/* Center the form card/content */}
                           <div className="w-full max-w-[900px] mx-auto mb-4">
@@ -665,22 +674,22 @@ export default function PostSignupSurvey() {
                                 {realtorStep === 0 && (
                                   <div className="flex flex-col w-full max-w-lg mx-auto items-center">
                                     <div
-                                      className="flex flex-col gap-8 w-full"
+                                      className="flex flex-col gap-6 sm:gap-8 w-full"
                                       style={{
-                                        maxHeight: '60vh',
+                                        maxHeight: '50vh',
                                         overflowY: 'auto',
                                         paddingRight: '8px',
                                       }}
                                     >
                                       {/* City/Cities input and chips */}
                                       <div className="w-full flex flex-col items-center">
-                                        <Label className="font-semibold text-black mb-1 block text-center">City/Cities</Label>
+                                        <Label className="font-semibold text-black mb-1 block text-center text-sm sm:text-base">City/Cities</Label>
                                         <div className="flex flex-wrap gap-2 mb-2 justify-center">
                                           {cities.map(city => (
-                                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-3 py-1 text-sm shadow-sm">
+                                            <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm shadow-sm">
                                               {city}
                                               <button type="button" className="ml-1" onClick={() => handleRemoveCity(city)}>
-                                                <X className="h-4 w-4 text-black" />
+                                                <X className="h-3 w-3 sm:h-4 sm:w-4 text-black" />
                                               </button>
                                             </span>
                                           ))}
@@ -696,45 +705,45 @@ export default function PostSignupSurvey() {
                                               }
                                             }}
                                             placeholder="Type a city and press Enter"
-                                            className="text-black border-black bg-white max-w-md rounded-lg shadow-sm text-base px-4 py-3"
+                                            className="text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3"
                                           />
                                           <Button
                                             type="button"
                                             onClick={handleAddCity}
-                                            className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm text-base px-6 py-3 max-w-[120px]"
+                                            className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 max-w-[80px] sm:max-w-[120px]"
                                           >
                                             Add
                                           </Button>
                                         </div>
                                       </div>
                                       {/* Single column for all fields */}
-                                      <div className="flex flex-col gap-6 w-full items-center">
+                                      <div className="flex flex-col gap-4 sm:gap-6 w-full items-center">
                                         {/* Min Price */}
                                         <div className="w-full flex flex-col items-center">
-                                          <Label className="font-semibold text-black text-center">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                          <Label className="font-semibold text-black text-center text-sm sm:text-base">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
                                           <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full">
-                                            <span className="text-black font-semibold mr-1">$CAD</span>
+                                            <span className="text-black font-semibold mr-1 text-sm sm:text-base">$CAD</span>
                                             <Input
                                               type="number"
                                               min={0}
                                               value={currentForm.priceRange.min}
                                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })}
-                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3"
+                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3"
                                               placeholder="0"
                                             />
                                           </div>
                                         </div>
                                         {/* Max Price */}
                                         <div className="w-full flex flex-col items-center">
-                                          <Label className="font-semibold text-black text-center">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
+                                          <Label className="font-semibold text-black text-center text-sm sm:text-base">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label>
                                           <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full">
-                                            <span className="text-black font-semibold mr-1">$CAD</span>
+                                            <span className="text-black font-semibold mr-1 text-sm sm:text-base">$CAD</span>
                                             <Input
                                               type="number"
                                               min={0}
                                               value={currentForm.priceRange.max}
                                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })}
-                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3"
+                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3"
                                               placeholder=""
                                             />
                                           </div>
@@ -746,9 +755,9 @@ export default function PostSignupSurvey() {
                                         </p>
                                         {/* Min Bedrooms */}
                                         <div className="w-full flex flex-col items-center">
-                                          <Label className="font-semibold text-black text-center">Min Bedrooms</Label>
+                                          <Label className="font-semibold text-black text-center text-sm sm:text-base">Min Bedrooms</Label>
                                           <Select value={currentForm.bedroomsMin} onValueChange={(value) => handleFormChange('bedroomsMin', value)}>
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3">
                                               <SelectValue placeholder="Select min bedrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -762,9 +771,9 @@ export default function PostSignupSurvey() {
                                         </div>
                                         {/* Max Bedrooms */}
                                         <div className="w-full flex flex-col items-center">
-                                          <Label className="font-semibold text-black text-center">Max Bedrooms</Label>
+                                          <Label className="font-semibold text-black text-center text-sm sm:text-base">Max Bedrooms</Label>
                                           <Select value={currentForm.bedroomsMax} onValueChange={(value) => handleFormChange('bedroomsMax', value)}>
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3">
                                               <SelectValue placeholder="Select max bedrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -781,9 +790,9 @@ export default function PostSignupSurvey() {
                                         </p>
                                         {/* Min Bathrooms */}
                                         <div className="w-full flex flex-col items-center">
-                                          <Label className="font-semibold text-black text-center">Min Bathrooms</Label>
+                                          <Label className="font-semibold text-black text-center text-sm sm:text-base">Min Bathrooms</Label>
                                           <Select value={currentForm.bathroomsMin} onValueChange={(value) => handleFormChange('bathroomsMin', value)}>
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3">
                                               <SelectValue placeholder="Select min bathrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -797,9 +806,9 @@ export default function PostSignupSurvey() {
                                         </div>
                                         {/* Max Bathrooms */}
                                         <div className="w-full flex flex-col items-center">
-                                          <Label className="font-semibold text-black text-center">Max Bathrooms</Label>
+                                          <Label className="font-semibold text-black text-center text-sm sm:text-base">Max Bathrooms</Label>
                                           <Select value={currentForm.bathroomsMax} onValueChange={(value) => handleFormChange('bathroomsMax', value)}>
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3">
+                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3">
                                               <SelectValue placeholder="Select max bathrooms" className="text-black !text-black" />
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black">
@@ -819,8 +828,8 @@ export default function PostSignupSurvey() {
                                   </div>
                                 )}
                                 {realtorStep === 1 && (
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
-                                    <Label className="font-semibold text-black mb-1">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
+                                  <div className="flex flex-col gap-6 sm:gap-8 max-w-2xl mx-auto">
+                                    <Label className="font-semibold text-black mb-1 text-sm sm:text-base">Areas Served <span className="text-xs font-normal">(optional)</span></Label>
                                     <div className="flex flex-wrap gap-2 mt-2">
                                       {AREAS_SERVED.map(area => (
                                         <Button
@@ -828,7 +837,10 @@ export default function PostSignupSurvey() {
                                           variant={currentForm.areasServed.includes(area) ? "default" : "outline"}
                                           size="sm"
                                           onClick={() => handleArrayToggle('areasServed', area)}
-                                          className={currentForm.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
+                                          className={cn(
+                                            currentForm.areasServed.includes(area) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black",
+                                            "text-xs sm:text-sm"
+                                          )}
                                         >
                                           {area}
                                         </Button>
@@ -838,8 +850,8 @@ export default function PostSignupSurvey() {
                                   </div>
                                 )}
                                 {realtorStep === 2 && (
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
-                                    <Label className="font-semibold text-black mb-1">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
+                                  <div className="flex flex-col gap-6 sm:gap-8 max-w-2xl mx-auto">
+                                    <Label className="font-semibold text-black mb-1 text-sm sm:text-base">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label>
                                     <div className="flex flex-wrap gap-2 mt-2">
                                       {CLIENT_TYPES.map(type => (
                                         <Button
@@ -847,7 +859,10 @@ export default function PostSignupSurvey() {
                                           variant={currentForm.clientTypes.includes(type) ? "default" : "outline"}
                                           size="sm"
                                           onClick={() => handleArrayToggle('clientTypes', type)}
-                                          className={currentForm.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black"}
+                                          className={cn(
+                                            currentForm.clientTypes.includes(type) ? "bg-blue-200 text-black border-blue-400" : "bg-white text-black border-black",
+                                            "text-xs sm:text-sm"
+                                          )}
                                         >
                                           {type}
                                         </Button>
@@ -857,7 +872,7 @@ export default function PostSignupSurvey() {
                                   </div>
                                 )}
                                 {realtorStep === 3 && (
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                                  <div className="flex flex-col gap-6 sm:gap-8 max-w-2xl mx-auto">
                                     <div className="flex items-center space-x-2 mb-2">
                                       <Checkbox
                                         id="accepting-clients"
@@ -865,15 +880,15 @@ export default function PostSignupSurvey() {
                                         onCheckedChange={(checked) => handleFormChange('isAcceptingClients', checked)}
                                         className="border-black"
                                       />
-                                      <Label htmlFor="accepting-clients" className="text-black">I am currently accepting new clients</Label>
+                                      <Label htmlFor="accepting-clients" className="text-black text-sm sm:text-base">I am currently accepting new clients</Label>
                                     </div>
                                     <div>
-                                      <Label className="font-semibold text-black mb-1">Additional Requirements</Label>
+                                      <Label className="font-semibold text-black mb-1 text-sm sm:text-base">Additional Requirements</Label>
                                       <Input
                                         placeholder="Any specific requirements or preferences?"
                                         value={currentForm.additionalRequirements}
                                         onChange={(e) => handleFormChange('additionalRequirements', e.target.value)}
-                                        className="text-black border-black bg-white rounded-lg shadow-sm"
+                                        className="text-black border-black bg-white rounded-lg shadow-sm text-sm sm:text-base"
                                       />
                                       <p className="text-xs text-gray-500 italic mt-2">Share any special requirements or preferences you have for new clients.</p>
                                     </div>
@@ -889,7 +904,7 @@ export default function PostSignupSurvey() {
                                 if (realtorStep > 0) setRealtorStep(realtorStep - 1);
                                 else setCurrentType('');
                               }}
-                              className="border-black text-white hover:bg-gray-200"
+                              className="border-black text-black hover:bg-gray-200 text-sm sm:text-base"
                             >
                               Back
                             </Button>
@@ -907,7 +922,7 @@ export default function PostSignupSurvey() {
                                   }
                                 }
                               }}
-                              className="bg-blue-600 text-white hover:bg-blue-700"
+                              className="bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
                             >
                               {realtorStep < REALTOR_STEPS.length - 1 ? 'Next' : isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>) : 'Submit'}
                             </Button>
@@ -916,9 +931,9 @@ export default function PostSignupSurvey() {
                       ) : (
                         <>
                           <div className="space-y-2">
-                            <Label className="font-semibold text-black">Bedrooms</Label>
+                            <Label className="font-semibold text-black text-sm sm:text-base">Bedrooms</Label>
                             <Select value={currentForm.bedrooms} onValueChange={(value) => handleFormChange('bedrooms', value)}>
-                              <SelectTrigger className="text-black border-black bg-white">
+                              <SelectTrigger className="text-black border-black bg-white text-sm sm:text-base">
                                 <SelectValue placeholder="Select bedrooms" className="text-black bg-white" />
                               </SelectTrigger>
                               <SelectContent className="text-black bg-white border-black">
@@ -931,9 +946,9 @@ export default function PostSignupSurvey() {
                             </Select>
                           </div>
                           <div className="space-y-2">
-                            <Label className="font-semibold text-black">Bathrooms</Label>
+                            <Label className="font-semibold text-black text-sm sm:text-base">Bathrooms</Label>
                             <Select value={currentForm.bathrooms} onValueChange={(value) => handleFormChange('bathrooms', value)}>
-                              <SelectTrigger className="text-black border-black bg-white">
+                              <SelectTrigger className="text-black border-black bg-white text-sm sm:text-base">
                                 <SelectValue placeholder="Select bathrooms" className="text-black bg-white" />
                               </SelectTrigger>
                               <SelectContent className="text-black bg-white border-black">
@@ -953,13 +968,13 @@ export default function PostSignupSurvey() {
                         <Button
                           variant="outline"
                           onClick={() => setCurrentType('')}
-                          className="border-black text-white hover:bg-gray-200"
+                          className="border-black text-black hover:bg-gray-200 text-sm sm:text-base"
                         >
                           Back
                         </Button>
                         <Button
                           onClick={handleSubmit}
-                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          className="bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
                           disabled={isSubmitting}
                         >
                           {isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>) : 'Submit'}
@@ -970,7 +985,7 @@ export default function PostSignupSurvey() {
                 )}
               </div>
             </Tabs>
-          </motion.div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
