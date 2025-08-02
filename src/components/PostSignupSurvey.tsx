@@ -531,9 +531,9 @@ export default function PostSignupSurvey() { // Define the main component functi
             }}
           >
             {/* Tab navigation for different user types */}
-            <Tabs value={currentType} onValueChange={setCurrentType} className="w-full"> {/* Tabs component with controlled value */}
+            <Tabs value={currentType} onValueChange={setCurrentType} className="w-full block border-2 border-red-500"> {/* Tabs component with controlled value - added block to override any inline behavior and debug border */}
               {/* Tab list with numbered options */}
-              <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm"> {/* Tab list container with grid layout */}
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm w-full !inline-block"> {/* Tab list container with grid layout - added w-full and !inline-block to override inline-flex */}
                 {USER_TYPES.map((type, index) => ( // Map through user types
                   <TabsTrigger // Tab trigger component
                     key={type.id} // Unique key for React
@@ -570,7 +570,7 @@ export default function PostSignupSurvey() { // Define the main component functi
               </TabsList>
 
               {/* Tab content area */}
-              <div className="space-y-4 sm:space-y-4 py-3 sm:py-4"> {/* Tab content container with spacing */}
+              <div className="space-y-4 sm:space-y-4 py-3 sm:py-4 w-full"> {/* Tab content container with spacing - added w-full */}
                 {/* Initial role selection screen */}
                 {!currentType ? ( // Conditional rendering for initial screen
                   <motion.div // Motion div for animation
