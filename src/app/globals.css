@@ -85,7 +85,9 @@ body {
 
 /* Responsive modal height */
 .modal-content-mobile {
-  max-height: calc(90vh - 140px);
+  max-height: calc(95vh - 120px);
+  -webkit-overflow-scrolling: touch; /* Better iOS scrolling */
+  overscroll-behavior: contain; /* Prevent scroll chaining */
 }
 
 @media (min-width: 640px) {

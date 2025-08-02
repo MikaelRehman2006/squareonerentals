@@ -495,7 +495,7 @@ export default function PostSignupSurvey() {
           <div 
             className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 hide-scrollbar modal-content-mobile" 
             style={{ 
-              maxHeight: 'calc(90vh - 140px)',
+              maxHeight: 'calc(95vh - 120px)',
             }}
           >
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
@@ -516,7 +516,11 @@ export default function PostSignupSurvey() {
                       <span className="hidden sm:inline">{index + 1}.</span>
                       <span className="sm:hidden">{index + 1}</span>
                       <span className="hidden sm:inline">{type.label}</span>
-                      <span className="sm:hidden">{type.label.length > 8 ? type.label.substring(0, 8) + '...' : type.label}</span>
+                      <span className="sm:hidden">
+                        {type.label === 'Looking to Rent' ? 'Rent' : 
+                         type.label === 'Looking to Buy' ? 'Buy' : 
+                         type.label.length > 8 ? type.label.substring(0, 8) + '...' : type.label}
+                      </span>
                       {completedSteps[type.id] && (
                         <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                       )}
@@ -528,20 +532,20 @@ export default function PostSignupSurvey() {
                 ))}
               </TabsList>
 
-              <div className="space-y-4 py-4">
+              <div className="space-y-3 sm:space-y-4 py-2 sm:py-4">
                 {!currentType ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="space-y-4"
+                    className="space-y-3 sm:space-y-4"
                   >
-                    <Label className="text-base sm:text-lg font-semibold text-black">
-                      Tell us more about what you're looking for! <span className="text-sm sm:text-base font-normal">(Pick all that apply)</span>
+                    <Label className="text-sm sm:text-lg font-semibold text-black">
+                      Tell us more about what you're looking for! <span className="text-xs sm:text-base font-normal">(Pick all that apply)</span>
                     </Label>
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {USER_TYPES.map(type => (
-                        <div key={type.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-blue-50 transition-colors">
+                        <div key={type.id} className="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg hover:bg-blue-50 transition-colors">
                           <Checkbox
                             id={type.id}
                             checked={selectedTypes.includes(type.id)}
@@ -551,14 +555,14 @@ export default function PostSignupSurvey() {
                           {/* Icon for each role */}
                           <div className="mt-1">{type.icon}</div>
                           <div className="space-y-1 flex-1">
-                            <Label htmlFor={type.id} className="font-medium text-black text-sm sm:text-base">{type.label}</Label>
+                            <Label htmlFor={type.id} className="font-medium text-black text-xs sm:text-base">{type.label}</Label>
                             <p className="text-xs sm:text-sm text-gray-700">{type.description}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                     <Button
-                      className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
+                      className="w-full mt-3 sm:mt-4 bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
                       onClick={() => {
                         if (selectedTypes.length === 0) {
                           toast.error('Please select at least one option');
