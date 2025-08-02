@@ -712,26 +712,36 @@ export default function PostSignupSurvey() { // Define the main component functi
                         </div>
                       )}
 
-                      {/* Realtor/Landlord Multi-Step Form */}
+                      {/* Realtor/Landlord Multi-Step Form - Fixed Pixel Layout */}
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
-                        <div className="w-full"> {/* Main container - full width */}
-                          {/* Stepper Progress Bar - Centered */}
-                          <div className="flex items-center justify-center mb-8"> {/* Stepper container */}
+                        <div style={{ width: '100%', padding: '0 20px' }}> {/* Main container with fixed padding */}
+                          {/* Stepper Progress Bar - Fixed Position */}
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px' }}> {/* Stepper container */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
-                              <div key={step} className="flex items-center"> {/* Individual step */}
-                                <div className={`rounded-full w-10 h-10 flex items-center justify-center font-bold text-white ${idx === realtorStep ? 'bg-blue-600' : 'bg-gray-300'}`}> {/* Step circle */}
+                              <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
+                                <div style={{ 
+                                  borderRadius: '50%', 
+                                  width: '40px', 
+                                  height: '40px', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center', 
+                                  fontWeight: 'bold', 
+                                  color: 'white',
+                                  backgroundColor: idx === realtorStep ? '#2563eb' : '#d1d5db'
+                                }}> {/* Step circle */}
                                   {idx + 1} {/* Step number */}
                                 </div>
-                                {idx < REALTOR_STEPS.length - 1 && <div className="w-12 h-1 bg-gray-300 mx-3" />} {/* Separator line */}
+                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '48px', height: '4px', backgroundColor: '#d1d5db', margin: '0 12px' }} />} {/* Separator line */}
                               </div>
                             ))}
                           </div>
 
-                          {/* Step Header - Centered */}
-                          <div className="text-center mb-8"> {/* Header container */}
-                            <UserCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" /> {/* Icon */}
-                            <h2 className="text-2xl font-bold text-blue-700 mb-2">{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
-                            <p className="text-gray-600"> {/* Step description */}
+                          {/* Step Header - Fixed Position */}
+                          <div style={{ textAlign: 'center', marginBottom: '32px' }}> {/* Header container */}
+                            <UserCircle style={{ width: '64px', height: '64px', color: '#3b82f6', margin: '0 auto 16px' }} /> {/* Icon */}
+                            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '8px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
+                            <p style={{ color: '#6b7280' }}> {/* Step description */}
                               {realtorStep === 0 ? 'Tell us about your properties!' : 
                                realtorStep === 1 ? 'Where do you serve clients?' : 
                                realtorStep === 2 ? 'Who do you work with?' : 
@@ -739,8 +749,8 @@ export default function PostSignupSurvey() { // Define the main component functi
                             </p>
                           </div>
 
-                          {/* Form Content - Full Width */}
-                          <div className="w-full"> {/* Form container */}
+                          {/* Form Content - Fixed Width Container */}
+                          <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}> {/* Form container with fixed max width */}
                             <AnimatePresence mode="wait" initial={false}> {/* Animation wrapper */}
                               <motion.div // Motion container
                                 key={realtorStep} // Animation key
@@ -748,25 +758,25 @@ export default function PostSignupSurvey() { // Define the main component functi
                                 animate={{ opacity: 1, x: 0 }} // Animated state
                                 exit={{ opacity: 0, x: -40 }} // Exit state
                                 transition={{ duration: 0.3 }} // Animation duration
-                                className="w-full" // Full width
+                                style={{ width: '100%' }} // Full width
                               >
-                                {/* Step 0: Property Details */}
+                                {/* Step 0: Property Details - Fixed Pixel Layout */}
                                 {realtorStep === 0 && ( // Property details step
-                                  <div className="w-full space-y-8"> {/* Full width container */}
+                                  <div style={{ width: '100%' }}> {/* Fixed width container */}
                                     {/* City/Cities Section */}
-                                    <div className="w-full"> {/* City section */}
-                                      <Label className="block text-center text-lg font-semibold text-black mb-4">City/Cities</Label> {/* Label */}
-                                      <div className="flex flex-wrap gap-2 mb-4 justify-center"> {/* City chips */}
+                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* City section */}
+                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>City/Cities</Label> {/* Label */}
+                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', justifyContent: 'center' }}> {/* City chips */}
                                         {cities.map(city => ( // Map cities
-                                          <span key={city} className="flex items-center bg-blue-100 text-black rounded-full px-4 py-2 text-sm shadow-sm"> {/* City chip */}
+                                          <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '8px 16px', fontSize: '14px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}> {/* City chip */}
                                             {city} {/* City name */}
-                                            <button type="button" className="ml-2" onClick={() => handleRemoveCity(city)}> {/* Remove button */}
-                                              <X className="h-4 w-4 text-black" /> {/* X icon */}
+                                            <button type="button" style={{ marginLeft: '8px' }} onClick={() => handleRemoveCity(city)}> {/* Remove button */}
+                                              <X style={{ width: '16px', height: '16px', color: 'black' }} /> {/* X icon */}
                                             </button>
                                           </span>
                                         ))}
                                       </div>
-                                      <div className="flex gap-3 w-full max-w-2xl mx-auto"> {/* Input container - centered with max width */}
+                                      <div style={{ display: 'flex', gap: '12px', width: '100%' }}> {/* Input container */}
                                         <Input // City input
                                           value={cityInput} // Value
                                           onChange={e => setCityInput(e.target.value)} // Change handler
@@ -777,12 +787,12 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             }
                                           }}
                                           placeholder="Type a city and press Enter" // Placeholder
-                                          className="flex-1 text-black border-black bg-white rounded-lg shadow-sm text-base px-4 py-3" // Styling
+                                          style={{ flex: 1, color: 'black', border: '1px solid black', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '12px 16px' }} // Fixed styling
                                         />
                                         <Button // Add button
                                           type="button" // Button type
                                           onClick={handleAddCity} // Click handler
-                                          className="bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm text-base px-6 py-3 whitespace-nowrap" // Styling
+                                          style={{ backgroundColor: '#2563eb', color: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '12px 24px', whiteSpace: 'nowrap' }} // Fixed styling
                                         >
                                           Add {/* Button text */}
                                         </Button>
@@ -790,47 +800,47 @@ export default function PostSignupSurvey() { // Define the main component functi
                                     </div>
 
                                     {/* Price Range Section */}
-                                    <div className="w-full space-y-6"> {/* Price section */}
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto"> {/* Price inputs grid */}
+                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* Price section */}
+                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%' }}> {/* Price inputs grid */}
                                         {/* Min Price */}
-                                        <div className="w-full"> {/* Min price container */}
-                                          <Label className="block text-center text-lg font-semibold text-black mb-3">
+                                        <div style={{ width: '100%' }}> {/* Min price container */}
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>
                                             Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} 
-                                            <span className="text-sm font-normal text-gray-600 ml-1">($CAD)</span>
+                                            <span style={{ fontSize: '14px', fontWeight: '400', color: '#6b7280', marginLeft: '4px' }}>($CAD)</span>
                                           </Label> {/* Label */}
-                                          <div className="flex items-center border-2 border-gray-300 rounded-lg px-3 bg-white shadow-sm"> {/* Input container */}
-                                            <span className="text-black font-semibold mr-2">$CAD</span> {/* Currency */}
+                                          <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #d1d5db', borderRadius: '8px', padding: '0 12px', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}> {/* Input container */}
+                                            <span style={{ color: 'black', fontWeight: '600', marginRight: '8px' }}>$CAD</span> {/* Currency */}
                                             <Input // Min price input
                                               type="number" // Input type
                                               min={0} // Min value
                                               value={currentForm.priceRange.min} // Value
                                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })} // Change handler
-                                              className="flex-1 border-0 focus:ring-0 text-black bg-white text-base px-2 py-3" // Styling
+                                              style={{ flex: 1, border: 'none', outline: 'none', color: 'black', backgroundColor: 'white', fontSize: '16px', padding: '8px 8px' }} // Fixed styling
                                               placeholder="0" // Placeholder
                                             />
                                           </div>
                                         </div>
 
                                         {/* Max Price */}
-                                        <div className="w-full"> {/* Max price container */}
-                                          <Label className="block text-center text-lg font-semibold text-black mb-3">
+                                        <div style={{ width: '100%' }}> {/* Max price container */}
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>
                                             Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} 
-                                            <span className="text-sm font-normal text-gray-600 ml-1">($CAD)</span>
+                                            <span style={{ fontSize: '14px', fontWeight: '400', color: '#6b7280', marginLeft: '4px' }}>($CAD)</span>
                                           </Label> {/* Label */}
-                                          <div className="flex items-center border-2 border-gray-300 rounded-lg px-3 bg-white shadow-sm"> {/* Input container */}
-                                            <span className="text-black font-semibold mr-2">$CAD</span> {/* Currency */}
+                                          <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #d1d5db', borderRadius: '8px', padding: '0 12px', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}> {/* Input container */}
+                                            <span style={{ color: 'black', fontWeight: '600', marginRight: '8px' }}>$CAD</span> {/* Currency */}
                                             <Input // Max price input
                                               type="number" // Input type
                                               min={0} // Min value
                                               value={currentForm.priceRange.max} // Value
                                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })} // Change handler
-                                              className="flex-1 border-0 focus:ring-0 text-black bg-white text-base px-2 py-3" // Styling
+                                              style={{ flex: 1, border: 'none', outline: 'none', color: 'black', backgroundColor: 'white', fontSize: '16px', padding: '8px 8px' }} // Fixed styling
                                               placeholder="" // Placeholder
                                             />
                                           </div>
                                         </div>
                                       </div>
-                                      <p className="text-sm text-gray-500 italic text-center max-w-2xl mx-auto"> {/* Helper text */}
+                                      <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '12px' }}> {/* Helper text */}
                                         {currentType === 'landlord' 
                                           ? 'Enter the monthly rent range for your properties, from lowest to highest.'
                                           : 'Enter the price range of properties you represent, from lowest to highest.'}
@@ -838,21 +848,21 @@ export default function PostSignupSurvey() { // Define the main component functi
                                     </div>
 
                                     {/* Bedrooms Section */}
-                                    <div className="w-full space-y-6"> {/* Bedrooms section */}
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto"> {/* Bedrooms grid */}
+                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* Bedrooms section */}
+                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%' }}> {/* Bedrooms grid */}
                                         {/* Min Bedrooms */}
-                                        <div className="w-full"> {/* Min bedrooms container */}
-                                          <Label className="block text-center text-lg font-semibold text-black mb-3">Min Bedrooms</Label> {/* Label */}
+                                        <div style={{ width: '100%' }}> {/* Min bedrooms container */}
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>Min Bedrooms</Label> {/* Label */}
                                           <Select // Min bedrooms select
                                             value={currentForm.bedroomsMin} // Value
                                             onValueChange={(value) => handleFormChange('bedroomsMin', value)} // Change handler
                                           >
-                                            <SelectTrigger className="w-full text-black border-2 border-gray-300 bg-white rounded-lg shadow-sm text-base px-4 py-3"> {/* Trigger */}
-                                              <SelectValue placeholder="Select min bedrooms" className="text-black" /> {/* Placeholder */}
+                                            <SelectTrigger style={{ width: '100%', color: 'black', border: '2px solid #d1d5db', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '16px' }}> {/* Trigger */}
+                                              <SelectValue placeholder="Select min bedrooms" style={{ color: 'black' }} /> {/* Placeholder */}
                                             </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-gray-300"> {/* Content */}
+                                            <SelectContent style={{ color: 'black', backgroundColor: 'white', border: '1px solid #d1d5db' }}> {/* Content */}
                                               {BEDROOM_OPTIONS.map(bed => ( // Map options
-                                                <SelectItem key={bed} value={bed} className="text-black bg-white"> {/* Item */}
+                                                <SelectItem key={bed} value={bed} style={{ color: 'black', backgroundColor: 'white' }}> {/* Item */}
                                                   {bed} {/* Option text */}
                                                 </SelectItem>
                                               ))}
@@ -861,18 +871,18 @@ export default function PostSignupSurvey() { // Define the main component functi
                                         </div>
 
                                         {/* Max Bedrooms */}
-                                        <div className="w-full"> {/* Max bedrooms container */}
-                                          <Label className="block text-center text-lg font-semibold text-black mb-3">Max Bedrooms</Label> {/* Label */}
+                                        <div style={{ width: '100%' }}> {/* Max bedrooms container */}
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>Max Bedrooms</Label> {/* Label */}
                                           <Select // Max bedrooms select
                                             value={currentForm.bedroomsMax} // Value
                                             onValueChange={(value) => handleFormChange('bedroomsMax', value)} // Change handler
                                           >
-                                            <SelectTrigger className="w-full text-black border-2 border-gray-300 bg-white rounded-lg shadow-sm text-base px-4 py-3"> {/* Trigger */}
-                                              <SelectValue placeholder="Select max bedrooms" className="text-black" /> {/* Placeholder */}
+                                            <SelectTrigger style={{ width: '100%', color: 'black', border: '2px solid #d1d5db', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '16px' }}> {/* Trigger */}
+                                              <SelectValue placeholder="Select max bedrooms" style={{ color: 'black' }} /> {/* Placeholder */}
                                             </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-gray-300"> {/* Content */}
+                                            <SelectContent style={{ color: 'black', backgroundColor: 'white', border: '1px solid #d1d5db' }}> {/* Content */}
                                               {BEDROOM_OPTIONS.map(bed => ( // Map options
-                                                <SelectItem key={bed} value={bed} className="text-black bg-white"> {/* Item */}
+                                                <SelectItem key={bed} value={bed} style={{ color: 'black', backgroundColor: 'white' }}> {/* Item */}
                                                   {bed} {/* Option text */}
                                                 </SelectItem>
                                               ))}
@@ -880,27 +890,27 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           </Select>
                                         </div>
                                       </div>
-                                      <p className="text-sm text-gray-500 italic text-center max-w-2xl mx-auto"> {/* Helper text */}
+                                      <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '12px' }}> {/* Helper text */}
                                         Provide the range of bedrooms in your properties, from the lowest to the highest count.
                                       </p>
                                     </div>
 
                                     {/* Bathrooms Section */}
-                                    <div className="w-full space-y-6"> {/* Bathrooms section */}
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto"> {/* Bathrooms grid */}
+                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* Bathrooms section */}
+                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%' }}> {/* Bathrooms grid */}
                                         {/* Min Bathrooms */}
-                                        <div className="w-full"> {/* Min bathrooms container */}
-                                          <Label className="block text-center text-lg font-semibold text-black mb-3">Min Bathrooms</Label> {/* Label */}
+                                        <div style={{ width: '100%' }}> {/* Min bathrooms container */}
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>Min Bathrooms</Label> {/* Label */}
                                           <Select // Min bathrooms select
                                             value={currentForm.bathroomsMin} // Value
                                             onValueChange={(value) => handleFormChange('bathroomsMin', value)} // Change handler
                                           >
-                                            <SelectTrigger className="w-full text-black border-2 border-gray-300 bg-white rounded-lg shadow-sm text-base px-4 py-3"> {/* Trigger */}
-                                              <SelectValue placeholder="Select min bathrooms" className="text-black" /> {/* Placeholder */}
+                                            <SelectTrigger style={{ width: '100%', color: 'black', border: '2px solid #d1d5db', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '16px' }}> {/* Trigger */}
+                                              <SelectValue placeholder="Select min bathrooms" style={{ color: 'black' }} /> {/* Placeholder */}
                                             </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-gray-300"> {/* Content */}
+                                            <SelectContent style={{ color: 'black', backgroundColor: 'white', border: '1px solid #d1d5db' }}> {/* Content */}
                                               {BATHROOM_OPTIONS.map(bath => ( // Map options
-                                                <SelectItem key={bath} value={bath} className="text-black bg-white"> {/* Item */}
+                                                <SelectItem key={bath} value={bath} style={{ color: 'black', backgroundColor: 'white' }}> {/* Item */}
                                                   {bath} {/* Option text */}
                                                 </SelectItem>
                                               ))}
@@ -909,18 +919,18 @@ export default function PostSignupSurvey() { // Define the main component functi
                                         </div>
 
                                         {/* Max Bathrooms */}
-                                        <div className="w-full"> {/* Max bathrooms container */}
-                                          <Label className="block text-center text-lg font-semibold text-black mb-3">Max Bathrooms</Label> {/* Label */}
+                                        <div style={{ width: '100%' }}> {/* Max bathrooms container */}
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>Max Bathrooms</Label> {/* Label */}
                                           <Select // Max bathrooms select
                                             value={currentForm.bathroomsMax} // Value
                                             onValueChange={(value) => handleFormChange('bathroomsMax', value)} // Change handler
                                           >
-                                            <SelectTrigger className="w-full text-black border-2 border-gray-300 bg-white rounded-lg shadow-sm text-base px-4 py-3"> {/* Trigger */}
-                                              <SelectValue placeholder="Select max bathrooms" className="text-black" /> {/* Placeholder */}
+                                            <SelectTrigger style={{ width: '100%', color: 'black', border: '2px solid #d1d5db', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '16px' }}> {/* Trigger */}
+                                              <SelectValue placeholder="Select max bathrooms" style={{ color: 'black' }} /> {/* Placeholder */}
                                             </SelectTrigger>
-                                            <SelectContent className="text-black bg-white border-gray-300"> {/* Content */}
+                                            <SelectContent style={{ color: 'black', backgroundColor: 'white', border: '1px solid #d1d5db' }}> {/* Content */}
                                               {BATHROOM_OPTIONS.map(bath => ( // Map options
-                                                <SelectItem key={bath} value={bath} className="text-black bg-white"> {/* Item */}
+                                                <SelectItem key={bath} value={bath} style={{ color: 'black', backgroundColor: 'white' }}> {/* Item */}
                                                   {bath} {/* Option text */}
                                                 </SelectItem>
                                               ))}
@@ -928,93 +938,105 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           </Select>
                                         </div>
                                       </div>
-                                      <p className="text-sm text-gray-500 italic text-center max-w-2xl mx-auto"> {/* Helper text */}
+                                      <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '12px' }}> {/* Helper text */}
                                         Provide the range of bathrooms in your properties, from the lowest to the highest count.
                                       </p>
                                     </div>
                                   </div>
                                 )}
 
-                                {/* Step 1: Areas Served */}
+                                {/* Step 1: Areas Served - Fixed Pixel Layout */}
                                 {realtorStep === 1 && ( // Areas served step
-                                  <div className="w-full space-y-8"> {/* Full width container */}
-                                    <div className="text-center mb-6"> {/* Header */}
-                                      <Label className="text-xl font-semibold text-black">Areas Served</Label> {/* Label */}
-                                      <p className="text-sm text-gray-600 mt-1">(optional)</p> {/* Subtitle */}
+                                  <div style={{ width: '100%' }}> {/* Full width container */}
+                                    <div style={{ textAlign: 'center', marginBottom: '24px' }}> {/* Header */}
+                                      <Label style={{ fontSize: '20px', fontWeight: '600', color: 'black' }}>Areas Served</Label> {/* Label */}
+                                      <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>(optional)</p> {/* Subtitle */}
                                     </div>
-                                    <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto"> {/* Areas grid */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', width: '100%' }}> {/* Areas grid */}
                                       {AREAS_SERVED.map(area => ( // Map areas
                                         <Button // Area button
                                           key={area} // Key
                                           variant={currentForm.areasServed.includes(area) ? "default" : "outline"} // Variant
                                           size="lg" // Size
                                           onClick={() => handleArrayToggle('areasServed', area)} // Click handler
-                                          className={`px-6 py-3 text-base ${currentForm.areasServed.includes(area) 
-                                            ? "bg-blue-600 text-white border-blue-600" 
-                                            : "bg-white text-black border-2 border-gray-300 hover:bg-gray-50"}`} // Styling
+                                          style={{ 
+                                            padding: '12px 24px', 
+                                            fontSize: '16px',
+                                            backgroundColor: currentForm.areasServed.includes(area) ? '#2563eb' : 'white',
+                                            color: currentForm.areasServed.includes(area) ? 'white' : 'black',
+                                            border: currentForm.areasServed.includes(area) ? '2px solid #2563eb' : '2px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer'
+                                          }} // Fixed styling
                                         >
                                           {area} {/* Area text */}
                                         </Button>
                                       ))}
                                     </div>
-                                    <p className="text-sm text-gray-500 italic text-center max-w-2xl mx-auto"> {/* Helper text */}
+                                    <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '12px' }}> {/* Helper text */}
                                       Select all the areas where you actively serve clients.
                                     </p>
                                   </div>
                                 )}
 
-                                {/* Step 2: Client Types */}
+                                {/* Step 2: Client Types - Fixed Pixel Layout */}
                                 {realtorStep === 2 && ( // Client types step
-                                  <div className="w-full space-y-8"> {/* Full width container */}
-                                    <div className="text-center mb-6"> {/* Header */}
-                                      <Label className="text-xl font-semibold text-black">Preferred Client Types</Label> {/* Label */}
-                                      <p className="text-sm text-gray-600 mt-1">(optional)</p> {/* Subtitle */}
+                                  <div style={{ width: '100%' }}> {/* Full width container */}
+                                    <div style={{ textAlign: 'center', marginBottom: '24px' }}> {/* Header */}
+                                      <Label style={{ fontSize: '20px', fontWeight: '600', color: 'black' }}>Preferred Client Types</Label> {/* Label */}
+                                      <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>(optional)</p> {/* Subtitle */}
                                     </div>
-                                    <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto"> {/* Types grid */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', width: '100%' }}> {/* Types grid */}
                                       {CLIENT_TYPES.map(type => ( // Map types
                                         <Button // Type button
                                           key={type} // Key
                                           variant={currentForm.clientTypes.includes(type) ? "default" : "outline"} // Variant
                                           size="lg" // Size
                                           onClick={() => handleArrayToggle('clientTypes', type)} // Click handler
-                                          className={`px-6 py-3 text-base ${currentForm.clientTypes.includes(type) 
-                                            ? "bg-blue-600 text-white border-blue-600" 
-                                            : "bg-white text-black border-2 border-gray-300 hover:bg-gray-50"}`} // Styling
+                                          style={{ 
+                                            padding: '12px 24px', 
+                                            fontSize: '16px',
+                                            backgroundColor: currentForm.clientTypes.includes(type) ? '#2563eb' : 'white',
+                                            color: currentForm.clientTypes.includes(type) ? 'white' : 'black',
+                                            border: currentForm.clientTypes.includes(type) ? '2px solid #2563eb' : '2px solid #d1d5db',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer'
+                                          }} // Fixed styling
                                         >
                                           {type} {/* Type text */}
                                         </Button>
                                       ))}
                                     </div>
-                                    <p className="text-sm text-gray-500 italic text-center max-w-2xl mx-auto"> {/* Helper text */}
+                                    <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '12px' }}> {/* Helper text */}
                                       Let us know which types of clients you prefer to work with.
                                     </p>
                                   </div>
                                 )}
 
-                                {/* Step 3: Additional Info */}
+                                {/* Step 3: Additional Info - Fixed Pixel Layout */}
                                 {realtorStep === 3 && ( // Additional info step
-                                  <div className="w-full space-y-8 max-w-4xl mx-auto"> {/* Full width container */}
+                                  <div style={{ width: '100%' }}> {/* Full width container */}
                                     {/* Accepting Clients */}
-                                    <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg"> {/* Checkbox container */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', marginBottom: '32px' }}> {/* Checkbox container */}
                                       <Checkbox // Checkbox
                                         id="accepting-clients" // ID
                                         checked={currentForm.isAcceptingClients} // Checked state
                                         onCheckedChange={(checked) => handleFormChange('isAcceptingClients', checked)} // Change handler
-                                        className="border-2 border-gray-300" // Styling
+                                        style={{ border: '2px solid #d1d5db' }} // Fixed styling
                                       />
-                                      <Label htmlFor="accepting-clients" className="text-lg text-black">I am currently accepting new clients</Label> {/* Label */}
+                                      <Label htmlFor="accepting-clients" style={{ fontSize: '18px', color: 'black' }}>I am currently accepting new clients</Label> {/* Label */}
                                     </div>
 
                                     {/* Additional Requirements */}
-                                    <div className="space-y-4"> {/* Requirements container */}
-                                      <Label className="block text-lg font-semibold text-black">Additional Requirements</Label> {/* Label */}
+                                    <div style={{ width: '100%' }}> {/* Requirements container */}
+                                      <Label style={{ display: 'block', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>Additional Requirements</Label> {/* Label */}
                                       <Input // Input
                                         placeholder="Any specific requirements or preferences?" // Placeholder
                                         value={currentForm.additionalRequirements} // Value
                                         onChange={(e) => handleFormChange('additionalRequirements', e.target.value)} // Change handler
-                                        className="w-full text-black border-2 border-gray-300 bg-white rounded-lg shadow-sm text-base px-4 py-3" // Styling
+                                        style={{ width: '100%', color: 'black', border: '2px solid #d1d5db', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '16px' }} // Fixed styling
                                       />
-                                      <p className="text-sm text-gray-500 italic"> {/* Helper text */}
+                                      <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', marginTop: '8px' }}> {/* Helper text */}
                                         Share any special requirements or preferences you have for new clients.
                                       </p>
                                     </div>
@@ -1024,15 +1046,15 @@ export default function PostSignupSurvey() { // Define the main component functi
                             </AnimatePresence>
                           </div>
 
-                          {/* Navigation Buttons */}
-                          <div className="flex justify-between mt-8 max-w-4xl mx-auto"> {/* Navigation container */}
+                          {/* Navigation Buttons - Fixed Pixel Layout */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', width: '100%', maxWidth: '800px', margin: '32px auto 0' }}> {/* Navigation container */}
                             <Button // Back button
                               variant="outline" // Variant
                               onClick={() => { // Click handler
                                 if (realtorStep > 0) setRealtorStep(realtorStep - 1); // Go back
                                 else setCurrentType(''); // Go to initial selection
                               }}
-                              className="border-2 border-gray-300 text-black hover:bg-gray-50 px-8 py-3 text-base" // Styling
+                              style={{ border: '2px solid #d1d5db', color: 'black', padding: '12px 32px', fontSize: '16px', borderRadius: '8px' }} // Fixed styling
                             >
                               Back {/* Button text */}
                             </Button>
@@ -1050,7 +1072,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                   }
                                 }
                               }}
-                              className="bg-blue-600 text-white hover:bg-blue-700 px-8 py-3 text-base" // Styling
+                              style={{ backgroundColor: '#2563eb', color: 'white', padding: '12px 32px', fontSize: '16px', borderRadius: '8px' }} // Fixed styling
                             >
                               {realtorStep < REALTOR_STEPS.length - 1 ? 'Next' : isSubmitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>) : 'Submit'} {/* Button text */}
                             </Button>
