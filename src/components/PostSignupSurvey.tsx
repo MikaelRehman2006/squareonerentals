@@ -493,18 +493,13 @@ export default function PostSignupSurvey() {
 
           {/* Scrollable Content */}
           <div 
-            className="flex-1 overflow-y-auto px-6 pb-6" 
+            className="flex-1 overflow-y-auto px-6 pb-6 hide-scrollbar" 
             style={{ 
               maxHeight: 'calc(90vh - 180px)',
-              scrollbarWidth: 'none', /* Firefox */
-              msOverflowStyle: 'none', /* IE and Edge */
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
           >
-            <style jsx>{`
-              div::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
               <TabsList className="grid grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
                 {USER_TYPES.map((type, index) => (
@@ -683,7 +678,7 @@ export default function PostSignupSurvey() {
                                 {realtorStep === 0 && (
                                   <div className="flex flex-col w-full max-w-lg mx-auto items-center">
                                     <div
-                                      className="flex flex-col gap-8 w-full"
+                                      className="flex flex-col gap-8 w-full hide-scrollbar"
                                       style={{
                                         maxHeight: '55vh',
                                         overflowY: 'auto',
@@ -692,11 +687,6 @@ export default function PostSignupSurvey() {
                                         msOverflowStyle: 'none',
                                       }}
                                     >
-                                      <style jsx>{`
-                                        div::-webkit-scrollbar {
-                                          display: none;
-                                        }
-                                      `}</style>
                                       {/* City/Cities input and chips */}
                                       <div className="w-full flex flex-col items-center">
                                         <Label className="font-semibold text-black mb-1 block text-center">City/Cities</Label>
