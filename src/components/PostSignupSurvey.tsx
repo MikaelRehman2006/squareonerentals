@@ -524,7 +524,7 @@ export default function PostSignupSurvey() { // Define the main component functi
 
           {/* Scrollable content area */}
           <div // Scrollable content container
-            className="flex-1 overflow-y-auto px-3 sm:px-6 pb-3 sm:pb-6" // Flex grow with scroll and padding
+            className="flex-1 overflow-y-auto pb-3 sm:pb-6" // Flex grow with scroll and padding - removed horizontal padding
             style={{ // Inline styles
               maxHeight: 'calc(80vh - 100px)', // Maximum height calculation
               overflowY: 'auto', // Enable vertical scrolling
