@@ -460,7 +460,7 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
         <div className="flex flex-col h-full">
           {/* Header - Fixed */}
           <div className="flex-shrink-0 p-6 pb-4">
@@ -492,7 +492,19 @@ export default function PostSignupSurvey() {
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ maxHeight: 'calc(85vh - 200px)' }}>
+          <div 
+            className="flex-1 overflow-y-auto px-6 pb-6" 
+            style={{ 
+              maxHeight: 'calc(90vh - 180px)',
+              scrollbarWidth: 'none', /* Firefox */
+              msOverflowStyle: 'none', /* IE and Edge */
+            }}
+          >
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
               <TabsList className="grid grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
                 {USER_TYPES.map((type, index) => (
@@ -673,11 +685,18 @@ export default function PostSignupSurvey() {
                                     <div
                                       className="flex flex-col gap-8 w-full"
                                       style={{
-                                        maxHeight: '50vh',
+                                        maxHeight: '55vh',
                                         overflowY: 'auto',
                                         paddingRight: '8px',
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none',
                                       }}
                                     >
+                                      <style jsx>{`
+                                        div::-webkit-scrollbar {
+                                          display: none;
+                                        }
+                                      `}</style>
                                       {/* City/Cities input and chips */}
                                       <div className="w-full flex flex-col items-center">
                                         <Label className="font-semibold text-black mb-1 block text-center">City/Cities</Label>
