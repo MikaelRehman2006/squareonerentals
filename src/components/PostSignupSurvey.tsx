@@ -496,8 +496,6 @@ export default function PostSignupSurvey() {
             className="flex-1 overflow-y-auto px-6 pb-6 hide-scrollbar" 
             style={{ 
               maxHeight: 'calc(90vh - 180px)',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
             }}
           >
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
@@ -678,13 +676,11 @@ export default function PostSignupSurvey() {
                                 {realtorStep === 0 && (
                                   <div className="flex flex-col w-full max-w-lg mx-auto items-center">
                                     <div
-                                      className="flex flex-col gap-8 w-full hide-scrollbar"
+                                      className="flex flex-col gap-8 w-full"
                                       style={{
                                         maxHeight: '55vh',
                                         overflowY: 'auto',
                                         paddingRight: '8px',
-                                        scrollbarWidth: 'none',
-                                        msOverflowStyle: 'none',
                                       }}
                                     >
                                       {/* City/Cities input and chips */}
