@@ -495,30 +495,33 @@ export default function PostSignupSurvey() {
           <div 
             className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 hide-scrollbar modal-content-mobile" 
             style={{ 
-              maxHeight: 'calc(85vh - 160px)',
+              maxHeight: 'calc(90vh - 140px)',
             }}
           >
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
-              <TabsList className="grid grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
+              <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-4 bg-white/80 rounded-lg shadow-sm">
                 {USER_TYPES.map((type, index) => (
                   <TabsTrigger
                     key={type.id}
                     value={type.id}
                     className={cn(
-                      "flex items-center gap-2 group relative text-black font-semibold transition-all",
+                      "flex items-center gap-1 sm:gap-2 group relative text-black font-semibold transition-all text-xs sm:text-sm",
                       !selectedTypes.includes(type.id) && "opacity-50",
                       currentType === type.id && "bg-gradient-to-r from-blue-100 to-blue-200 shadow-md border border-blue-300"
                     )}
                     disabled={!selectedTypes.includes(type.id)}
                     style={{ boxShadow: currentType === type.id ? '0 2px 8px 0 rgba(0,0,0,0.08)' : undefined }}
                   >
-                    <span className="flex items-center gap-2">
-                      {index + 1}. {type.label}
+                    <span className="flex items-center gap-1 sm:gap-2">
+                      <span className="hidden sm:inline">{index + 1}.</span>
+                      <span className="sm:hidden">{index + 1}</span>
+                      <span className="hidden sm:inline">{type.label}</span>
+                      <span className="sm:hidden">{type.label.length > 8 ? type.label.substring(0, 8) + '...' : type.label}</span>
                       {completedSteps[type.id] && (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                       )}
                     </span>
-                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
                       {type.description}
                     </div>
                   </TabsTrigger>
@@ -533,8 +536,8 @@ export default function PostSignupSurvey() {
                     exit={{ opacity: 0 }}
                     className="space-y-4"
                   >
-                    <Label className="text-lg font-semibold text-black">
-                      Tell us more about what you're looking for! <span className="text-base font-normal">(Pick all that apply)</span>
+                    <Label className="text-base sm:text-lg font-semibold text-black">
+                      Tell us more about what you're looking for! <span className="text-sm sm:text-base font-normal">(Pick all that apply)</span>
                     </Label>
                     <div className="space-y-3">
                       {USER_TYPES.map(type => (
@@ -547,15 +550,15 @@ export default function PostSignupSurvey() {
                           />
                           {/* Icon for each role */}
                           <div className="mt-1">{type.icon}</div>
-                          <div className="space-y-1">
-                            <Label htmlFor={type.id} className="font-medium text-black">{type.label}</Label>
-                            <p className="text-sm text-gray-700">{type.description}</p>
+                          <div className="space-y-1 flex-1">
+                            <Label htmlFor={type.id} className="font-medium text-black text-sm sm:text-base">{type.label}</Label>
+                            <p className="text-xs sm:text-sm text-gray-700">{type.description}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                     <Button
-                      className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700"
+                      className="w-full mt-4 bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
                       onClick={() => {
                         if (selectedTypes.length === 0) {
                           toast.error('Please select at least one option');

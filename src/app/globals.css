@@ -85,7 +85,7 @@ body {
 
 /* Responsive modal height */
 .modal-content-mobile {
-  max-height: calc(85vh - 160px);
+  max-height: calc(90vh - 140px);
 }
 
 @media (min-width: 640px) {
