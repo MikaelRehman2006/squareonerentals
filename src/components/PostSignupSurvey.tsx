@@ -487,7 +487,7 @@ export default function PostSignupSurvey() { // Define the main component functi
     // Main modal dialog container
     <Dialog open={isOpen} onOpenChange={() => {}}> {/* Dialog component with controlled open state */}
       {/* Modal content with responsive sizing */}
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton> {/* Dialog content with styling */}
+      <DialogContent className={`${['realtor', 'landlord'].includes(currentType) ? 'sm:max-w-4xl' : 'sm:max-w-2xl'} max-h-[80vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0`} hideCloseButton> {/* Dialog content with styling - wider for realtor/landlord */}
         {/* Flex container for header and scrollable content */}
         <div className="flex flex-col h-full"> {/* Flex container div */}
           {/* Fixed header section */}
