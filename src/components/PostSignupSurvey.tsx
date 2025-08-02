@@ -714,7 +714,7 @@ export default function PostSignupSurvey() { // Define the main component functi
 
                       {/* Bedrooms and Bathrooms */}
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
-                        <div className="w-full flex flex-col items-center"> {/* Container for realtor/landlord specific fields */}
+                        <div className="w-full flex flex-col"> {/* Container for realtor/landlord specific fields - removed items-center */}
                           {/* Stepper Progress Bar */}
                           <div className="flex items-center justify-center mb-6"> {/* Stepper progress bar container */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
@@ -726,13 +726,13 @@ export default function PostSignupSurvey() { // Define the main component functi
                               </div>
                             ))}
                           </div>
-                          <div className="flex flex-col items-center mb-4"> {/* Current step description container */}
+                          <div className="flex flex-col items-center mb-4"> {/* Current step description container - keep centered for header */}
                             <UserCircle className="w-12 h-12 text-blue-500 mb-2" /> {/* User circle icon */}
                             <div className="text-lg font-semibold text-blue-700 mb-1">{REALTOR_STEPS[realtorStep]}</div> {/* Current step title */}
                             <div className="text-sm text-gray-500 mb-2">{realtorStep === 0 ? 'Tell us about your properties!' : realtorStep === 1 ? 'Where do you serve clients?' : realtorStep === 2 ? 'Who do you work with?' : 'Anything else you want to share?'}</div> {/* Current step description */}
                           </div>
-                          {/* Center the form card/content */}
-                          <div className="w-full max-w-[900px] mx-auto mb-4"> {/* Form card container */}
+                          {/* Form card/content - removed width constraints */}
+                          <div className="w-full mb-4"> {/* Form card container - removed max-w-[900px] and mx-auto */}
                             <AnimatePresence mode="wait" initial={false}> {/* AnimatePresence for animations */}
                               <motion.div // Motion div for animation
                                 key={realtorStep} // Key for animation
@@ -742,9 +742,9 @@ export default function PostSignupSurvey() { // Define the main component functi
                                 transition={{ duration: 0.3 }} // Animation duration
                               >
                                 {realtorStep === 0 && ( // Conditional rendering for Property Details step
-                                  <div className="flex flex-col w-full items-center"> {/* Form card content - removed max-w-lg constraint */}
+                                  <div className="flex flex-col w-full"> {/* Form card content - removed items-center and max-w-lg constraint */}
                                     <div // Form fields container
-                                      className="flex flex-col gap-8 w-full max-w-2xl" // Grid layout for fields - increased max width
+                                      className="flex flex-col gap-8 w-full" // Grid layout for fields - removed max-w-2xl constraint
                                       style={{ // Inline styles
                                         maxHeight: '55vh', // Maximum height for scrollable content
                                         overflowY: 'auto', // Enable vertical scrolling
@@ -752,7 +752,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                       }}
                                     >
                                       {/* City/Cities input and chips */}
-                                      <div className="w-full flex flex-col items-center"> {/* City input container */}
+                                      <div className="w-full flex flex-col"> {/* City input container - removed items-center */}
                                         <Label className="font-semibold text-black mb-1 block text-center">City/Cities</Label> {/* Label for city input */}
                                         <div className="flex flex-wrap gap-2 mb-2 justify-center"> {/* Chips container */}
                                           {cities.map(city => ( // Map through cities
@@ -764,7 +764,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             </span>
                                           ))}
                                         </div>
-                                        <div className="flex gap-2 w-full justify-center"> {/* Input and Add button container */}
+                                        <div className="flex gap-2 w-full"> {/* Input and Add button container - removed justify-center */}
                                           <Input // Input component
                                             value={cityInput} // Input value
                                             onChange={e => setCityInput(e.target.value)} // Change handler
@@ -787,11 +787,11 @@ export default function PostSignupSurvey() { // Define the main component functi
                                         </div>
                                       </div>
                                       {/* Single column for all fields */}
-                                      <div className="flex flex-col gap-6 w-full items-center"> {/* Grid layout for fields */}
+                                      <div className="flex flex-col gap-6 w-full"> {/* Grid layout for fields - removed items-center */}
                                         {/* Min Price */}
-                                        <div className="w-full flex flex-col items-center"> {/* Min price container */}
+                                        <div className="w-full flex flex-col"> {/* Min price container - removed items-center */}
                                           <Label className="font-semibold text-black text-center">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label> {/* Label for min price */}
-                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full max-w-md"> {/* Input container - reordered classes */}
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full"> {/* Input container - removed max-w-md constraint */}
                                             <span className="text-black font-semibold mr-1">$CAD</span> {/* Currency symbol */}
                                             <Input // Input component
                                               type="number" // Input type
@@ -804,9 +804,9 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           </div>
                                         </div>
                                         {/* Max Price */}
-                                        <div className="w-full flex flex-col items-center"> {/* Max price container */}
+                                        <div className="w-full flex flex-col"> {/* Max price container - removed items-center */}
                                           <Label className="font-semibold text-black text-center">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label> {/* Label for max price */}
-                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full max-w-md"> {/* Input container - reordered classes */}
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full"> {/* Input container - removed max-w-md constraint */}
                                             <span className="text-black font-semibold mr-1">$CAD</span> {/* Currency symbol */}
                                             <Input // Input component
                                               type="number" // Input type
@@ -824,7 +824,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             : 'Enter the price range of properties you represent, from lowest to highest.'}
                                         </p>
                                         {/* Min Bedrooms */}
-                                        <div className="w-full flex flex-col items-center"> {/* Min bedrooms container */}
+                                        <div className="w-full flex flex-col"> {/* Min bedrooms container - removed items-center */}
                                           <Label className="font-semibold text-black text-center">Min Bedrooms</Label> {/* Label for min bedrooms */}
                                           <Select // Select component
                                             value={currentForm.bedroomsMin} // Selected value
@@ -843,7 +843,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           </Select>
                                         </div>
                                         {/* Max Bedrooms */}
-                                        <div className="w-full flex flex-col items-center"> {/* Max bedrooms container */}
+                                        <div className="w-full flex flex-col"> {/* Max bedrooms container - removed items-center */}
                                           <Label className="font-semibold text-black text-center">Max Bedrooms</Label> {/* Label for max bedrooms */}
                                           <Select // Select component
                                             value={currentForm.bedroomsMax} // Selected value
@@ -865,7 +865,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           Provide the range of bedrooms in your properties, from the lowest to the highest count.
                                         </p>
                                         {/* Min Bathrooms */}
-                                        <div className="w-full flex flex-col items-center"> {/* Min bathrooms container */}
+                                        <div className="w-full flex flex-col"> {/* Min bathrooms container - removed items-center */}
                                           <Label className="font-semibold text-black text-center">Min Bathrooms</Label> {/* Label for min bathrooms */}
                                           <Select // Select component
                                             value={currentForm.bathroomsMin} // Selected value
@@ -884,7 +884,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           </Select>
                                         </div>
                                         {/* Max Bathrooms */}
-                                        <div className="w-full flex flex-col items-center"> {/* Max bathrooms container */}
+                                        <div className="w-full flex flex-col"> {/* Max bathrooms container - removed items-center */}
                                           <Label className="font-semibold text-black text-center">Max Bathrooms</Label> {/* Label for max bathrooms */}
                                           <Select // Select component
                                             value={currentForm.bathroomsMax} // Selected value
@@ -910,7 +910,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                   </div>
                                 )}
                                 {realtorStep === 1 && ( // Conditional rendering for Areas Served step
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto"> {/* Form card content */}
+                                  <div className="flex flex-col gap-8 w-full"> {/* Form card content - removed max-w-2xl and mx-auto */}
                                     <Label className="font-semibold text-black mb-1">Areas Served <span className="text-xs font-normal">(optional)</span></Label> {/* Label for areas served */}
                                     <div className="flex flex-wrap gap-2 mt-2"> {/* Chips container */}
                                       {AREAS_SERVED.map(area => ( // Map through areas served options
@@ -929,7 +929,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                   </div>
                                 )}
                                 {realtorStep === 2 && ( // Conditional rendering for Preferred Client Types step
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto"> {/* Form card content */}
+                                  <div className="flex flex-col gap-8 w-full"> {/* Form card content - removed max-w-2xl and mx-auto */}
                                     <Label className="font-semibold text-black mb-1">Preferred Client Types <span className="text-xs font-normal">(optional)</span></Label> {/* Label for client types */}
                                     <div className="flex flex-wrap gap-2 mt-2"> {/* Chips container */}
                                       {CLIENT_TYPES.map(type => ( // Map through client types options
@@ -948,7 +948,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                   </div>
                                 )}
                                 {realtorStep === 3 && ( // Conditional rendering for Additional Info step
-                                  <div className="flex flex-col gap-8 max-w-2xl mx-auto"> {/* Form card content */}
+                                  <div className="flex flex-col gap-8 w-full"> {/* Form card content - removed max-w-2xl and mx-auto */}
                                     <div className="flex items-center space-x-2 mb-2"> {/* Accepting clients checkbox container */}
                                       <Checkbox // Checkbox component
                                         id="accepting-clients" // Unique ID
