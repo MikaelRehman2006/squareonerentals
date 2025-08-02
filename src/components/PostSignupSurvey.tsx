@@ -493,9 +493,10 @@ export default function PostSignupSurvey() {
 
           {/* Scrollable Content */}
           <div 
-            className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 hide-scrollbar modal-content-mobile" 
+            className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 modal-content-mobile" 
             style={{ 
               maxHeight: 'calc(95vh - 120px)',
+              overflowY: 'auto',
             }}
           >
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
