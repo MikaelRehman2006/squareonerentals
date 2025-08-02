@@ -460,27 +460,27 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
         <div className="flex flex-col h-full">
           {/* Header - Fixed */}
-          <div className="flex-shrink-0 p-4 sm:p-6 pb-2 sm:pb-4">
+          <div className="flex-shrink-0 p-3 sm:p-6 pb-2 sm:pb-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               <DialogHeader>
-                <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-black">
+                <DialogTitle className="text-lg sm:text-2xl font-bold text-center text-black">
                   Complete Your Profile
                 </DialogTitle>
                 {/* Only show welcome and optionality messages on initial role selection */}
                 {!currentType && (
                   <>
-                    <div className="text-center mt-3 sm:mt-4 text-black text-sm sm:text-base font-medium">
+                    <div className="text-center mt-2 sm:mt-4 text-black text-xs sm:text-base font-medium">
                       Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
                     </div>
-                    <DialogDescription className="text-center mt-3 sm:mt-4 text-black">
-                      <span className="block mt-2 text-xs sm:text-sm text-blue-700 font-semibold">
+                    <DialogDescription className="text-center mt-2 sm:mt-4 text-black">
+                      <span className="block mt-1 sm:mt-2 text-xs text-blue-700 font-semibold">
                         This quick step is optional—but the more we know, the better we can help you!<br/>
                         <span className="text-gray-700">If you skip, you can always return to your dashboard and change your preferences later.</span>
                       </span>
@@ -493,9 +493,9 @@ export default function PostSignupSurvey() {
 
           {/* Scrollable Content */}
           <div 
-            className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 modal-content-mobile" 
+            className="flex-1 overflow-y-auto px-3 sm:px-6 pb-3 sm:pb-6" 
             style={{ 
-              maxHeight: 'calc(95vh - 120px)',
+              maxHeight: 'calc(80vh - 100px)',
               overflowY: 'auto',
             }}
           >
@@ -533,20 +533,20 @@ export default function PostSignupSurvey() {
                 ))}
               </TabsList>
 
-              <div className="space-y-3 sm:space-y-4 py-2 sm:py-4">
+              <div className="space-y-4 sm:space-y-4 py-3 sm:py-4">
                 {!currentType ? (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="space-y-3 sm:space-y-4"
+                    className="space-y-4 sm:space-y-4"
                   >
                     <Label className="text-sm sm:text-lg font-semibold text-black">
                       Tell us more about what you're looking for! <span className="text-xs sm:text-base font-normal">(Pick all that apply)</span>
                     </Label>
-                    <div className="space-y-2 sm:space-y-3">
+                    <div className="space-y-3 sm:space-y-3">
                       {USER_TYPES.map(type => (
-                        <div key={type.id} className="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg hover:bg-blue-50 transition-colors">
+                        <div key={type.id} className="flex items-start space-x-3 sm:space-x-3 p-3 sm:p-3 rounded-lg hover:bg-blue-50 transition-colors">
                           <Checkbox
                             id={type.id}
                             checked={selectedTypes.includes(type.id)}
@@ -556,14 +556,14 @@ export default function PostSignupSurvey() {
                           {/* Icon for each role */}
                           <div className="mt-1">{type.icon}</div>
                           <div className="space-y-1 flex-1">
-                            <Label htmlFor={type.id} className="font-medium text-black text-xs sm:text-base">{type.label}</Label>
+                            <Label htmlFor={type.id} className="font-medium text-black text-sm sm:text-base">{type.label}</Label>
                             <p className="text-xs sm:text-sm text-gray-700">{type.description}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                     <Button
-                      className="w-full mt-3 sm:mt-4 bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
+                      className="w-full mt-4 sm:mt-4 bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
                       onClick={() => {
                         if (selectedTypes.length === 0) {
                           toast.error('Please select at least one option');
