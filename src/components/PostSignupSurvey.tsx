@@ -460,27 +460,27 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
         <div className="flex flex-col h-full">
           {/* Header - Fixed */}
-          <div className="flex-shrink-0 p-6 pb-4">
+          <div className="flex-shrink-0 p-4 sm:p-6 pb-2 sm:pb-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-center text-black">
+                <DialogTitle className="text-xl sm:text-2xl font-bold text-center text-black">
                   Complete Your Profile
                 </DialogTitle>
                 {/* Only show welcome and optionality messages on initial role selection */}
                 {!currentType && (
                   <>
-                    <div className="text-center mt-4 text-black text-base font-medium">
+                    <div className="text-center mt-3 sm:mt-4 text-black text-sm sm:text-base font-medium">
                       Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother.
                     </div>
-                    <DialogDescription className="text-center mt-4 text-black">
-                      <span className="block mt-2 text-sm text-blue-700 font-semibold">
+                    <DialogDescription className="text-center mt-3 sm:mt-4 text-black">
+                      <span className="block mt-2 text-xs sm:text-sm text-blue-700 font-semibold">
                         This quick step is optional—but the more we know, the better we can help you!<br/>
                         <span className="text-gray-700">If you skip, you can always return to your dashboard and change your preferences later.</span>
                       </span>
@@ -493,9 +493,9 @@ export default function PostSignupSurvey() {
 
           {/* Scrollable Content */}
           <div 
-            className="flex-1 overflow-y-auto px-6 pb-6 hide-scrollbar" 
+            className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 hide-scrollbar modal-content-mobile" 
             style={{ 
-              maxHeight: 'calc(95vh - 200px)',
+              maxHeight: 'calc(85vh - 160px)',
             }}
           >
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">

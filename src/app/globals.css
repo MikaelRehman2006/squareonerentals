@@ -83,6 +83,17 @@ body {
   display: none;  /* Chrome, Safari and Opera */
 }
 
+/* Responsive modal height */
+.modal-content-mobile {
+  max-height: calc(85vh - 160px);
+}
+
+@media (min-width: 640px) {
+  .modal-content-mobile {
+    max-height: calc(95vh - 200px);
+  }
+}
+
 /* Form styling stability fixes */
 .form-container {
   isolation: isolate !important;
