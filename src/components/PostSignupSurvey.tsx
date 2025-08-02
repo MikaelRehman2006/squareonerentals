@@ -506,8 +506,8 @@ export default function PostSignupSurvey() {
                     key={type.id}
                     value={type.id}
                     className={cn(
-                      "flex items-center gap-1 sm:gap-2 group relative text-black font-semibold transition-all text-xs sm:text-sm",
-                      !selectedTypes.includes(type.id) && "opacity-50",
+                      "flex items-center gap-1 sm:gap-2 group relative text-black font-semibold transition-all text-xs sm:text-sm p-2 sm:p-3 border border-gray-200 rounded-md",
+                      !selectedTypes.includes(type.id) && "opacity-50 bg-white",
                       currentType === type.id && "bg-gradient-to-r from-blue-100 to-blue-200 shadow-md border border-blue-300"
                     )}
                     disabled={!selectedTypes.includes(type.id)}
@@ -541,9 +541,11 @@ export default function PostSignupSurvey() {
                     exit={{ opacity: 0 }}
                     className="space-y-4 sm:space-y-4"
                   >
-                    <Label className="text-sm sm:text-lg font-semibold text-black">
-                      Tell us more about what you're looking for! <span className="text-xs sm:text-base font-normal">(Pick all that apply)</span>
-                    </Label>
+                    <div className="mt-6 sm:mt-0">
+                      <Label className="text-sm sm:text-lg font-semibold text-black">
+                        Tell us more about what you're looking for! <span className="text-xs sm:text-base font-normal">(Pick all that apply)</span>
+                      </Label>
+                    </div>
                     <div className="space-y-3 sm:space-y-3">
                       {USER_TYPES.map(type => (
                         <div key={type.id} className="flex items-start space-x-3 sm:space-x-3 p-3 sm:p-3 rounded-lg hover:bg-blue-50 transition-colors">
@@ -587,7 +589,7 @@ export default function PostSignupSurvey() {
                       )}
                     </Button>
                     {/* Extra space below Continue button for mobile scroll bounce */}
-                    <div className="h-20 sm:h-0"></div>
+                    <div className="h-40 sm:h-40"></div>
                   </motion.div>
                 ) : (
                   <motion.div
