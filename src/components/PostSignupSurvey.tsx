@@ -742,9 +742,9 @@ export default function PostSignupSurvey() { // Define the main component functi
                                 transition={{ duration: 0.3 }} // Animation duration
                               >
                                 {realtorStep === 0 && ( // Conditional rendering for Property Details step
-                                  <div className="flex flex-col w-full max-w-lg mx-auto items-center"> {/* Form card content */}
+                                  <div className="flex flex-col w-full items-center"> {/* Form card content - removed max-w-lg constraint */}
                                     <div // Form fields container
-                                      className="flex flex-col gap-8 w-full" // Grid layout for fields
+                                      className="flex flex-col gap-8 w-full max-w-2xl" // Grid layout for fields - increased max width
                                       style={{ // Inline styles
                                         maxHeight: '55vh', // Maximum height for scrollable content
                                         overflowY: 'auto', // Enable vertical scrolling
@@ -775,7 +775,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                               }
                                             }}
                                             placeholder="Type a city and press Enter" // Placeholder text
-                                            className="text-black border-black bg-white max-w-md rounded-lg shadow-sm text-base px-4 py-3" // Styling classes
+                                            className="text-black border-black bg-white w-full max-w-md rounded-lg shadow-sm text-base px-4 py-3" // Styling classes - added w-full
                                           />
                                           <Button // Add button
                                             type="button" // Button type
@@ -791,14 +791,14 @@ export default function PostSignupSurvey() { // Define the main component functi
                                         {/* Min Price */}
                                         <div className="w-full flex flex-col items-center"> {/* Min price container */}
                                           <Label className="font-semibold text-black text-center">Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label> {/* Label for min price */}
-                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full"> {/* Input container */}
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full max-w-md"> {/* Input container - reordered classes */}
                                             <span className="text-black font-semibold mr-1">$CAD</span> {/* Currency symbol */}
                                             <Input // Input component
                                               type="number" // Input type
                                               min={0} // Minimum value
                                               value={currentForm.priceRange.min} // Input value
                                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, min: e.target.value })} // Change handler
-                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3" // Styling classes
+                                              className="border-0 focus:ring-0 text-black bg-white w-full text-base px-4 py-3" // Styling classes - removed max-w-md constraint
                                               placeholder="0" // Placeholder text
                                             />
                                           </div>
@@ -806,14 +806,14 @@ export default function PostSignupSurvey() { // Define the main component functi
                                         {/* Max Price */}
                                         <div className="w-full flex flex-col items-center"> {/* Max price container */}
                                           <Label className="font-semibold text-black text-center">Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} <span className="text-xs font-normal">($CAD)</span></Label> {/* Label for max price */}
-                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm max-w-md w-full"> {/* Input container */}
+                                          <div className="flex items-center border rounded-lg px-2 bg-white shadow-sm w-full max-w-md"> {/* Input container - reordered classes */}
                                             <span className="text-black font-semibold mr-1">$CAD</span> {/* Currency symbol */}
                                             <Input // Input component
                                               type="number" // Input type
                                               min={0} // Minimum value
                                               value={currentForm.priceRange.max} // Input value
                                               onChange={e => handleFormChange('priceRange', { ...currentForm.priceRange, max: e.target.value })} // Change handler
-                                              className="border-0 focus:ring-0 text-black bg-white max-w-md w-full text-base px-4 py-3" // Styling classes
+                                              className="border-0 focus:ring-0 text-black bg-white w-full text-base px-4 py-3" // Styling classes - removed max-w-md constraint
                                               placeholder="" // Placeholder text
                                             />
                                           </div>
@@ -830,7 +830,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             value={currentForm.bedroomsMin} // Selected value
                                             onValueChange={(value) => handleFormChange('bedroomsMin', value)} // Change handler
                                           >
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger */}
+                                            <SelectTrigger className="text-black !text-black border-black bg-white w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger - removed max-w-md constraint */}
                                               <SelectValue placeholder="Select min bedrooms" className="text-black !text-black" /> {/* Placeholder text */}
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black"> {/* Select content */}
@@ -849,7 +849,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             value={currentForm.bedroomsMax} // Selected value
                                             onValueChange={(value) => handleFormChange('bedroomsMax', value)} // Change handler
                                           >
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger */}
+                                            <SelectTrigger className="text-black !text-black border-black bg-white w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger - removed max-w-md constraint */}
                                               <SelectValue placeholder="Select max bedrooms" className="text-black !text-black" /> {/* Placeholder text */}
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black"> {/* Select content */}
@@ -871,7 +871,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             value={currentForm.bathroomsMin} // Selected value
                                             onValueChange={(value) => handleFormChange('bathroomsMin', value)} // Change handler
                                           >
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger */}
+                                            <SelectTrigger className="text-black !text-black border-black bg-white w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger - removed max-w-md constraint */}
                                               <SelectValue placeholder="Select min bathrooms" className="text-black !text-black" /> {/* Placeholder text */}
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black"> {/* Select content */}
@@ -890,7 +890,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             value={currentForm.bathroomsMax} // Selected value
                                             onValueChange={(value) => handleFormChange('bathroomsMax', value)} // Change handler
                                           >
-                                            <SelectTrigger className="text-black !text-black border-black bg-white max-w-md w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger */}
+                                            <SelectTrigger className="text-black !text-black border-black bg-white w-full rounded-lg shadow-sm text-base px-4 py-3"> {/* Select trigger - removed max-w-md constraint */}
                                               <SelectValue placeholder="Select max bathrooms" className="text-black !text-black" /> {/* Placeholder text */}
                                             </SelectTrigger>
                                             <SelectContent className="text-black bg-white border-black"> {/* Select content */}
