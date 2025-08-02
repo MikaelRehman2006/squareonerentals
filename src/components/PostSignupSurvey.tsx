@@ -506,7 +506,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                 {!currentType && ( // Conditional rendering for initial screen
                   <>
                     {/* Welcome message */}
-                    image.png                    <div className="text-center mt-2 sm:mt-4 text-black text-xs sm:text-base font-medium"> {/* Welcome message container */}
+                    <div className="text-center mt-2 sm:mt-4 text-black text-xs sm:text-base font-medium"> {/* Welcome message container */}
                       Thanks for signing up! To help us connect you with the right people and listings, we encourage you to complete a short survey. Whether you're looking to rent, buy, or list a property, your answers help us personalize your experience and make things smoother. {/* Welcome text */}
                     </div>
                     {/* Optionality note */}
