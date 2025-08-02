@@ -460,7 +460,7 @@ export default function PostSignupSurvey() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
+      <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0" hideCloseButton>
         <div className="flex flex-col h-full">
           {/* Header - Fixed */}
           <div className="flex-shrink-0 p-6 pb-4">
@@ -495,7 +495,7 @@ export default function PostSignupSurvey() {
           <div 
             className="flex-1 overflow-y-auto px-6 pb-6 hide-scrollbar" 
             style={{ 
-              maxHeight: 'calc(90vh - 180px)',
+              maxHeight: 'calc(95vh - 200px)',
             }}
           >
             <Tabs value={currentType} onValueChange={setCurrentType} className="w-full">
