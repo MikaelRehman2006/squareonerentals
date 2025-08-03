@@ -750,7 +750,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Form Content - Fixed Width Container */}
-                          <div style={{ width: '100%', maxWidth: '600px', margin: '0 0 0 auto' }}> {/* Form container aligned to the right */}
+                          <div style={{ width: '100%', maxWidth: '500px', margin: '0 0 0 auto', paddingRight: '20px' }}> {/* Form container aligned to the right with padding */}
                             <AnimatePresence mode="wait" initial={false}> {/* Animation wrapper */}
                               <motion.div // Motion container
                                 key={realtorStep} // Animation key
@@ -764,19 +764,19 @@ export default function PostSignupSurvey() { // Define the main component functi
                                 {realtorStep === 0 && ( // Property details step
                                   <div style={{ width: '100%' }}> {/* Fixed width container */}
                                     {/* City/Cities Section */}
-                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* City section */}
-                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>City/Cities</Label> {/* Label */}
-                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px', justifyContent: 'center' }}> {/* City chips */}
+                                    <div style={{ width: '100%', marginBottom: '40px' }}> {/* City section with more spacing */}
+                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '20px', fontWeight: '600', color: 'black', marginBottom: '20px' }}>City/Cities</Label> {/* Label with larger font */}
+                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px', justifyContent: 'center' }}> {/* City chips */}
                                         {cities.map(city => ( // Map cities
-                                          <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '8px 16px', fontSize: '14px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}> {/* City chip */}
+                                          <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '10px 18px', fontSize: '14px', boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)' }}> {/* City chip with better shadow */}
                                             {city} {/* City name */}
-                                            <button type="button" style={{ marginLeft: '8px' }} onClick={() => handleRemoveCity(city)}> {/* Remove button */}
+                                            <button type="button" style={{ marginLeft: '10px' }} onClick={() => handleRemoveCity(city)}> {/* Remove button */}
                                               <X style={{ width: '16px', height: '16px', color: 'black' }} /> {/* X icon */}
                                             </button>
                                           </span>
                                         ))}
                                       </div>
-                                      <div style={{ display: 'flex', gap: '12px', width: '100%' }}> {/* Input container */}
+                                      <div style={{ display: 'flex', gap: '16px', width: '100%' }}> {/* Input container with more gap */}
                                         <Input // City input
                                           value={cityInput} // Value
                                           onChange={e => setCityInput(e.target.value)} // Change handler
@@ -800,14 +800,14 @@ export default function PostSignupSurvey() { // Define the main component functi
                                     </div>
 
                                     {/* Price Range Section */}
-                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* Price section */}
-                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%' }}> {/* Price inputs grid */}
+                                    <div style={{ width: '100%', marginBottom: '40px' }}> {/* Price section with more spacing */}
+                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', width: '100%' }}> {/* Price inputs grid with more gap */}
                                         {/* Min Price */}
                                         <div style={{ width: '100%' }}> {/* Min price container */}
-                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '20px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>
                                             Min {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} 
-                                            <span style={{ fontSize: '14px', fontWeight: '400', color: '#6b7280', marginLeft: '4px' }}>($CAD)</span>
-                                          </Label> {/* Label */}
+                                            <span style={{ fontSize: '16px', fontWeight: '400', color: '#6b7280', marginLeft: '6px' }}>($CAD)</span>
+                                          </Label> {/* Label with larger font */}
                                           <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #d1d5db', borderRadius: '8px', padding: '0 12px', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}> {/* Input container */}
                                             <span style={{ color: 'black', fontWeight: '600', marginRight: '8px' }}>$CAD</span> {/* Currency */}
                                             <Input // Min price input
@@ -823,10 +823,10 @@ export default function PostSignupSurvey() { // Define the main component functi
 
                                         {/* Max Price */}
                                         <div style={{ width: '100%' }}> {/* Max price container */}
-                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>
+                                          <Label style={{ display: 'block', textAlign: 'center', fontSize: '20px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>
                                             Max {currentType === 'landlord' ? 'Monthly Rent' : 'Price'} 
-                                            <span style={{ fontSize: '14px', fontWeight: '400', color: '#6b7280', marginLeft: '4px' }}>($CAD)</span>
-                                          </Label> {/* Label */}
+                                            <span style={{ fontSize: '16px', fontWeight: '400', color: '#6b7280', marginLeft: '6px' }}>($CAD)</span>
+                                          </Label> {/* Label with larger font */}
                                           <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #d1d5db', borderRadius: '8px', padding: '0 12px', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}> {/* Input container */}
                                             <span style={{ color: 'black', fontWeight: '600', marginRight: '8px' }}>$CAD</span> {/* Currency */}
                                             <Input // Max price input
@@ -840,7 +840,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                                           </div>
                                         </div>
                                       </div>
-                                      <p style={{ fontSize: '14px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '12px' }}> {/* Helper text */}
+                                      <p style={{ fontSize: '16px', color: '#6b7280', fontStyle: 'italic', textAlign: 'center', width: '100%', marginTop: '16px', lineHeight: '1.5' }}> {/* Helper text with better spacing */}
                                         {currentType === 'landlord' 
                                           ? 'Enter the monthly rent range for your properties, from lowest to highest.'
                                           : 'Enter the price range of properties you represent, from lowest to highest.'}
@@ -848,8 +848,8 @@ export default function PostSignupSurvey() { // Define the main component functi
                                     </div>
 
                                     {/* Bedrooms Section */}
-                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* Bedrooms section */}
-                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', width: '100%' }}> {/* Bedrooms grid */}
+                                    <div style={{ width: '100%', marginBottom: '40px' }}> {/* Bedrooms section with more spacing */}
+                                                                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', width: '100%' }}> {/* Bedrooms grid with more gap */}
                                         {/* Min Bedrooms */}
                                         <div style={{ width: '100%' }}> {/* Min bedrooms container */}
                                           <Label style={{ display: 'block', textAlign: 'center', fontSize: '18px', fontWeight: '600', color: 'black', marginBottom: '12px' }}>Min Bedrooms</Label> {/* Label */}
@@ -1047,7 +1047,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Navigation Buttons - Fixed Pixel Layout */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', width: '100%', maxWidth: '600px', margin: '32px 0 0 auto' }}> {/* Navigation container aligned to the right */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', width: '100%', maxWidth: '500px', margin: '32px 0 0 auto', paddingRight: '20px' }}> {/* Navigation container aligned to the right with padding */}
                             <Button // Back button
                               variant="outline" // Variant
                               onClick={() => { // Click handler
