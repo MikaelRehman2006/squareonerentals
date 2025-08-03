@@ -716,31 +716,31 @@ export default function PostSignupSurvey() { // Define the main component functi
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
                         <div style={{ width: '100%', padding: '0 20px' }}> {/* Main container with fixed padding */}
                           {/* Stepper Progress Bar - Fixed Position */}
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '24px', width: '240px', margin: '0 0 24px 0', marginLeft: 'auto', marginRight: '16px' }}> {/* Stepper container at the very right edge - 20% smaller */}
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }}> {/* Stepper container at the very right edge */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
                               <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
                                 <div style={{ 
                                   borderRadius: '50%', 
-                                  width: '32px', 
-                                  height: '32px', 
+                                  width: '40px', 
+                                  height: '40px', 
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center', 
                                   fontWeight: 'bold', 
                                   color: 'white',
                                   backgroundColor: idx === realtorStep ? '#2563eb' : '#d1d5db'
-                                }}> {/* Step circle - 20% smaller */}
+                                }}> {/* Step circle */}
                                   {idx + 1} {/* Step number */}
                                 </div>
-                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '38px', height: '3px', backgroundColor: '#d1d5db', margin: '0 10px' }} />} {/* Separator line - 20% smaller */}
+                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '48px', height: '4px', backgroundColor: '#d1d5db', margin: '0 12px' }} />} {/* Separator line */}
                               </div>
                             ))}
                           </div>
 
                           {/* Step Header - Fixed Position */}
-                          <div style={{ textAlign: 'center', marginBottom: '24px', width: '240px', margin: '0 0 24px 0', marginLeft: 'auto', marginRight: '16px' }}> {/* Header container at the very right edge - 20% smaller */}
-                            <UserCircle style={{ width: '51px', height: '51px', color: '#3b82f6', margin: '0 auto 13px' }} /> {/* Icon - 20% smaller */}
-                            <h2 style={{ fontSize: '19px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '6px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title - 20% smaller */}
+                          <div style={{ textAlign: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }}> {/* Header container at the very right edge */}
+                            <UserCircle style={{ width: '64px', height: '64px', color: '#3b82f6', margin: '0 auto 16px' }} /> {/* Icon */}
+                            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '8px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
                             <p style={{ color: '#6b7280' }}> {/* Step description */}
                               {realtorStep === 0 ? 'Tell us about your properties!' : 
                                realtorStep === 1 ? 'Where do you serve clients?' : 
