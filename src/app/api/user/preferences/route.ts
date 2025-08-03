@@ -60,13 +60,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate that preferences has keys for each userType
-    for (const type of userTypes) {
-      if (!preferences[type]) {
-        return NextResponse.json(
-          { error: `Missing preferences for userType: ${type}` },
-          { status: 400 }
-        );
+    // Only validate preferences structure if userTypes is not empty
+    if (userTypes.length > 0) {
+      // Validate that preferences has keys for each userType
+      for (const type of userTypes) {
+        if (!preferences[type]) {
+          return NextResponse.json(
+            { error: `Missing preferences for userType: ${type}` },
+            { status: 400 }
+          );
+        }
       }
     }
 
