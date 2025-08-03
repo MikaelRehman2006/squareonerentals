@@ -716,7 +716,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
                         <div style={{ width: '100%', padding: '0 20px' }}> {/* Main container with fixed padding */}
                           {/* Stepper Progress Bar - Fixed Position */}
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '32px', paddingRight: '20px' }}> {/* Stepper container aligned to the right */}
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', maxWidth: '500px', margin: '0 0 32px auto', paddingRight: '20px' }}> {/* Stepper container centered within right-aligned area */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
                               <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
                                 <div style={{ 
@@ -738,7 +738,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Step Header - Fixed Position */}
-                          <div style={{ textAlign: 'center', marginBottom: '32px', maxWidth: '500px', margin: '0 0 32px auto', paddingRight: '20px' }}> {/* Header container aligned to the right */}
+                          <div style={{ textAlign: 'center', marginBottom: '32px', maxWidth: '500px', margin: '0 0 32px auto', paddingRight: '20px' }}> {/* Header container centered within right-aligned area */}
                             <UserCircle style={{ width: '64px', height: '64px', color: '#3b82f6', margin: '0 auto 16px' }} /> {/* Icon */}
                             <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '8px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
                             <p style={{ color: '#6b7280' }}> {/* Step description */}
