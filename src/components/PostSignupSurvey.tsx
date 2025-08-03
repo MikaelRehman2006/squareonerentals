@@ -716,31 +716,31 @@ export default function PostSignupSurvey() { // Define the main component functi
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
                         <div style={{ width: '100%', padding: '0 20px' }}> {/* Main container with fixed padding */}
                           {/* Stepper Progress Bar - Fixed Position */}
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }}> {/* Stepper container at the very right edge */}
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '24px', width: '240px', margin: '0 0 24px 0', marginLeft: 'auto', marginRight: '16px' }}> {/* Stepper container at the very right edge - 20% smaller */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
                               <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
                                 <div style={{ 
                                   borderRadius: '50%', 
-                                  width: '40px', 
-                                  height: '40px', 
+                                  width: '32px', 
+                                  height: '32px', 
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center', 
                                   fontWeight: 'bold', 
                                   color: 'white',
                                   backgroundColor: idx === realtorStep ? '#2563eb' : '#d1d5db'
-                                }}> {/* Step circle */}
+                                }}> {/* Step circle - 20% smaller */}
                                   {idx + 1} {/* Step number */}
                                 </div>
-                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '48px', height: '4px', backgroundColor: '#d1d5db', margin: '0 12px' }} />} {/* Separator line */}
+                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '38px', height: '3px', backgroundColor: '#d1d5db', margin: '0 10px' }} />} {/* Separator line - 20% smaller */}
                               </div>
                             ))}
                           </div>
 
                           {/* Step Header - Fixed Position */}
-                          <div style={{ textAlign: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }}> {/* Header container at the very right edge */}
-                            <UserCircle style={{ width: '64px', height: '64px', color: '#3b82f6', margin: '0 auto 16px' }} /> {/* Icon */}
-                            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '8px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
+                          <div style={{ textAlign: 'center', marginBottom: '24px', width: '240px', margin: '0 0 24px 0', marginLeft: 'auto', marginRight: '16px' }}> {/* Header container at the very right edge - 20% smaller */}
+                            <UserCircle style={{ width: '51px', height: '51px', color: '#3b82f6', margin: '0 auto 13px' }} /> {/* Icon - 20% smaller */}
+                            <h2 style={{ fontSize: '19px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '6px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title - 20% smaller */}
                             <p style={{ color: '#6b7280' }}> {/* Step description */}
                               {realtorStep === 0 ? 'Tell us about your properties!' : 
                                realtorStep === 1 ? 'Where do you serve clients?' : 
@@ -750,7 +750,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Form Content - Fixed Width Container */}
-                          <div style={{ width: '100%', maxWidth: '500px', margin: '0 0 0 auto', paddingRight: '20px' }}> {/* Form container aligned to the right with padding */}
+                          <div style={{ width: '100%', maxWidth: '400px', margin: '0 0 0 auto', paddingRight: '16px' }}> {/* Form container aligned to the right with padding - 20% smaller */}
                             <AnimatePresence mode="wait" initial={false}> {/* Animation wrapper */}
                               <motion.div // Motion container
                                 key={realtorStep} // Animation key
@@ -764,19 +764,19 @@ export default function PostSignupSurvey() { // Define the main component functi
                                 {realtorStep === 0 && ( // Property details step
                                   <div style={{ width: '100%' }}> {/* Fixed width container */}
                                     {/* City/Cities Section */}
-                                    <div style={{ width: '100%', marginBottom: '40px' }}> {/* City section with more spacing */}
-                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '20px', fontWeight: '600', color: 'black', marginBottom: '20px' }}>City/Cities</Label> {/* Label with larger font */}
-                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px', justifyContent: 'center' }}> {/* City chips */}
+                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* City section with more spacing - 20% smaller */}
+                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '16px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>City/Cities</Label> {/* Label with larger font - 20% smaller */}
+                                                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px', justifyContent: 'center' }}> {/* City chips - 20% smaller */}
                                         {cities.map(city => ( // Map cities
-                                          <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '10px 18px', fontSize: '14px', boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)' }}> {/* City chip with better shadow */}
+                                                                                      <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '8px 14px', fontSize: '11px', boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)' }}> {/* City chip with better shadow - 20% smaller */}
                                             {city} {/* City name */}
-                                            <button type="button" style={{ marginLeft: '10px' }} onClick={() => handleRemoveCity(city)}> {/* Remove button */}
-                                              <X style={{ width: '16px', height: '16px', color: 'black' }} /> {/* X icon */}
+                                                                                          <button type="button" style={{ marginLeft: '8px' }} onClick={() => handleRemoveCity(city)}> {/* Remove button - 20% smaller */}
+                                                <X style={{ width: '13px', height: '13px', color: 'black' }} /> {/* X icon - 20% smaller */}
                                             </button>
                                           </span>
                                         ))}
                                       </div>
-                                      <div style={{ display: 'flex', gap: '16px', width: '100%' }}> {/* Input container with more gap */}
+                                      <div style={{ display: 'flex', gap: '13px', width: '100%' }}> {/* Input container with more gap - 20% smaller */}
                                         <Input // City input
                                           value={cityInput} // Value
                                           onChange={e => setCityInput(e.target.value)} // Change handler
@@ -787,12 +787,12 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             }
                                           }}
                                           placeholder="Type a city and press Enter" // Placeholder
-                                          style={{ flex: 1, color: 'black', border: '1px solid black', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '12px 16px' }} // Fixed styling
+                                          style={{ flex: 1, color: 'black', border: '1px solid black', backgroundColor: 'white', borderRadius: '6px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '13px', padding: '10px 13px' }} // Fixed styling - 20% smaller
                                         />
                                         <Button // Add button
                                           type="button" // Button type
                                           onClick={handleAddCity} // Click handler
-                                          style={{ backgroundColor: '#2563eb', color: 'white', borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '16px', padding: '12px 24px', whiteSpace: 'nowrap' }} // Fixed styling
+                                          style={{ backgroundColor: '#2563eb', color: 'white', borderRadius: '6px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '13px', padding: '10px 19px', whiteSpace: 'nowrap' }} // Fixed styling - 20% smaller
                                         >
                                           Add {/* Button text */}
                                         </Button>
