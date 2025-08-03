@@ -487,7 +487,7 @@ export default function PostSignupSurvey() { // Define the main component functi
     // Main modal dialog container
     <Dialog open={isOpen} onOpenChange={() => {}}> {/* Dialog component with controlled open state */}
       {/* Modal content with responsive sizing */}
-      <DialogContent className={`${['realtor', 'landlord'].includes(currentType) ? 'sm:max-w-4xl' : 'sm:max-w-2xl'} max-h-[80vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0`} hideCloseButton> {/* Dialog content with styling - wider for realtor/landlord */}
+      <DialogContent className={`${['realtor', 'landlord'].includes(currentType) ? 'sm:max-w-3xl' : 'sm:max-w-2xl'} max-h-[80vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0`} hideCloseButton> {/* Dialog content with styling - narrower for realtor/landlord */}
         {/* Flex container for header and scrollable content */}
         <div className="flex flex-col h-full"> {/* Flex container div */}
           {/* Fixed header section */}
@@ -750,7 +750,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Form Content - Fixed Width Container */}
-                          <div style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}> {/* Form container with fixed max width */}
+                          <div style={{ width: '100%', maxWidth: '600px', margin: '0 0 0 auto' }}> {/* Form container aligned to the right */}
                             <AnimatePresence mode="wait" initial={false}> {/* Animation wrapper */}
                               <motion.div // Motion container
                                 key={realtorStep} // Animation key
@@ -1047,7 +1047,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Navigation Buttons - Fixed Pixel Layout */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', width: '100%', maxWidth: '800px', margin: '32px auto 0' }}> {/* Navigation container */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px', width: '100%', maxWidth: '600px', margin: '32px 0 0 auto' }}> {/* Navigation container aligned to the right */}
                             <Button // Back button
                               variant="outline" // Variant
                               onClick={() => { // Click handler
