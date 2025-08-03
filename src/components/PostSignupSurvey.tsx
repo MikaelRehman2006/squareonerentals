@@ -716,7 +716,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
                         <div style={{ width: '100%', padding: '0 20px' }}> {/* Main container with fixed padding */}
                           {/* Stepper Progress Bar - Fixed Position */}
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }}> {/* Stepper container at the very right edge */}
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }} className="sm:mb-8 sm:w-[300px] mb-4 w-[200px]"> {/* Stepper container at the very right edge */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
                               <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
                                 <div style={{ 
@@ -729,18 +729,18 @@ export default function PostSignupSurvey() { // Define the main component functi
                                   fontWeight: 'bold', 
                                   color: 'white',
                                   backgroundColor: idx === realtorStep ? '#2563eb' : '#d1d5db'
-                                }}> {/* Step circle */}
+                                }} className="sm:w-10 sm:h-10 w-6 h-6"> {/* Step circle */}
                                   {idx + 1} {/* Step number */}
                                 </div>
-                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '48px', height: '4px', backgroundColor: '#d1d5db', margin: '0 12px' }} />} {/* Separator line */}
+                                {idx < REALTOR_STEPS.length - 1 && <div style={{ width: '48px', height: '4px', backgroundColor: '#d1d5db', margin: '0 12px' }} className="sm:w-12 sm:h-1 w-8 h-0.5" />} {/* Separator line */}
                               </div>
                             ))}
                           </div>
 
                           {/* Step Header - Fixed Position */}
-                          <div style={{ textAlign: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }}> {/* Header container at the very right edge */}
-                            <UserCircle style={{ width: '64px', height: '64px', color: '#3b82f6', margin: '0 auto 16px' }} /> {/* Icon */}
-                            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '8px' }}>{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
+                          <div style={{ textAlign: 'center', marginBottom: '32px', width: '300px', margin: '0 0 32px 0', marginLeft: 'auto', marginRight: '20px' }} className="sm:mb-8 sm:w-[300px] mb-4 w-[200px]"> {/* Header container at the very right edge */}
+                            <UserCircle style={{ width: '64px', height: '64px', color: '#3b82f6', margin: '0 auto 16px' }} className="sm:w-16 sm:h-16 w-10 h-10" /> {/* Icon */}
+                            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '8px' }} className="sm:text-2xl sm:mb-2 text-lg mb-1">{REALTOR_STEPS[realtorStep]}</h2> {/* Step title */}
                             <p style={{ color: '#6b7280' }}> {/* Step description */}
                               {realtorStep === 0 ? 'Tell us about your properties!' : 
                                realtorStep === 1 ? 'Where do you serve clients?' : 
@@ -750,7 +750,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Form Content - Fixed Width Container */}
-                          <div style={{ width: '100%', maxWidth: '400px', margin: '0 0 0 auto', paddingRight: '16px' }}> {/* Form container aligned to the right with padding - 20% smaller */}
+                          <div style={{ width: '100%', maxWidth: '400px', margin: '0 0 0 auto', paddingRight: '16px' }} className="sm:max-w-[400px] max-w-[280px]"> {/* Form container aligned to the right with padding - 20% smaller */}
                             <AnimatePresence mode="wait" initial={false}> {/* Animation wrapper */}
                               <motion.div // Motion container
                                 key={realtorStep} // Animation key
@@ -764,19 +764,19 @@ export default function PostSignupSurvey() { // Define the main component functi
                                 {realtorStep === 0 && ( // Property details step
                                   <div style={{ width: '100%' }}> {/* Fixed width container */}
                                     {/* City/Cities Section */}
-                                    <div style={{ width: '100%', marginBottom: '32px' }}> {/* City section with more spacing - 20% smaller */}
-                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '16px', fontWeight: '600', color: 'black', marginBottom: '16px' }}>City/Cities</Label> {/* Label with larger font - 20% smaller */}
-                                                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px', justifyContent: 'center' }}> {/* City chips - 20% smaller */}
+                                    <div style={{ width: '100%', marginBottom: '32px' }} className="sm:mb-8 mb-4"> {/* City section with more spacing - 20% smaller */}
+                                      <Label style={{ display: 'block', textAlign: 'center', fontSize: '16px', fontWeight: '600', color: 'black', marginBottom: '16px' }} className="sm:text-lg sm:mb-4 text-sm mb-2">City/Cities</Label> {/* Label with larger font - 20% smaller */}
+                                                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px', justifyContent: 'center' }} className="sm:gap-2 sm:mb-4 gap-1 mb-2"> {/* City chips - 20% smaller */}
                                         {cities.map(city => ( // Map cities
-                                                                                      <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '8px 14px', fontSize: '11px', boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)' }}> {/* City chip with better shadow - 20% smaller */}
+                                                                                      <span key={city} style={{ display: 'flex', alignItems: 'center', backgroundColor: '#dbeafe', color: 'black', borderRadius: '9999px', padding: '8px 14px', fontSize: '11px', boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.1)' }} className="sm:px-4 sm:py-2 sm:text-sm px-2 py-1 text-xs"> {/* City chip with better shadow - 20% smaller */}
                                             {city} {/* City name */}
-                                                                                          <button type="button" style={{ marginLeft: '8px' }} onClick={() => handleRemoveCity(city)}> {/* Remove button - 20% smaller */}
-                                                <X style={{ width: '13px', height: '13px', color: 'black' }} /> {/* X icon - 20% smaller */}
+                                                                                          <button type="button" style={{ marginLeft: '8px' }} onClick={() => handleRemoveCity(city)} className="sm:ml-2 ml-1"> {/* Remove button - 20% smaller */}
+                                                <X style={{ width: '13px', height: '13px', color: 'black' }} className="sm:w-4 sm:h-4 w-3 h-3" /> {/* X icon - 20% smaller */}
                                             </button>
                                           </span>
                                         ))}
                                       </div>
-                                      <div style={{ display: 'flex', gap: '13px', width: '100%' }}> {/* Input container with more gap - 20% smaller */}
+                                      <div style={{ display: 'flex', gap: '13px', width: '100%' }} className="sm:gap-3 gap-2"> {/* Input container with more gap - 20% smaller */}
                                         <Input // City input
                                           value={cityInput} // Value
                                           onChange={e => setCityInput(e.target.value)} // Change handler
@@ -787,12 +787,12 @@ export default function PostSignupSurvey() { // Define the main component functi
                                             }
                                           }}
                                           placeholder="Type a city and press Enter" // Placeholder
-                                          style={{ flex: 1, color: 'black', border: '1px solid black', backgroundColor: 'white', borderRadius: '6px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '13px', padding: '10px 13px' }} // Fixed styling - 20% smaller
+                                          style={{ flex: 1, color: 'black', border: '1px solid black', backgroundColor: 'white', borderRadius: '6px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '13px', padding: '10px 13px' }} className="sm:text-sm sm:px-4 sm:py-3 text-xs px-2 py-1" // Fixed styling - 20% smaller
                                         />
                                         <Button // Add button
                                           type="button" // Button type
                                           onClick={handleAddCity} // Click handler
-                                          style={{ backgroundColor: '#2563eb', color: 'white', borderRadius: '6px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '13px', padding: '10px 19px', whiteSpace: 'nowrap' }} // Fixed styling - 20% smaller
+                                          style={{ backgroundColor: '#2563eb', color: 'white', borderRadius: '6px', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', fontSize: '13px', padding: '10px 19px', whiteSpace: 'nowrap' }} className="sm:text-sm sm:px-6 sm:py-3 text-xs px-3 py-1" // Fixed styling - 20% smaller
                                         >
                                           Add {/* Button text */}
                                         </Button>
