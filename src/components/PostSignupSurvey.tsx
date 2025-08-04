@@ -508,6 +508,15 @@ export default function PostSignupSurvey() { // Define the main component functi
       <DialogContent className={`${['realtor', 'landlord'].includes(currentType) ? 'sm:max-w-3xl' : 'sm:max-w-2xl'} max-h-[80vh] sm:max-h-[95vh] overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black shadow-2xl rounded-2xl border-0`} hideCloseButton> {/* Dialog content with styling - narrower for realtor/landlord */}
         {/* Flex container for header and scrollable content */}
         <div className="flex flex-col h-full"> {/* Flex container div */}
+          {/* Close button - top left */}
+          <button
+            onClick={handleNone}
+            className="absolute top-4 left-4 z-50 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            aria-label="Close survey"
+          >
+            <XCircle className="h-5 w-5 text-gray-600" />
+          </button>
+          
           {/* Fixed header section */}
           <div className="flex-shrink-0 p-3 sm:p-6 pb-2 sm:pb-4"> {/* Header container with padding */}
             <motion.div // Motion div for animation
@@ -662,6 +671,10 @@ export default function PostSignupSurvey() { // Define the main component functi
                           e.preventDefault();
                           // Close the survey modal
                           setIsOpen(false);
+                          // Mark onboarding as completed to prevent reappearance
+                          if (session?.user?.email) {
+                            localStorage.setItem(`onboarding_completed_${session.user.email}`, 'true');
+                          }
                           // Open terms in new tab
                           window.open('/terms-and-conditions', '_blank');
                         }}
