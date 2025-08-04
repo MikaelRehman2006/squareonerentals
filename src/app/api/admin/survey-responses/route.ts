@@ -29,6 +29,16 @@ export async function GET(request: NextRequest) {
       createdAt: user.createdAt
     }));
     
+    // Debug logging
+    console.log('API: Total users found:', formattedUsers.length);
+    formattedUsers.forEach((user, index) => {
+      console.log(`API: User ${index + 1} - ${user.name}:`, {
+        userTypes: user.preferences?.userTypes,
+        hasLandlord: user.preferences && 'landlord' in user.preferences ? 'YES' : 'NO',
+        landlordData: user.preferences && 'landlord' in user.preferences ? user.preferences.landlord : null
+      });
+    });
+    
     return NextResponse.json({ users: formattedUsers });
   } catch (error) {
     console.error('Error fetching survey responses:', error);

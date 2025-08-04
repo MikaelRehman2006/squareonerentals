@@ -56,6 +56,15 @@ export default function PDFDownloader({ users }: PDFDownloaderProps) {
       return;
     }
 
+    // Debug logging
+    console.log('Selected roles:', selectedRoles);
+    console.log('Filtered users:', filteredUsers);
+    filteredUsers.forEach((user, index) => {
+      console.log(`User ${index + 1}:`, user.name);
+      console.log('User types:', user.preferences?.userTypes);
+      console.log('Preferences object:', user.preferences);
+    });
+
     setIsGenerating(true);
     
     try {
@@ -102,9 +111,12 @@ export default function PDFDownloader({ users }: PDFDownloaderProps) {
         
         // User preferences details
         if (user.preferences?.userTypes) {
+          console.log(`Processing user ${user.name} with roles:`, user.preferences.userTypes);
           user.preferences.userTypes.forEach(role => {
+            console.log(`Checking role: ${role}, selected: ${selectedRoles.includes(role)}`);
             if (selectedRoles.includes(role)) {
               const roleData = user.preferences[role];
+              console.log(`Role data for ${role}:`, roleData);
               if (roleData && typeof roleData === 'object') {
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
@@ -115,9 +127,12 @@ export default function PDFDownloader({ users }: PDFDownloaderProps) {
                 doc.setFont('helvetica', 'normal');
                 
                 Object.entries(roleData).forEach(([key, value]) => {
+                  console.log(`Processing key: ${key}, value:`, value);
                   if (value !== null && value !== undefined && value !== '') {
                     const displayKey = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                     const displayValue = Array.isArray(value) ? value.join(', ') : String(value);
+                    
+                    console.log(`Adding to PDF: ${displayKey}: ${displayValue}`);
                     
                     // Check if we need a new page
                     if (yPosition > 250) {
