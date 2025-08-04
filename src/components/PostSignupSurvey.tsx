@@ -667,14 +667,33 @@ export default function PostSignupSurvey() { // Define the main component functi
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 underline"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.preventDefault();
                           // Close the survey modal
                           setIsOpen(false);
-                          // Mark onboarding as completed to prevent reappearance
+                          
+                          // Mark onboarding as completed in both localStorage and database
                           if (session?.user?.email) {
                             localStorage.setItem(`onboarding_completed_${session.user.email}`, 'true');
+                            
+                            // Update user preferences in database to mark onboarding as completed
+                            try {
+                              await fetch('/api/user/preferences', {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  userTypes: [],
+                                  preferences: {},
+                                  onboardingCompleted: true
+                                }),
+                              });
+                            } catch (error) {
+                              console.error('Error updating onboarding status:', error);
+                            }
                           }
+                          
                           // Open terms in new tab
                           window.open('/terms-and-conditions', '_blank');
                         }}
