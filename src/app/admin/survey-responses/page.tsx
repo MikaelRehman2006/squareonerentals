@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import PDFDownloader from '@/components/PDFDownloader';
 
 interface UserPreference {
   _id: string;
@@ -72,6 +73,9 @@ export default function SurveyResponsesPage() {
 
   return (
     <div className="p-8">
+      {/* PDF Download Section */}
+      <PDFDownloader users={users} />
+      
       <Card>
         <CardHeader>
           <CardTitle>Survey Responses</CardTitle>

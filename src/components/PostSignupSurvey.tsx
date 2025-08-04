@@ -418,16 +418,25 @@ export default function PostSignupSurvey() { // Define the main component functi
           };
         }
       });
+      const requestBody = { // Create request body object
+        userTypes: selectedTypes, // Include selected user types
+        preferences, // Include preferences object
+        onboardingCompleted: true // Mark onboarding as completed
+      };
+      
+      // Debug logging for mobile issues
+      console.log('Frontend Request Body:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch('/api/user/preferences', { // Send POST request to API
         method: 'POST', // Use POST method
         headers: { 'Content-Type': 'application/json' }, // Set content type header
-        body: JSON.stringify({ // Stringify request body
-          userTypes: selectedTypes, // Include selected user types
-          preferences, // Include preferences object
-          onboardingCompleted: true // Mark onboarding as completed
-        })
+        body: JSON.stringify(requestBody) // Stringify request body
       });
-      if (!response.ok) throw new Error('Failed to save preferences'); // Throw error if response not ok
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`Failed to save preferences: ${response.status} ${response.statusText}`);
+      }
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
@@ -444,16 +453,25 @@ export default function PostSignupSurvey() { // Define the main component functi
   const handleNone = async () => { // Define async function to handle none selection
     setIsSubmitting(true); // Set submitting state to true
     try { // Try to skip survey
+      const requestBody = { // Create request body object
+        userTypes: [], // Empty user types array
+        preferences: {}, // Empty preferences object
+        onboardingCompleted: true // Mark onboarding as completed
+      };
+      
+      // Debug logging for mobile issues
+      console.log('Frontend None Request Body:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch('/api/user/preferences', { // Send POST request to API
         method: 'POST', // Use POST method
         headers: { 'Content-Type': 'application/json' }, // Set content type header
-        body: JSON.stringify({ // Stringify request body
-          userTypes: [], // Empty user types array
-          preferences: {}, // Empty preferences object
-          onboardingCompleted: true // Mark onboarding as completed
-        })
+        body: JSON.stringify(requestBody) // Stringify request body
       });
-      if (!response.ok) throw new Error('Failed to skip survey'); // Throw error if response not ok
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response (None):', errorText);
+        throw new Error(`Failed to skip survey: ${response.status} ${response.statusText}`);
+      }
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }

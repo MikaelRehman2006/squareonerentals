@@ -61,6 +61,8 @@
     "framer-motion": "^12.17.0",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.483.0",
     "mongoose": "^7.5.2",

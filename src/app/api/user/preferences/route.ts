@@ -52,6 +52,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { userTypes, preferences, onboardingCompleted } = body;
+    
+    // Debug logging for mobile issues
+    console.log('API Request Body:', JSON.stringify(body, null, 2));
+    console.log('User-Agent:', request.headers.get('user-agent'));
 
     if (!userTypes || !preferences || typeof preferences !== 'object') {
       return NextResponse.json(
