@@ -649,6 +649,21 @@ export default function PostSignupSurvey() { // Define the main component functi
                         'Continue' // Button text
                       )}
                     </Button>
+                    
+                    {/* Terms and Conditions Notice */}
+                    <div className="mt-4 text-center text-xs text-gray-600">
+                      By completing this survey and signing up, you agree to our{' '}
+                      <a 
+                        href="/terms-and-conditions" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Terms and Conditions
+                      </a>
+                      , which includes consent for us to share your preferences with realtors and property managers to facilitate connections when both parties meet each other's requirements.
+                    </div>
+                    
                     {/* Extra space below Continue button for mobile scroll bounce */}
                     <div className="h-40 sm:h-40"></div> {/* Extra space div */}
                   </motion.div>
