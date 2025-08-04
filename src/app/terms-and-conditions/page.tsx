@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function TermsAndConditionsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -13,25 +13,25 @@ export default function TermsAndConditionsPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms and Conditions</h1>
+          <h1 className="text-4xl font-bold text-black mb-4">Terms and Conditions</h1>
           <p className="text-lg text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
         </motion.div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900">Square One Rentals - Terms and Conditions</CardTitle>
+        <Card className="shadow-lg bg-white border border-gray-200">
+          <CardHeader className="bg-white">
+            <CardTitle className="text-2xl font-bold text-black">Square One Rentals - Terms and Conditions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6 text-gray-700">
+          <CardContent className="space-y-6 text-black">
             
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Acceptance of Terms</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">1. Acceptance of Terms</h2>
               <p className="mb-4">
                 By accessing and using Square One Rentals ("the Platform"), you accept and agree to be bound by the terms and provision of this agreement.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Data Sharing and Matching Services</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">2. Data Sharing and Matching Services</h2>
               <div className="space-y-3">
                 <p>
                   <strong>2.1 Consent for Data Sharing:</strong> By completing our onboarding survey and creating an account, you explicitly consent to the sharing of your preferences, requirements, and contact information with realtors, property managers, and other service providers on our platform.
@@ -53,7 +53,7 @@ export default function TermsAndConditionsPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Limitation of Liability</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">3. Limitation of Liability</h2>
               <div className="space-y-3">
                 <p>
                   <strong>3.1 No Legal Action:</strong> By using our platform, you agree that you will not take any legal action, file lawsuits, or seek damages against Square One Rentals, its owners, employees, or affiliates for any reason related to the use of our services.
@@ -68,7 +68,7 @@ export default function TermsAndConditionsPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Data Protection and Privacy</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">4. Data Protection and Privacy</h2>
               <div className="space-y-3">
                 <p>
                   <strong>4.1 Data Security:</strong> We implement reasonable security measures to protect your personal information, but we cannot guarantee absolute security.
@@ -83,7 +83,7 @@ export default function TermsAndConditionsPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Platform Usage</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">5. Platform Usage</h2>
               <div className="space-y-3">
                 <p>
                   <strong>5.1 Acceptable Use:</strong> You agree to use the platform only for lawful purposes and in accordance with these terms.
@@ -101,21 +101,21 @@ export default function TermsAndConditionsPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Service Modifications</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">6. Service Modifications</h2>
               <p>
                 Square One Rentals reserves the right to modify, suspend, or discontinue any aspect of our service at any time without prior notice. We are not liable to you or any third party for any modification, suspension, or discontinuance of the service.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Governing Law</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">7. Governing Law</h2>
               <p>
                 These terms and conditions are governed by and construed in accordance with the laws of Ontario, Canada. Any disputes arising from these terms or the use of our platform shall be resolved through binding arbitration in Ontario, Canada.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Contact Information</h2>
+              <h2 className="text-xl font-semibold text-black mb-3">8. Contact Information</h2>
               <p>
                 If you have any questions about these Terms and Conditions, please contact us at{' '}
                 <a href="mailto:squareone.rental@gmail.com" className="text-blue-600 hover:text-blue-800 underline">
@@ -124,8 +124,8 @@ export default function TermsAndConditionsPage() {
               </p>
             </section>
 
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm text-blue-800">
+            <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-sm text-black">
                 <strong>Important Notice:</strong> By using Square One Rentals, you acknowledge that you have read, understood, and agreed to these terms and conditions, including the consent for data sharing and the limitation of liability provisions.
               </p>
             </div>

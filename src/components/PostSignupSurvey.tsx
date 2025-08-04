@@ -658,6 +658,13 @@ export default function PostSignupSurvey() { // Define the main component functi
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Close the survey modal
+                          setIsOpen(false);
+                          // Open terms in new tab
+                          window.open('/terms-and-conditions', '_blank');
+                        }}
                       >
                         Terms and Conditions
                       </a>
