@@ -84,18 +84,53 @@ export default function RentalCalculator() {
     const totalMonthly = monthlyRent + utilities + insurance + costs.parking + (costs.petFee / 12);
     const totalAnnual = totalMonthly * 12;
 
-    // Calculate affordability score (simplified)
-    const affordabilityScore = Math.min(100, Math.max(0, 100 - (totalMonthly / 3000) * 100));
+    // Calculate affordability score based on Ontario 2025 market realities
+    // Ontario average rent is around $2,200-2,800 for 1-2 bedroom units
+    const baseScore = 100;
+    let deductions = 0;
+    
+    if (totalMonthly > 3500) {
+      deductions += 40; // Very expensive for Ontario
+    } else if (totalMonthly > 2800) {
+      deductions += 25; // Above average but manageable
+    } else if (totalMonthly > 2200) {
+      deductions += 10; // Average Ontario rent
+    } else if (totalMonthly > 1800) {
+      deductions += 5; // Below average - good deal
+    }
+    
+    // Additional deductions for high utilities
+    if (utilities > 250) {
+      deductions += 15;
+    } else if (utilities > 150) {
+      deductions += 8;
+    }
+    
+    // Pet fee considerations
+    if (costs.petFee > 300) {
+      deductions += 10;
+    }
+    
+    const affordabilityScore = Math.max(0, baseScore - deductions);
 
     const recommendations = [];
-    if (totalMonthly > 3000) {
-      recommendations.push("Consider a roommate to split costs");
+    if (totalMonthly > 3500) {
+      recommendations.push("This is above typical Ontario rental prices. Consider sharing costs or looking in less expensive areas.");
+    } else if (totalMonthly > 2800) {
+      recommendations.push("This is above average for Ontario. Consider if the location/amenities justify the premium.");
+    } else if (totalMonthly > 2200) {
+      recommendations.push("This is typical for Ontario rentals. Good balance of cost and location.");
+    } else if (totalMonthly > 1800) {
+      recommendations.push("This is below average for Ontario - good value for money!");
+    } else {
+      recommendations.push("Excellent price for Ontario! This is well below market average.");
     }
-    if (utilities > 300) {
-      recommendations.push("Look for energy-efficient properties");
+    
+    if (utilities > 250) {
+      recommendations.push("Utilities are high for Ontario. Look for energy-efficient properties or inclusive utilities.");
     }
-    if (costs.petFee > 500) {
-      recommendations.push("Consider pet-friendly properties with lower fees");
+    if (costs.petFee > 300) {
+      recommendations.push("Pet fees are high for Ontario. Some landlords offer lower or no pet fees.");
     }
 
     setCalculationResult({
@@ -125,13 +160,21 @@ export default function RentalCalculator() {
 
     const warnings = [];
     if (debtToIncomeRatio > 0.43) {
-      warnings.push("Your debt-to-income ratio is high. Consider paying down debt first.");
+      warnings.push("Your debt-to-income ratio is high for Ontario standards. Consider paying down debt first.");
     }
     if (savings < monthlyIncome * 3) {
-      warnings.push("Consider building emergency savings before renting.");
+      warnings.push("Consider building emergency savings before renting in Ontario's competitive market.");
     }
     if (creditScore < 650) {
-      warnings.push("Your credit score may affect rental applications.");
+      warnings.push("Your credit score may affect rental applications in Ontario's competitive market.");
+    }
+    
+    // Ontario-specific warnings
+    if (monthlyIncome < 4000 && maxRent > 1200) {
+      warnings.push("With your income, consider more affordable areas or roommates to stay within budget.");
+    }
+    if (monthlyIncome < 6000 && maxRent > 1800) {
+      warnings.push("Consider if this rent leaves enough for other living expenses in Ontario.");
     }
 
     setAffordabilityResult({
@@ -189,7 +232,7 @@ export default function RentalCalculator() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div 
@@ -198,10 +241,10 @@ export default function RentalCalculator() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Rental Calculator
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto">
             Make informed decisions about your rental with our comprehensive calculators. 
             Whether you're a tenant or landlord, we've got you covered.
           </p>
@@ -249,7 +292,7 @@ export default function RentalCalculator() {
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Base Monthly Rent
                         </label>
                         <Input
@@ -260,7 +303,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Utilities (Monthly)
                         </label>
                         <Input
@@ -271,7 +314,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Internet
                         </label>
                         <Input
@@ -282,7 +325,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Parking
                         </label>
                         <Input
@@ -293,7 +336,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Pet Fee (One-time)
                         </label>
                         <Input
@@ -304,7 +347,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Security Deposit
                         </label>
                         <Input
@@ -315,7 +358,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Application Fee
                         </label>
                         <Input
@@ -326,7 +369,7 @@ export default function RentalCalculator() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-200 mb-2">
                           Renter's Insurance
                         </label>
                         <Input
@@ -399,11 +442,12 @@ export default function RentalCalculator() {
                             style={{ width: `${calculationResult.affordabilityScore}%` }}
                           ></div>
                         </div>
-                        <div className="text-sm text-gray-600 mt-2">
-                          {calculationResult.affordabilityScore >= 80 ? 'Excellent' : 
-                           calculationResult.affordabilityScore >= 60 ? 'Good' : 
-                           calculationResult.affordabilityScore >= 40 ? 'Fair' : 'Poor'}
-                        </div>
+                                                 <div className="text-sm text-gray-200 mt-2">
+                           {calculationResult.affordabilityScore >= 85 ? 'Excellent Value' : 
+                            calculationResult.affordabilityScore >= 70 ? 'Good Value' : 
+                            calculationResult.affordabilityScore >= 50 ? 'Fair Price' : 
+                            calculationResult.affordabilityScore >= 30 ? 'Expensive' : 'Very Expensive'}
+                         </div>
                       </div>
 
                       {calculationResult.recommendations.length > 0 && (
@@ -413,12 +457,12 @@ export default function RentalCalculator() {
                             <span className="font-semibold">Recommendations</span>
                           </div>
                           <ul className="space-y-2">
-                            {calculationResult.recommendations.map((rec, index) => (
-                              <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                                <span className="text-blue-600 mt-1">•</span>
-                                {rec}
-                              </li>
-                            ))}
+                                                         {calculationResult.recommendations.map((rec, index) => (
+                               <li key={index} className="text-sm text-gray-200 flex items-start gap-2">
+                                 <span className="text-blue-400 mt-1">•</span>
+                                 {rec}
+                               </li>
+                             ))}
                           </ul>
                         </div>
                       )}
@@ -443,54 +487,54 @@ export default function RentalCalculator() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Monthly Income
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={affordabilityInputs.monthlyIncome}
-                          onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, monthlyIncome: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Monthly Debt Payments
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={affordabilityInputs.monthlyDebts}
-                          onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, monthlyDebts: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Savings
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={affordabilityInputs.savings}
-                          onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, savings: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Credit Score
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={affordabilityInputs.creditScore}
-                          onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, creditScore: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Employment Type
-                        </label>
+                                             <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Monthly Income
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={affordabilityInputs.monthlyIncome}
+                           onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, monthlyIncome: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Monthly Debt Payments
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={affordabilityInputs.monthlyDebts}
+                           onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, monthlyDebts: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Savings
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={affordabilityInputs.savings}
+                           onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, savings: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Credit Score
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={affordabilityInputs.creditScore}
+                           onChange={(e) => setAffordabilityInputs(prev => ({ ...prev, creditScore: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Employment Type
+                         </label>
                         <select
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           value={affordabilityInputs.employmentType}
@@ -558,12 +602,12 @@ export default function RentalCalculator() {
                             <span className="font-semibold">Important Notes</span>
                           </div>
                           <ul className="space-y-2">
-                            {affordabilityResult.warnings.map((warning, index) => (
-                              <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                                <span className="text-orange-600 mt-1">•</span>
-                                {warning}
-                              </li>
-                            ))}
+                                                         {affordabilityResult.warnings.map((warning, index) => (
+                               <li key={index} className="text-sm text-gray-200 flex items-start gap-2">
+                                 <span className="text-orange-400 mt-1">•</span>
+                                 {warning}
+                               </li>
+                             ))}
                           </ul>
                         </div>
                       )}
@@ -588,87 +632,87 @@ export default function RentalCalculator() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Property Value
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.propertyValue}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, propertyValue: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Monthly Rent
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.monthlyRent}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, monthlyRent: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Property Tax (Monthly)
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.propertyTax}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, propertyTax: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Insurance (Monthly)
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.insurance}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, insurance: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Maintenance (Monthly)
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.maintenance}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, maintenance: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Property Management (%)
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.propertyManagement}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, propertyManagement: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Vacancy Rate (%)
-                        </label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={investmentInputs.vacancyRate}
-                          onChange={(e) => setInvestmentInputs(prev => ({ ...prev, vacancyRate: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Mortgage Payment
-                        </label>
+                                             <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Property Value
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.propertyValue}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, propertyValue: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Monthly Rent
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.monthlyRent}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, monthlyRent: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Property Tax (Monthly)
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.propertyTax}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, propertyTax: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Insurance (Monthly)
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.insurance}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, insurance: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Maintenance (Monthly)
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.maintenance}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, maintenance: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Property Management (%)
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.propertyManagement}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, propertyManagement: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Vacancy Rate (%)
+                         </label>
+                         <Input
+                           type="number"
+                           placeholder="0"
+                           value={investmentInputs.vacancyRate}
+                           onChange={(e) => setInvestmentInputs(prev => ({ ...prev, vacancyRate: e.target.value }))}
+                         />
+                       </div>
+                       <div>
+                         <label className="block text-sm font-medium text-gray-200 mb-2">
+                           Mortgage Payment
+                         </label>
                         <Input
                           type="number"
                           placeholder="0"
@@ -739,7 +783,7 @@ export default function RentalCalculator() {
                           <Info className="w-5 h-5 text-blue-600" />
                           <span className="font-semibold">Investment Assessment</span>
                         </div>
-                        <div className="text-sm text-gray-700 space-y-2">
+                                                 <div className="text-sm text-gray-200 space-y-2">
                           {investmentResult.capRate > 6 ? (
                             <p>✅ Good cap rate for rental properties</p>
                           ) : (
@@ -779,51 +823,51 @@ export default function RentalCalculator() {
                 Rental Cost Tips
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Always factor in utilities and internet costs</li>
-                <li>• Consider renter's insurance for protection</li>
-                <li>• Account for parking fees if applicable</li>
-                <li>• Include one-time fees like security deposits</li>
-                <li>• Budget for potential rent increases</li>
-              </ul>
-            </CardContent>
-          </Card>
+                         <CardContent>
+               <ul className="space-y-2 text-sm text-gray-200">
+                 <li>• Ontario average rent is $2,200-2,800 for 1-2 bedrooms</li>
+                 <li>• Utilities typically $150-250/month in Ontario</li>
+                 <li>• Security deposits are limited to 1 month's rent</li>
+                 <li>• Pet fees vary widely - some landlords don't charge</li>
+                 <li>• Rent control applies to buildings occupied before 2018</li>
+               </ul>
+             </CardContent>
+           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-                Affordability Guidelines
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Rent should not exceed 30% of income</li>
-                <li>• Aim for 25% for better financial flexibility</li>
-                <li>• Consider debt-to-income ratio below 43%</li>
-                <li>• Maintain emergency savings</li>
-                <li>• Factor in all living expenses</li>
-              </ul>
-            </CardContent>
-          </Card>
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <TrendingUp className="w-5 h-5 text-green-400" />
+                 Affordability Guidelines
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <ul className="space-y-2 text-sm text-gray-200">
+                 <li>• Ontario rent should not exceed 30% of income</li>
+                 <li>• Aim for 25% for better financial flexibility</li>
+                 <li>• Consider debt-to-income ratio below 43%</li>
+                 <li>• Maintain 3-6 months emergency savings</li>
+                 <li>• Factor in Ontario's high cost of living</li>
+               </ul>
+             </CardContent>
+           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-purple-600" />
-                Investment Metrics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>• Cap Rate: 6-8% is generally good</li>
-                <li>• Cash-on-Cash: 8-12% is ideal</li>
-                <li>• Positive cash flow is essential</li>
-                <li>• Consider property appreciation</li>
-                <li>• Factor in maintenance costs</li>
-              </ul>
-            </CardContent>
+           <Card>
+             <CardHeader>
+               <CardTitle className="flex items-center gap-2">
+                 <DollarSign className="w-5 h-5 text-purple-400" />
+                 Investment Metrics
+               </CardTitle>
+             </CardHeader>
+             <CardContent>
+               <ul className="space-y-2 text-sm text-gray-200">
+                 <li>• Cap Rate: 6-8% is generally good</li>
+                 <li>• Cash-on-Cash: 8-12% is ideal</li>
+                 <li>• Positive cash flow is essential</li>
+                 <li>• Consider property appreciation</li>
+                 <li>• Factor in maintenance costs</li>
+               </ul>
+             </CardContent>
           </Card>
         </motion.div>
       </div>
