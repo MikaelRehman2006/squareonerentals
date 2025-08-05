@@ -21,6 +21,16 @@ export default function Footer() {
           </ul>
         </div>
         <div>
+          <h4 className="font-semibold mb-4">Legal & Privacy</h4>
+          <ul className="space-y-2">
+            <li><Link href="/privacy-policy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
+            <li><Link href="/cookie-policy" className="text-gray-400 hover:text-white">Cookie Policy</Link></li>
+            <li><Link href="/accessibility-statement" className="text-gray-400 hover:text-white">Accessibility Statement</Link></li>
+            <li><Link href="/dmca-policy" className="text-gray-400 hover:text-white">DMCA Policy</Link></li>
+            <li><Link href="/acceptable-use-policy" className="text-gray-400 hover:text-white">Acceptable Use Policy</Link></li>
+          </ul>
+        </div>
+        <div>
           <h4 className="font-semibold mb-4">Services</h4>
           <ul className="space-y-2">
             <li><Link href="/memberships" className="text-gray-400 hover:text-white">Membership Plans</Link></li>

@@ -73,6 +73,21 @@ export default function MembershipsPage() {
         >
           Choose the right plan for your rental listing needs
         </motion.p>
+        <motion.div 
+          className="mt-4 max-w-lg mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isLoaded ? 1 : 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-center">
+            <div className="flex items-center text-blue-800 text-sm">
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+              </svg>
+              <span>🔒 Secure payments powered by <strong>Stripe</strong> - we never see your payment details</span>
+            </div>
+          </div>
+        </motion.div>
       </motion.div>
 
       {/* Simple Equal-Sized Toggle Switch */}
@@ -367,6 +382,10 @@ export default function MembershipsPage() {
             {
               question: "How do I get started?",
               answer: "Choose the plan that fits your needs and click the 'Get Started' button. After completing the payment process, you can immediately start posting listings with your new membership benefits.",
+            },
+            {
+              question: "Is my payment information secure?",
+              answer: "Yes! We use Stripe, the world's most trusted payment platform, to process all payments. We never collect or store your payment information directly - Stripe handles all payment details securely with bank-level encryption and PCI compliance.",
             },
           ].map((item, idx) => (
             <AccordionItem key={item.question} question={item.question} answer={item.answer} defaultOpen={idx === 0} />
