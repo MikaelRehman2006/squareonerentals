@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-12 px-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-6 gap-8">
         <div>
           <h4 className="font-semibold mb-4">About Square One Rentals</h4>
           <p className="text-gray-400">We connect renters with property owners in the Square One area of Mississauga, making the rental process simple and efficient.</p>
@@ -18,6 +18,24 @@ export default function Footer() {
             <li><Link href="/terms-and-conditions" className="text-gray-400 hover:text-white">Terms & Conditions</Link></li>
             <li><Link href="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
             <li><Link href="/realtors" className="text-gray-400 hover:text-white">For Realtors</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Support & Help</h4>
+          <ul className="space-y-2">
+            <li><Link href="/faq" className="text-gray-400 hover:text-white">FAQ</Link></li>
+            <li><Link href="/help-center" className="text-gray-400 hover:text-white">Help Center</Link></li>
+            <li><Link href="/report-issue" className="text-gray-400 hover:text-white">Report Issue</Link></li>
+            <li><Link href="/feedback" className="text-gray-400 hover:text-white">Feedback</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Resources</h4>
+          <ul className="space-y-2">
+            <li><Link href="/rental-guide" className="text-gray-400 hover:text-white">Rental Guide</Link></li>
+            <li><Link href="/landlord-guide" className="text-gray-400 hover:text-white">Landlord Guide</Link></li>
+            <li><Link href="/market-insights" className="text-gray-400 hover:text-white">Market Insights</Link></li>
+            <li><Link href="/rental-calculator" className="text-gray-400 hover:text-white">Rental Calculator</Link></li>
           </ul>
         </div>
         <div>
@@ -38,6 +56,15 @@ export default function Footer() {
             <li><Link href="/favorites" className="text-gray-400 hover:text-white">Saved Listings</Link></li>
             <li><Link href="/notifications" className="text-gray-400 hover:text-white">Notifications</Link></li>
             <li><Link href="/settings" className="text-gray-400 hover:text-white">Account Settings</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Business</h4>
+          <ul className="space-y-2">
+            <li><Link href="/partnerships" className="text-gray-400 hover:text-white">Partnerships</Link></li>
+            <li><Link href="/investor-relations" className="text-gray-400 hover:text-white">Investor Relations</Link></li>
+            <li><Link href="/realtor-services" className="text-gray-400 hover:text-white">Realtor Services</Link></li>
+            <li><Link href="/property-manager-services" className="text-gray-400 hover:text-white">Property Manager Services</Link></li>
           </ul>
         </div>
         <div>
