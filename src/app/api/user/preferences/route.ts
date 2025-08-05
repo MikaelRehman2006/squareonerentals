@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { userTypes, preferences, onboardingCompleted } = body;
-    
+
     // Debug logging for mobile issues
     console.log('API Request Body:', JSON.stringify(body, null, 2));
     console.log('User-Agent:', request.headers.get('user-agent'));
@@ -66,13 +66,13 @@ export async function POST(request: NextRequest) {
 
     // Only validate preferences structure if userTypes is not empty
     if (userTypes.length > 0) {
-      // Validate that preferences has keys for each userType
-      for (const type of userTypes) {
-        if (!preferences[type]) {
-          return NextResponse.json(
-            { error: `Missing preferences for userType: ${type}` },
-            { status: 400 }
-          );
+    // Validate that preferences has keys for each userType
+    for (const type of userTypes) {
+      if (!preferences[type]) {
+        return NextResponse.json(
+          { error: `Missing preferences for userType: ${type}` },
+          { status: 400 }
+        );
         }
       }
     }

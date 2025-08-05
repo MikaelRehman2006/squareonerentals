@@ -518,14 +518,14 @@ export default function PostSignupSurvey() { // Define the main component functi
               
               // Load existing form data for each role
               if (data.preferences.preferences) {
-                const existingFormData = { ...formData };
+                const existingRoleForms = { ...roleForms };
                 Object.keys(data.preferences.preferences).forEach(role => {
                   if (data.preferences.preferences[role]) {
-                    existingFormData[role] = data.preferences.preferences[role];
+                    existingRoleForms[role] = data.preferences.preferences[role];
                   }
                 });
-                setFormData(existingFormData);
-                console.log('Set existing form data:', existingFormData);
+                setRoleForms(existingRoleForms);
+                console.log('Set existing form data:', existingRoleForms);
               }
             }
           }
