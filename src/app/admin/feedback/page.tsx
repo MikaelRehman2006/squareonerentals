@@ -48,10 +48,18 @@ export default function AdminFeedback() {
       if (filter !== 'all') params.append('type', filter);
       if (statusFilter !== 'all') params.append('status', statusFilter);
       
+      console.log('Fetching feedback from:', `/api/admin/feedback?${params}`);
+      
       const response = await fetch(`/api/admin/feedback?${params}`);
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Feedback data received:', data);
         setFeedback(data.feedback);
+      } else {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
       }
     } catch (error) {
       console.error('Error fetching feedback:', error);

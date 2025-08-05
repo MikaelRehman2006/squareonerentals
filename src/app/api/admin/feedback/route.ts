@@ -12,8 +12,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { type, ...feedbackData } = body;
 
+    console.log('Received feedback submission:', { type, ...feedbackData });
+
     // Validate required fields
     if (!type || !feedbackData.subject || !feedbackData.description) {
+      console.log('Missing required fields:', { type, subject: feedbackData.subject, description: feedbackData.description });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -29,8 +32,12 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date()
     };
 
+    console.log('Inserting feedback into database:', feedback);
+
     // Insert into database
     const result = await db.collection('feedback').insertOne(feedback);
+
+    console.log('Feedback inserted successfully with ID:', result.insertedId);
 
     return NextResponse.json({
       success: true,
@@ -50,8 +57,11 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
+    console.log('Admin feedback GET request - Session:', session?.user?.email);
+    
     // Check if user is admin
     if (!session?.user?.email) {
+      console.log('No session found');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -59,7 +69,10 @@ export async function GET(request: NextRequest) {
     const db = mongoose.connection.db;
     const user = await db.collection('users').findOne({ email: session.user.email });
     
-    if (!user || user.role !== 'admin') {
+    console.log('User found:', user?.role);
+    
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN')) {
+      console.log('User is not admin, role:', user?.role);
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
@@ -70,6 +83,8 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
+
+    console.log('Fetching feedback with filters:', { type, status, page, limit });
 
     // Build filter
     const filter: any = {};
@@ -86,6 +101,8 @@ export async function GET(request: NextRequest) {
 
     // Get total count
     const total = await db.collection('feedback').countDocuments(filter);
+
+    console.log('Found feedback items:', feedback.length, 'Total:', total);
 
     return NextResponse.json({
       feedback,
@@ -119,7 +136,7 @@ export async function PUT(request: NextRequest) {
     const db = mongoose.connection.db;
     const user = await db.collection('users').findOne({ email: session.user.email });
     
-    if (!user || user.role !== 'admin') {
+    if (!user || (user.role !== 'admin' && user.role !== 'ADMIN')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
