@@ -6,20 +6,8 @@ import mongoose from 'mongoose';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // Check if user is admin
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     await connectDB();
     const db = mongoose.connection.db;
-    const user = await db.collection('users').findOne({ email: session.user.email });
-    
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
 
     const body = await request.json();
     const { type, ...feedbackData } = body;
@@ -146,8 +134,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update feedback
+    const { ObjectId } = require('mongodb');
     const result = await db.collection('feedback').updateOne(
-      { _id: id },
+      { _id: new ObjectId(id) },
       {
         $set: {
           status,

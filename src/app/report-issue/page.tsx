@@ -12,7 +12,8 @@ export default function ReportIssue() {
     browser: '',
     device: '',
     steps: '',
-    priority: 'medium'
+    priority: 'medium',
+    anonymous: false
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +47,8 @@ export default function ReportIssue() {
           browser: '',
           device: '',
           steps: '',
-          priority: 'medium'
+          priority: 'medium',
+          anonymous: false
         });
       } else {
         alert('Failed to submit issue report. Please try again.');
@@ -78,7 +80,7 @@ export default function ReportIssue() {
           <h1 className="text-3xl font-bold text-black mb-4">Issue Report Submitted!</h1>
           <p className="text-gray-600 mb-8">
             Thank you for reporting this issue. Our team has been notified and will review it within 24-48 hours. 
-            We'll contact you at {formData.email} if we need any additional information.
+            {!formData.anonymous && formData.email && ` We'll contact you at ${formData.email} if we need any additional information.`}
           </p>
           <button 
             onClick={() => setIsSubmitted(false)}
@@ -109,35 +111,51 @@ export default function ReportIssue() {
               {/* Personal Information */}
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-lg font-semibold text-black mb-4">Your Information</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name *
-                    </label>
+                <div className="space-y-4">
+                  <div className="flex items-center">
                     <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
+                      type="checkbox"
+                      id="anonymous"
+                      name="anonymous"
+                      checked={formData.anonymous}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="mr-2"
                     />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
+                    <label htmlFor="anonymous" className="text-sm text-gray-700">
+                      Submit anonymously
                     </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
                   </div>
+                  
+                  {!formData.anonymous && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

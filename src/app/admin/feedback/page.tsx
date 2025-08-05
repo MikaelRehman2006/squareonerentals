@@ -68,7 +68,7 @@ export default function AdminFeedback() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id,
+          id: id.toString(),
           ...updates
         }),
       });

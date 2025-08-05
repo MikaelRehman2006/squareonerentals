@@ -147,9 +147,9 @@ export default function HelpCenter() {
               <p className="text-gray-600 text-sm mb-3">
                 Step-by-step guide to creating and publishing your rental listing.
               </p>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <a href="/help-center/post-listing" className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-block">
                 Read Guide →
-              </button>
+              </a>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -157,9 +157,9 @@ export default function HelpCenter() {
               <p className="text-gray-600 text-sm mb-3">
                 Learn how to use price, location, and amenity filters effectively.
               </p>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <a href="/help-center/search-filters" className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-block">
                 Read Guide →
-              </button>
+              </a>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -167,9 +167,9 @@ export default function HelpCenter() {
               <p className="text-gray-600 text-sm mb-3">
                 How to customize your notification preferences and stay updated.
               </p>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <a href="/help-center/notifications" className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-block">
                 Read Guide →
-              </button>
+              </a>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -177,9 +177,9 @@ export default function HelpCenter() {
               <p className="text-gray-600 text-sm mb-3">
                 Understanding your membership charges and payment methods.
               </p>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <a href="/help-center/payment-billing" className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-block">
                 Read Guide →
-              </button>
+              </a>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -187,19 +187,19 @@ export default function HelpCenter() {
               <p className="text-gray-600 text-sm mb-3">
                 Best practices for keeping your account safe and secure.
               </p>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <a href="/help-center/account-security" className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-block">
                 Read Guide →
-              </button>
+              </a>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-              <h3 className="font-semibold text-black mb-2">Mobile App Guide</h3>
+              <h3 className="font-semibold text-black mb-2">Contacting Landlords</h3>
               <p className="text-gray-600 text-sm mb-3">
-                How to use Square One Rentals on your mobile device.
+                Best practices for reaching out to property owners and scheduling viewings.
               </p>
-              <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <a href="/help-center/contacting-landlords" className="text-blue-600 hover:text-blue-800 text-sm font-medium inline-block">
                 Read Guide →
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -237,12 +237,12 @@ export default function HelpCenter() {
             Can't find what you're looking for? Our support team is here to help you get the most out of Square One Rentals.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 py-3 px-8 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            <a href="/contact" className="bg-white text-blue-600 py-3 px-8 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block">
               Contact Support
-            </button>
-            <button className="border-2 border-white text-white py-3 px-8 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+            </a>
+            <a href="/report-issue" className="border-2 border-white text-white py-3 px-8 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors inline-block">
               Report an Issue
-            </button>
+            </a>
           </div>
           <div className="mt-6 text-blue-100">
             <p><strong>Email:</strong> squareone.rental@gmail.com</p>
