@@ -164,7 +164,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               pattern="[0-9]*"
               value={filters.priceRange.min}
               onChange={(e) => handlePriceChange('min', e.target.value)}
-              className="w-full text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full text-sm text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-black"
               placeholder="Min Price"
             />
             <Input
@@ -173,7 +173,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               pattern="[0-9]*"
               value={filters.priceRange.max}
               onChange={(e) => handlePriceChange('max', e.target.value)}
-              className="w-full text-sm text-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full text-sm text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-black"
               placeholder="Max Price"
             />
           </div>
@@ -187,7 +187,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.bedrooms === '' ? 'any' : filters.bedrooms.toString()}
               onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? '' : parseInt(value))}
             >
-              <SelectTrigger className="w-full text-sm">
+              <SelectTrigger className="w-full text-sm text-black">
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
               <SelectContent>
@@ -202,7 +202,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.bathrooms === '' ? 'any' : filters.bathrooms.toString()}
               onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? '' : parseInt(value))}
             >
-              <SelectTrigger className="w-full text-sm">
+              <SelectTrigger className="w-full text-sm text-black">
                 <SelectValue placeholder="Bathrooms" />
               </SelectTrigger>
               <SelectContent>
@@ -217,7 +217,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.propertyType || 'any'}
               onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? '' : value)}
             >
-              <SelectTrigger className="w-full text-sm">
+              <SelectTrigger className="w-full text-sm text-black">
                 <SelectValue placeholder="Property Type" />
               </SelectTrigger>
               <SelectContent>
@@ -307,7 +307,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
           </Button>
         </div>
         {/* Extra space to prevent bounce-back */}
-        <div className="h-8"></div>
+        <div className="h-16"></div>
       </div>
     );
 
