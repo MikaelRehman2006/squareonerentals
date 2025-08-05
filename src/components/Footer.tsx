@@ -63,8 +63,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li><Link href="/partnerships" className="text-gray-400 hover:text-white">Partnerships</Link></li>
             <li><Link href="/investor-relations" className="text-gray-400 hover:text-white">Investor Relations</Link></li>
-            <li><Link href="/realtor-services" className="text-gray-400 hover:text-white">Realtor Services</Link></li>
-            <li><Link href="/property-manager-services" className="text-gray-400 hover:text-white">Property Manager Services</Link></li>
+            <li><Link href="/property-manager-services" className="text-gray-400 hover:text-white">Business Services</Link></li>
           </ul>
         </div>
         <div>

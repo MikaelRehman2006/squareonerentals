@@ -114,7 +114,7 @@ export default function Home() {
       </section>
 
       {/* Featured Listings Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div 
             className="text-center mb-16"
@@ -124,35 +124,43 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Listings</h2>
-            <p className="mt-4 text-xl text-gray-600">Discover our hand-picked properties</p>
+            <p className="mt-4 text-xl text-gray-600">Discover our handpicked premium properties</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredListings.map((listing) => (
-              <motion.div
-                key={listing.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-              >
-                <ListingCard listing={listing} />
-              </motion.div>
-            ))}
-          </div>
-          
+          {isLoading ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              <AnimatePresence>
+                {featuredListings.slice(0, 6).map((listing) => (
+                  <motion.div
+                    key={listing._id}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <ListingCard listing={listing} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          )}
+
           <motion.div 
-            className="mt-16 text-center"
+            className="text-center mt-12"
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
           >
             <Button
               asChild
               size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-6 rounded-xl hover:scale-105 transition-transform"
+              variant="outline"
+              className="text-lg px-8 py-6 rounded-xl"
             >
               <Link href="/listings">View All Listings</Link>
             </Button>
@@ -171,11 +179,11 @@ export default function Home() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">How It Works</h2>
-            <p className="mt-4 text-xl text-gray-600">Three simple steps to your new home</p>
+            <p className="mt-4 text-xl text-gray-600">Simple steps to find your perfect home</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {STEPS.map((step) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {STEPS.map((step, index) => (
               <motion.div
                 key={step.id}
                 className="relative p-8 bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300"
@@ -287,7 +295,7 @@ export default function Home() {
                 </li>
               </ul>
               <Link 
-                href="/realtor-services" 
+                href="/property-manager-services" 
                 className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
                 Learn More
@@ -350,7 +358,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <Link 
-              href="/business-services" 
+              href="/property-manager-services" 
               className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               View All Business Services
