@@ -388,15 +388,17 @@ export default function ListingsPage() {
                     Filters {appliedFilters.length > 0 && `(${appliedFilters.length})`}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] p-0 sm:max-w-none overflow-y-auto">
+                <SheetContent side="left" className="w-[300px] p-0 sm:max-w-none">
                   <SheetHeader className="p-4 border-b flex items-center justify-between">
                     <SheetTitle className="font-semibold text-left">Filters</SheetTitle>
                     <Button variant="ghost" size="sm" onClick={() => setIsMobileFilterOpen(false)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </SheetHeader>
-                  <div className="p-4">
-                    <ListingFilters onFilterChange={handleFilterChange} resetTrigger={resetTrigger} />
+                  <div className="overflow-y-auto h-[calc(100vh-80px)]">
+                    <div className="p-4">
+                      <ListingFilters onFilterChange={handleFilterChange} resetTrigger={resetTrigger} />
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>

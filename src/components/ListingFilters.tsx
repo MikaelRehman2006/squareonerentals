@@ -70,7 +70,6 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
     utilities: [],
     sortBy: 'date-desc',
   });
-  const [isOpen, setIsOpen] = useState(false);
   const [openSections, setOpenSections] = useState({
     amenities: true,
     features: true,
@@ -154,13 +153,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
   }, [resetTrigger, resetFilters]);
 
   const FilterContent = () => (
-    <Card className="bg-white border border-gray-200 shadow-sm w-full md:w-[250px]">
-      <CardHeader className="border-b border-gray-200 p-3 sm:p-4">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-gray-800">Filters</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="p-3 sm:p-4 sm:pt-6 space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6">
         {/* Price Range */}
         <div className="space-y-2 sm:space-y-3">
           <h3 className="text-sm font-medium text-gray-800">Price Range</h3>
@@ -313,33 +306,10 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
             Reset Filters
           </Button>
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
 
   return (
-    <>
-      {/* Mobile Filter Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="sm:hidden fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg z-50"
-      >
-        Filters
-      </button>
-
-      {/* Desktop Sidebar */}
-      <div className="hidden sm:block">
-        <FilterContent />
-      </div>
-
-      {/* Mobile Sidebar */}
-      {isOpen && (
-        <div className="sm:hidden fixed inset-0 bg-black bg-opacity-50 z-50">
-          <div className="fixed left-0 top-0 h-full">
-            <FilterContent />
-          </div>
-        </div>
-      )}
-    </>
+    <FilterContent />
   );
 }
