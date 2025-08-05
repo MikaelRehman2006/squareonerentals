@@ -8,14 +8,17 @@ import {
   Flag,
   Settings,
   BarChart,
+  MessageSquare,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: Home },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Listings', href: '/admin/listings', icon: ListFilter },
+  { name: 'Survey Responses', href: '/admin/survey-responses', icon: BarChart },
+  { name: 'Notifications', href: '/admin/notifications', icon: MessageSquare },
   { name: 'Reports', href: '/admin/reports', icon: Flag },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart },
+  { name: 'Feedback', href: '/admin/feedback', icon: MessageSquare },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
