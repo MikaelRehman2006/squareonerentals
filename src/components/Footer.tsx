@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-12 px-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h4 className="font-semibold mb-4">About Square One Rentals</h4>
           <p className="text-gray-400">We connect renters with property owners in the Square One area of Mississauga, making the rental process simple and efficient.</p>
@@ -15,6 +15,19 @@ export default function Footer() {
             <li><Link href="/submit" className="text-gray-400 hover:text-white">Submit Listing</Link></li>
             <li><Link href="/about" className="text-gray-400 hover:text-white">About Us</Link></li>
             <li><Link href="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
+            <li><Link href="/terms-and-conditions" className="text-gray-400 hover:text-white">Terms & Conditions</Link></li>
+            <li><Link href="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
+            <li><Link href="/realtors" className="text-gray-400 hover:text-white">For Realtors</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold mb-4">Services</h4>
+          <ul className="space-y-2">
+            <li><Link href="/memberships" className="text-gray-400 hover:text-white">Membership Plans</Link></li>
+            <li><Link href="/dashboard" className="text-gray-400 hover:text-white">Dashboard</Link></li>
+            <li><Link href="/favorites" className="text-gray-400 hover:text-white">Saved Listings</Link></li>
+            <li><Link href="/notifications" className="text-gray-400 hover:text-white">Notifications</Link></li>
+            <li><Link href="/settings" className="text-gray-400 hover:text-white">Account Settings</Link></li>
           </ul>
         </div>
         <div>
