@@ -177,11 +177,13 @@ export default function ProfilePage() {
 
   const handleEditProfile = () => {
     console.log('Edit Profile button clicked');
+    console.log('Current isEditing state:', isEditing);
     setIsEditing(!isEditing);
   };
 
   const handleViewDashboard = () => {
     console.log('View Dashboard button clicked');
+    console.log('Navigating to dashboard...');
     router.push('/dashboard');
   };
 
@@ -316,8 +318,18 @@ export default function ProfilePage() {
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     <button
+                      onClick={() => console.log('Test button clicked!')}
+                      className="w-full bg-red-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer relative z-10 pointer-events-auto"
+                      type="button"
+                    >
+                      🧪 Test Button (Click Me!)
+                    </button>
+
+                    <button
                       onClick={handleEditProfile}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                      onMouseEnter={() => console.log('Edit Profile button hovered')}
+                      onMouseDown={() => console.log('Edit Profile button mouse down')}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer relative z-10 pointer-events-auto"
                       type="button"
                     >
                       <Edit3 size={18} />
@@ -326,7 +338,9 @@ export default function ProfilePage() {
                     
                     <button
                       onClick={handleViewDashboard}
-                      className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                      onMouseEnter={() => console.log('View Dashboard button hovered')}
+                      onMouseDown={() => console.log('View Dashboard button mouse down')}
+                      className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer relative z-10 pointer-events-auto"
                       type="button"
                     >
                       <User size={18} />
