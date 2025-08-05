@@ -9,6 +9,7 @@ import {
   Settings,
   BarChart,
   MessageSquare,
+  AlertCircle,
 } from 'lucide-react';
 
 const navigation = [
@@ -18,7 +19,7 @@ const navigation = [
   { name: 'Survey Responses', href: '/admin/survey-responses', icon: BarChart },
   { name: 'Notifications', href: '/admin/notifications', icon: MessageSquare },
   { name: 'Reports', href: '/admin/reports', icon: Flag },
-  { name: 'Feedback', href: '/admin/feedback', icon: MessageSquare },
+  { name: 'Feedback', href: '/admin/feedback', icon: AlertCircle },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
