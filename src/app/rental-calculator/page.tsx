@@ -251,22 +251,26 @@ export default function RentalCalculator() {
         </motion.div>
 
         {/* Tab Navigation */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <Button
-                key={tab.id}
-                variant={activeTab === tab.id ? 'default' : 'outline'}
-                onClick={() => setActiveTab(tab.id as any)}
-                className="flex items-center gap-2 px-6 py-3"
-              >
-                <Icon className="w-5 h-5" />
-                {tab.label}
-              </Button>
-            );
-          })}
-        </div>
+                 <div className="flex flex-wrap justify-center gap-4 mb-8">
+           {tabs.map((tab) => {
+             const Icon = tab.icon;
+             return (
+               <Button
+                 key={tab.id}
+                 variant={activeTab === tab.id ? 'default' : 'outline'}
+                 onClick={() => setActiveTab(tab.id as any)}
+                 className={`flex items-center gap-2 px-6 py-3 transition-transform duration-200 hover:scale-105 ${
+                   activeTab === tab.id 
+                     ? 'bg-white text-gray-900 hover:bg-gray-100' 
+                     : 'bg-transparent text-white border-white hover:bg-white hover:text-gray-900'
+                 }`}
+               >
+                 <Icon className="w-5 h-5" />
+                 {tab.label}
+               </Button>
+             );
+           })}
+         </div>
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -778,12 +782,12 @@ export default function RentalCalculator() {
                         </div>
                       </div>
 
-                      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Info className="w-5 h-5 text-blue-600" />
-                          <span className="font-semibold">Investment Assessment</span>
-                        </div>
-                                                 <div className="text-sm text-gray-200 space-y-2">
+                                             <div className="mt-6 p-4 bg-gray-800 rounded-lg">
+                         <div className="flex items-center gap-2 mb-3">
+                           <Info className="w-5 h-5 text-blue-400" />
+                           <span className="font-semibold text-white">Investment Assessment</span>
+                         </div>
+                         <div className="text-sm text-gray-200 space-y-2">
                           {investmentResult.capRate > 6 ? (
                             <p>✅ Good cap rate for rental properties</p>
                           ) : (
