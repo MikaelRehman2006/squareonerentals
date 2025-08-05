@@ -19,6 +19,7 @@ import {
   FileText,
   Menu,
   X,
+  AlertCircle,
 } from 'lucide-react';
 
 const adminTabs = [
@@ -28,6 +29,7 @@ const adminTabs = [
   { name: 'Survey Responses', href: '/admin/survey-responses', icon: ClipboardList },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Reports', href: '/admin/reports', icon: FileText },
+  { name: 'Feedback', href: '/admin/feedback', icon: AlertCircle },
   { name: 'Settings', href: '/admin/settings', icon: Settings }
 ];
 
