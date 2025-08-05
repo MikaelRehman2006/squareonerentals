@@ -37,8 +37,20 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Plus
+  Plus,
+  ClipboardList,
+  Target,
+  Users,
+  Building2
 } from 'lucide-react';
+
+interface UserPreferences {
+  userTypes?: string[];
+  onboardingCompleted?: boolean;
+  preferences?: {
+    [key: string]: any;
+  };
+}
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -47,6 +59,8 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
+  const [loadingPreferences, setLoadingPreferences] = useState(true);
   const router = useRouter();
 
   // Preload name and email from session
@@ -54,6 +68,27 @@ export default function ProfilePage() {
     if (session?.user) {
       setName(session.user.name || '');
       setEmail(session.user.email || '');
+    }
+  }, [session]);
+
+  // Fetch user preferences
+  useEffect(() => {
+    const fetchPreferences = async () => {
+      try {
+        const response = await fetch('/api/user/preferences');
+        if (response.ok) {
+          const data = await response.json();
+          setUserPreferences(data);
+        }
+      } catch (error) {
+        console.error('Error fetching preferences:', error);
+      } finally {
+        setLoadingPreferences(false);
+      }
+    };
+
+    if (session?.user) {
+      fetchPreferences();
     }
   }, [session]);
 
@@ -154,7 +189,7 @@ export default function ProfilePage() {
                   </motion.div>
                   
                   <CardTitle className="text-2xl font-bold text-gray-900 mb-2">{name}</CardTitle>
-                  <CardDescription className="text-gray-600 flex items-center justify-center gap-2">
+                  <CardDescription className="text-black flex items-center justify-center gap-2">
                     <Mail size={16} />
                     {email}
                   </CardDescription>
@@ -167,15 +202,21 @@ export default function ProfilePage() {
                       whileHover={{ scale: 1.05 }}
                       className="text-center p-4 bg-blue-50 rounded-xl"
                     >
-                      <div className="text-2xl font-bold text-blue-600">12</div>
-                      <div className="text-sm text-gray-600">Listings</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {userPreferences?.onboardingCompleted ? '✓' : '!'}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {userPreferences?.onboardingCompleted ? 'Survey Complete' : 'Survey Pending'}
+                      </div>
                     </motion.div>
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       className="text-center p-4 bg-green-50 rounded-xl"
                     >
-                      <div className="text-2xl font-bold text-green-600">4.8</div>
-                      <div className="text-sm text-gray-600">Rating</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {userPreferences?.userTypes?.length || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">Roles Selected</div>
                     </motion.div>
                   </div>
 
@@ -262,26 +303,49 @@ export default function ProfilePage() {
                               <Input 
                                 value={email} 
                                 readOnly 
-                                className="w-full pl-10 bg-gray-50 cursor-not-allowed border-gray-300 rounded-xl text-gray-600" 
+                                className="w-full pl-10 bg-gray-50 cursor-not-allowed border-gray-300 rounded-xl text-black" 
                               />
                             </div>
                           </motion.div>
                         </div>
 
+                        {/* Password Change Section */}
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
-                          className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100"
+                          className="space-y-4"
                         >
-                          <div className="flex items-start gap-3">
-                            <Shield className="text-blue-600 mt-1" size={20} />
-                            <div>
-                              <h3 className="text-sm font-medium text-blue-800 mb-1">Account Security</h3>
-                              <p className="text-sm text-blue-700">
-                                For security reasons, password changes must be requested through our support team. 
-                                Contact us if you need to change your password.
-                              </p>
+                          <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">Current Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type={showPassword ? "text" : "password"}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter current password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">New Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type="password"
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter new password"
+                                />
+                              </div>
                             </div>
                           </div>
                         </motion.div>
@@ -290,6 +354,24 @@ export default function ProfilePage() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.3 }}
+                          className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100"
+                        >
+                          <div className="flex items-start gap-3">
+                            <Shield className="text-blue-600 mt-1" size={20} />
+                            <div>
+                              <h3 className="text-sm font-medium text-blue-800 mb-1">Account Security</h3>
+                              <p className="text-sm text-blue-700">
+                                Password changes are processed through our secure system. 
+                                Contact support if you need assistance with password recovery.
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
                           className="flex gap-3"
                         >
                           <motion.button
@@ -370,8 +452,8 @@ export default function ProfilePage() {
                           <Settings className="text-white" size={20} />
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900">Account Settings</div>
-                          <div className="text-sm text-gray-600">Manage preferences</div>
+                          <div className="font-medium text-gray-900">My Preferences</div>
+                          <div className="text-sm text-gray-600">Manage your preferences</div>
                         </div>
                       </div>
                     </motion.button>
@@ -414,7 +496,7 @@ export default function ProfilePage() {
               </Card>
             </motion.div>
 
-            {/* Account Stats */}
+            {/* Onboarding Survey Status */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -422,47 +504,85 @@ export default function ProfilePage() {
             >
               <Card className="bg-white rounded-3xl shadow-xl border-0">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-gray-900">Account Overview</CardTitle>
+                  <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <ClipboardList size={20} />
+                    Onboarding Survey Status
+                  </CardTitle>
                 </CardHeader>
                 
                 <CardContent className="p-6">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-4 bg-blue-50 rounded-xl"
-                    >
-                      <Calendar className="text-blue-600 mx-auto mb-2" size={24} />
-                      <div className="text-2xl font-bold text-blue-600">12</div>
-                      <div className="text-sm text-gray-600">Active Listings</div>
-                    </motion.div>
+                  {loadingPreferences ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading your preferences...</p>
+                    </div>
+                  ) : userPreferences?.onboardingCompleted ? (
+                    <div className="space-y-6">
+                      <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CheckCircle className="text-green-600" size={20} />
+                          <span className="font-medium text-green-800">Survey Completed</span>
+                        </div>
+                        <p className="text-green-700 text-sm">
+                          Thank you for completing the onboarding survey! Your preferences have been saved.
+                        </p>
+                      </div>
 
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-4 bg-green-50 rounded-xl"
-                    >
-                      <Star className="text-green-600 mx-auto mb-2" size={24} />
-                      <div className="text-2xl font-bold text-green-600">4.8</div>
-                      <div className="text-sm text-gray-600">Rating</div>
-                    </motion.div>
+                      {userPreferences?.userTypes && userPreferences.userTypes.length > 0 && (
+                        <div>
+                          <h3 className="font-medium text-gray-900 mb-3">Your Selected Roles:</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {userPreferences.userTypes.map((role, index) => (
+                              <motion.div
+                                key={role}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200"
+                              >
+                                <Target className="text-blue-600" size={16} />
+                                <span className="text-sm font-medium text-blue-800 capitalize">
+                                  {role.replace(/([A-Z])/g, ' $1').trim()}
+                                </span>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-4 bg-purple-50 rounded-xl"
-                    >
-                      <MapPin className="text-purple-600 mx-auto mb-2" size={24} />
-                      <div className="text-2xl font-bold text-purple-600">8</div>
-                      <div className="text-sm text-gray-600">Properties</div>
-                    </motion.div>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => router.push('/onboarding')}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <Edit3 size={18} />
+                        Update Survey Responses
+                      </motion.button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                        <div className="flex items-center gap-2 mb-3">
+                          <AlertCircle className="text-yellow-600" size={20} />
+                          <span className="font-medium text-yellow-800">Survey Not Completed</span>
+                        </div>
+                        <p className="text-yellow-700 text-sm">
+                          Please complete the onboarding survey to help us personalize your experience.
+                        </p>
+                      </div>
 
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-4 bg-orange-50 rounded-xl"
-                    >
-                      <Phone className="text-orange-600 mx-auto mb-2" size={24} />
-                      <div className="text-2xl font-bold text-orange-600">156</div>
-                      <div className="text-sm text-gray-600">Inquiries</div>
-                    </motion.div>
-                  </div>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => router.push('/onboarding')}
+                        className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <ClipboardList size={18} />
+                        Complete Onboarding Survey
+                      </motion.button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
