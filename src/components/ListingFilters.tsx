@@ -156,7 +156,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
     <div className="space-y-4 sm:space-y-6">
         {/* Price Range */}
         <div className="space-y-2 sm:space-y-3">
-          <h3 className="text-sm font-medium text-gray-800">Price Range</h3>
+          <h3 className="text-sm font-medium text-black">Price Range</h3>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Input
               type="text"
@@ -181,7 +181,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Property Details */}
         <div className="space-y-2 sm:space-y-3">
-          <h3 className="text-sm font-medium text-gray-800">Property Details</h3>
+          <h3 className="text-sm font-medium text-black">Property Details</h3>
           <div className="space-y-2 sm:space-y-3">
             <Select
               value={filters.bedrooms === '' ? 'any' : filters.bedrooms.toString()}
@@ -232,7 +232,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Amenities */}
         <Collapsible open={openSections.amenities} onOpenChange={() => toggleSection('amenities')}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-black hover:text-gray-700 transition-colors">
             <span>Amenities</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${openSections.amenities ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -245,7 +245,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
                     onCheckedChange={() => handleArrayToggle('amenities', amenity)}
                     className="h-4 w-4"
                   />
-                  <label className="text-sm text-gray-900 cursor-pointer select-none">{amenity}</label>
+                  <label className="text-sm text-black cursor-pointer select-none">{amenity}</label>
                 </div>
               ))}
             </div>
@@ -254,7 +254,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Features */}
         <Collapsible open={openSections.features} onOpenChange={() => toggleSection('features')}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-black hover:text-gray-700 transition-colors">
             <span>Features</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${openSections.features ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -267,7 +267,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
                     onCheckedChange={() => handleArrayToggle('features', feature)}
                     className="h-4 w-4"
                   />
-                  <label className="text-sm text-gray-900 cursor-pointer select-none">{feature}</label>
+                  <label className="text-sm text-black cursor-pointer select-none">{feature}</label>
                 </div>
               ))}
             </div>
@@ -276,7 +276,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Utilities */}
         <Collapsible open={openSections.utilities} onOpenChange={() => toggleSection('utilities')}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-black hover:text-gray-700 transition-colors">
             <span>Utilities</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${openSections.utilities ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -289,7 +289,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
                     onCheckedChange={() => handleArrayToggle('utilities', utility)}
                     className="h-4 w-4"
                   />
-                  <label className="text-sm text-gray-900 cursor-pointer select-none">{utility}</label>
+                  <label className="text-sm text-black cursor-pointer select-none">{utility}</label>
                 </div>
               ))}
             </div>
@@ -301,11 +301,13 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
           <Button
             variant="outline"
             onClick={resetFilters}
-            className="w-full bg-gray-100 text-gray-800 hover:bg-gray-200"
+            className="w-full bg-white text-black border-gray-300 hover:bg-gray-50"
           >
             Reset Filters
           </Button>
         </div>
+        {/* Extra space to prevent bounce-back */}
+        <div className="h-8"></div>
       </div>
     );
 
