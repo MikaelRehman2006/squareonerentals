@@ -156,7 +156,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
     <div className="space-y-4 sm:space-y-6">
         {/* Price Range */}
         <div className="space-y-2 sm:space-y-3">
-          <h3 className="text-sm font-medium text-black">Price Range</h3>
+          <h3 className="text-sm font-medium text-white">Price Range</h3>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Input
               type="text"
@@ -164,7 +164,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               pattern="[0-9]*"
               value={filters.priceRange.min}
               onChange={(e) => handlePriceChange('min', e.target.value)}
-              className="w-full text-sm text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-black"
+              className="w-full text-sm text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-white"
               placeholder="Min Price"
             />
             <Input
@@ -173,7 +173,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               pattern="[0-9]*"
               value={filters.priceRange.max}
               onChange={(e) => handlePriceChange('max', e.target.value)}
-              className="w-full text-sm text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-black"
+              className="w-full text-sm text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none placeholder:text-white"
               placeholder="Max Price"
             />
           </div>
@@ -181,13 +181,13 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Property Details */}
         <div className="space-y-2 sm:space-y-3">
-          <h3 className="text-sm font-medium text-black">Property Details</h3>
+          <h3 className="text-sm font-medium text-white">Property Details</h3>
           <div className="space-y-2 sm:space-y-3">
             <Select
               value={filters.bedrooms === '' ? 'any' : filters.bedrooms.toString()}
               onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? '' : parseInt(value))}
             >
-              <SelectTrigger className="w-full text-sm text-black">
+              <SelectTrigger className="w-full text-sm text-white">
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
               <SelectContent>
@@ -202,7 +202,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.bathrooms === '' ? 'any' : filters.bathrooms.toString()}
               onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? '' : parseInt(value))}
             >
-              <SelectTrigger className="w-full text-sm text-black">
+              <SelectTrigger className="w-full text-sm text-white">
                 <SelectValue placeholder="Bathrooms" />
               </SelectTrigger>
               <SelectContent>
@@ -217,7 +217,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.propertyType || 'any'}
               onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? '' : value)}
             >
-              <SelectTrigger className="w-full text-sm text-black">
+              <SelectTrigger className="w-full text-sm text-white">
                 <SelectValue placeholder="Property Type" />
               </SelectTrigger>
               <SelectContent>
@@ -232,7 +232,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Amenities */}
         <Collapsible open={openSections.amenities} onOpenChange={() => toggleSection('amenities')}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-black hover:text-gray-700 transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-white hover:text-gray-300 transition-colors">
             <span>Amenities</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${openSections.amenities ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -245,7 +245,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
                     onCheckedChange={() => handleArrayToggle('amenities', amenity)}
                     className="h-4 w-4"
                   />
-                  <label className="text-sm text-black cursor-pointer select-none">{amenity}</label>
+                  <label className="text-sm text-white cursor-pointer select-none">{amenity}</label>
                 </div>
               ))}
             </div>
@@ -254,7 +254,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Features */}
         <Collapsible open={openSections.features} onOpenChange={() => toggleSection('features')}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-black hover:text-gray-700 transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-white hover:text-gray-300 transition-colors">
             <span>Features</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${openSections.features ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -267,7 +267,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
                     onCheckedChange={() => handleArrayToggle('features', feature)}
                     className="h-4 w-4"
                   />
-                  <label className="text-sm text-black cursor-pointer select-none">{feature}</label>
+                  <label className="text-sm text-white cursor-pointer select-none">{feature}</label>
                 </div>
               ))}
             </div>
@@ -276,7 +276,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
 
         {/* Utilities */}
         <Collapsible open={openSections.utilities} onOpenChange={() => toggleSection('utilities')}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-black hover:text-gray-700 transition-colors">
+          <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium text-white hover:text-gray-300 transition-colors">
             <span>Utilities</span>
             <ChevronDown className={`h-4 w-4 transition-transform ${openSections.utilities ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
@@ -289,7 +289,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
                     onCheckedChange={() => handleArrayToggle('utilities', utility)}
                     className="h-4 w-4"
                   />
-                  <label className="text-sm text-black cursor-pointer select-none">{utility}</label>
+                  <label className="text-sm text-white cursor-pointer select-none">{utility}</label>
                 </div>
               ))}
             </div>
@@ -307,7 +307,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
           </Button>
         </div>
         {/* Extra space to prevent bounce-back */}
-        <div className="h-30"></div>
+        <div className="h-40"></div>
       </div>
     );
 
