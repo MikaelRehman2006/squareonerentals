@@ -392,6 +392,126 @@ export default function MembershipsPage() {
           ))}
         </div>
       </motion.div>
+
+      {/* Business Services Section */}
+      <motion.div
+        className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 p-8 rounded-2xl shadow-lg"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 30 }}
+        transition={{ delay: 0.6, duration: 0.6 }}
+      >
+        <div className="text-center text-white mb-8">
+          <h2 className="text-3xl font-bold mb-4">Business Services</h2>
+          <p className="text-blue-100 text-lg max-w-3xl mx-auto">
+            Are you a realtor or property manager looking for specialized services? 
+            We offer dedicated solutions to help grow your business and find qualified tenants.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Realtor Services */}
+          <motion.div
+            className="bg-white rounded-xl p-6 shadow-lg"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">For Realtors</h3>
+                <p className="text-gray-600 text-sm">Connect with qualified renters</p>
+              </div>
+            </div>
+            <ul className="space-y-2 text-gray-700 mb-6">
+              <li className="flex items-center">
+                <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Lead generation tools
+              </li>
+              <li className="flex items-center">
+                <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Featured listing placement
+              </li>
+              <li className="flex items-center">
+                <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Market analytics
+              </li>
+            </ul>
+            <a 
+              href="/realtor-services" 
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full text-center"
+            >
+              Learn More
+            </a>
+          </motion.div>
+
+          {/* Property Manager Services */}
+          <motion.div
+            className="bg-white rounded-xl p-6 shadow-lg"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">For Property Managers</h3>
+                <p className="text-gray-600 text-sm">Streamline your operations</p>
+              </div>
+            </div>
+            <ul className="space-y-2 text-gray-700 mb-6">
+              <li className="flex items-center">
+                <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Bulk management tools
+              </li>
+              <li className="flex items-center">
+                <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Tenant screening
+              </li>
+              <li className="flex items-center">
+                <svg className="w-4 h-4 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Portfolio analytics
+              </li>
+            </ul>
+            <a 
+              href="/property-manager-services" 
+              className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors w-full text-center"
+            >
+              Learn More
+            </a>
+          </motion.div>
+        </div>
+
+        <div className="text-center mt-8">
+          <p className="text-blue-100 mb-4">
+            Ready to grow your business? Contact our sales team for custom pricing and solutions.
+          </p>
+          <a 
+            href="/contact" 
+            className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
+            Contact Sales Team
+          </a>
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -26,6 +26,7 @@ const navigation = [
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
   { name: 'Memberships', href: '/memberships' },
+  { name: 'Business Services', href: '/business-services' },
 ];
 
 export default function Navbar() {
