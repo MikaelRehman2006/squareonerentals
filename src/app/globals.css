@@ -94,6 +94,27 @@ body {
   }
 }
 
+/* PC-only scrollbar styling for filters */
+@media (min-width: 640px) {
+  .filters-scroll-area::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .filters-scroll-area::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  .filters-scroll-area::-webkit-scrollbar-thumb {
+    background: #000000;
+    border-radius: 4px;
+  }
+  
+  .filters-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #333333;
+  }
+}
+
 /* Form styling stability fixes */
 .form-container {
   isolation: isolate !important;

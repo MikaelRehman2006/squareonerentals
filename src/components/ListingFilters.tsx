@@ -153,7 +153,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
   }, [resetTrigger, resetFilters]);
 
   const FilterContent = () => (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 sm:pr-2">
         {/* Price Range */}
         <div className="space-y-2 sm:space-y-3">
           <h3 className="text-sm font-medium text-black sm:text-black text-white">Price Range</h3>
@@ -187,7 +187,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.bedrooms === '' ? 'any' : filters.bedrooms.toString()}
               onValueChange={(value) => handleFilterChange('bedrooms', value === 'any' ? '' : parseInt(value))}
             >
-              <SelectTrigger className="w-full text-sm text-white sm:text-black">
+              <SelectTrigger className="w-full text-sm text-white sm:text-black sm:bg-white sm:border-gray-300">
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
               <SelectContent>
@@ -202,7 +202,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.bathrooms === '' ? 'any' : filters.bathrooms.toString()}
               onValueChange={(value) => handleFilterChange('bathrooms', value === 'any' ? '' : parseInt(value))}
             >
-              <SelectTrigger className="w-full text-sm text-white sm:text-black">
+              <SelectTrigger className="w-full text-sm text-white sm:text-black sm:bg-white sm:border-gray-300">
                 <SelectValue placeholder="Bathrooms" />
               </SelectTrigger>
               <SelectContent>
@@ -217,7 +217,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
               value={filters.propertyType || 'any'}
               onValueChange={(value) => handleFilterChange('propertyType', value === 'any' ? '' : value)}
             >
-              <SelectTrigger className="w-full text-sm text-white sm:text-black">
+              <SelectTrigger className="w-full text-sm text-white sm:text-black sm:bg-white sm:border-gray-300">
                 <SelectValue placeholder="Property Type" />
               </SelectTrigger>
               <SelectContent>

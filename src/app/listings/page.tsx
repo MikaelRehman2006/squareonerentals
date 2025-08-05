@@ -446,7 +446,7 @@ export default function ListingsPage() {
             {/* Filters sidebar - desktop only */}
             <div className={`md:w-64 flex-shrink-0 hidden md:block ${showFilters ? 'md:block' : 'md:hidden'}`}>
               <div className="sticky top-4">
-                <ScrollArea className="h-[calc(100vh-8rem)]">
+                <ScrollArea className="h-[calc(100vh-8rem)] filters-scroll-area">
                   <ListingFilters onFilterChange={handleFilterChange} resetTrigger={resetTrigger} />
                 </ScrollArea>
               </div>
