@@ -75,10 +75,28 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchPreferences = async () => {
       try {
+        console.log('Fetching user preferences...');
         const response = await fetch('/api/user/preferences');
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
-          setUserPreferences(data);
+          console.log('Fetched preferences data:', data);
+          
+          // The API returns { preferences: { userTypes, onboardingCompleted, etc } }
+          if (data.preferences) {
+            setUserPreferences({
+              userTypes: data.preferences.userTypes || [],
+              onboardingCompleted: data.preferences.onboardingCompleted || false,
+              preferences: data.preferences
+            });
+            console.log('Set user preferences:', {
+              userTypes: data.preferences.userTypes || [],
+              onboardingCompleted: data.preferences.onboardingCompleted || false
+            });
+          }
+        } else {
+          console.error('Failed to fetch preferences:', response.status);
         }
       } catch (error) {
         console.error('Error fetching preferences:', error);
@@ -118,6 +136,16 @@ export default function ProfilePage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleEditProfile = () => {
+    console.log('Edit Profile button clicked');
+    setIsEditing(!isEditing);
+  };
+
+  const handleViewDashboard = () => {
+    console.log('View Dashboard button clicked');
+    router.push('/dashboard');
   };
 
   if (!session) {
@@ -223,10 +251,7 @@ export default function ProfilePage() {
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     <button
-                      onClick={() => {
-                        console.log('Edit Profile button clicked');
-                        setIsEditing(!isEditing);
-                      }}
+                      onClick={handleEditProfile}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                       type="button"
                     >
@@ -234,15 +259,14 @@ export default function ProfilePage() {
                       {isEditing ? 'Cancel Edit' : 'Edit Profile'}
                     </button>
                     
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => router.push('/dashboard')}
-                      className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2"
+                    <button
+                      onClick={handleViewDashboard}
+                      className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                      type="button"
                     >
                       <User size={18} />
                       View Dashboard
-                    </motion.button>
+                    </button>
                   </div>
                 </CardContent>
               </div>
@@ -415,7 +439,7 @@ export default function ProfilePage() {
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
+                          transition={{ delay: 0.5 }}
                           className="flex gap-3"
                         >
                           <motion.button
