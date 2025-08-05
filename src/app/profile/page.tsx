@@ -222,15 +222,17 @@ export default function ProfilePage() {
 
                   {/* Action Buttons */}
                   <div className="space-y-3">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setIsEditing(!isEditing)}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2"
+                    <button
+                      onClick={() => {
+                        console.log('Edit Profile button clicked');
+                        setIsEditing(!isEditing);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                      type="button"
                     >
                       <Edit3 size={18} />
                       {isEditing ? 'Cancel Edit' : 'Edit Profile'}
-                    </motion.button>
+                    </button>
                     
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -302,18 +304,60 @@ export default function ProfilePage() {
                               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                               <Input 
                                 value={email} 
-                                readOnly 
-                                className="w-full pl-10 bg-gray-50 cursor-not-allowed border-gray-300 rounded-xl text-black" 
+                                onChange={e => setEmail(e.target.value)}
+                                className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-black"
+                                placeholder="Enter your email address"
                               />
                             </div>
                           </motion.div>
                         </div>
 
-                        {/* Password Change Section */}
+                        {/* Email Change Section */}
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
+                          className="space-y-4"
+                        >
+                          <h3 className="text-lg font-medium text-gray-900">Change Email Address</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">Current Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type={showPassword ? "text" : "password"}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter current password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">New Email Address</label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type="email"
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter new email address"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* Password Change Section */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
                           className="space-y-4"
                         >
                           <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
@@ -353,7 +397,7 @@ export default function ProfilePage() {
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
+                          transition={{ delay: 0.4 }}
                           className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100"
                         >
                           <div className="flex items-start gap-3">
@@ -553,7 +597,7 @@ export default function ProfilePage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => router.push('/onboarding')}
+                        onClick={() => window.dispatchEvent(new CustomEvent('openSurvey'))}
                         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2"
                       >
                         <Edit3 size={18} />
@@ -575,7 +619,7 @@ export default function ProfilePage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => router.push('/onboarding')}
+                        onClick={() => window.dispatchEvent(new CustomEvent('openSurvey'))}
                         className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
                       >
                         <ClipboardList size={18} />
