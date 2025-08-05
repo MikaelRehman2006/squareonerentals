@@ -498,6 +498,46 @@ export default function PostSignupSurvey() { // Define the main component functi
     };
   }, []); // Empty dependency array
 
+  // Load existing user preferences when survey opens
+  useEffect(() => {
+    const loadExistingPreferences = async () => {
+      if (session?.user?.email && isOpen) {
+        try {
+          console.log('Loading existing preferences for survey...');
+          const response = await fetch('/api/user/preferences');
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Loaded existing preferences:', data);
+            
+            if (data.preferences) {
+              // Load existing user types
+              if (data.preferences.userTypes && data.preferences.userTypes.length > 0) {
+                setSelectedTypes(data.preferences.userTypes);
+                console.log('Set existing user types:', data.preferences.userTypes);
+              }
+              
+              // Load existing form data for each role
+              if (data.preferences.preferences) {
+                const existingFormData = { ...formData };
+                Object.keys(data.preferences.preferences).forEach(role => {
+                  if (data.preferences.preferences[role]) {
+                    existingFormData[role] = data.preferences.preferences[role];
+                  }
+                });
+                setFormData(existingFormData);
+                console.log('Set existing form data:', existingFormData);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading existing preferences:', error);
+        }
+      }
+    };
+
+    loadExistingPreferences();
+  }, [session, isOpen]);
+
   // Don't render if no session
   if (!session) return null; // Return null if no session
 
@@ -669,29 +709,30 @@ export default function PostSignupSurvey() { // Define the main component functi
                         className="text-blue-600 hover:text-blue-800 underline"
                         onClick={async (e) => {
                           e.preventDefault();
+                          // Mark onboarding as completed in both localStorage and database
+                          localStorage.setItem(`onboarding_completed_${session.user.email}`, 'true');
+                          
+                          // Dispatch survey completion event
+                          window.dispatchEvent(new CustomEvent('surveyCompleted'));
+                          
                           // Close the survey modal
                           setIsOpen(false);
                           
-                          // Mark onboarding as completed in both localStorage and database
-                          if (session?.user?.email) {
-                            localStorage.setItem(`onboarding_completed_${session.user.email}`, 'true');
-                            
-                            // Update user preferences in database to mark onboarding as completed
-                            try {
-                              await fetch('/api/user/preferences', {
-                                method: 'PUT',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                  userTypes: [],
-                                  preferences: {},
-                                  onboardingCompleted: true
-                                }),
-                              });
-                            } catch (error) {
-                              console.error('Error updating onboarding status:', error);
-                            }
+                          // Update user preferences in database to mark onboarding as completed
+                          try {
+                            await fetch('/api/user/preferences', {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                userTypes: [],
+                                preferences: {},
+                                onboardingCompleted: true
+                              }),
+                            });
+                          } catch (error) {
+                            console.error('Error updating onboarding status:', error);
                           }
                           
                           // Open terms in new tab

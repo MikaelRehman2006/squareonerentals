@@ -110,6 +110,43 @@ export default function ProfilePage() {
     }
   }, [session]);
 
+  // Listen for survey completion events
+  useEffect(() => {
+    const handleSurveyCompleted = () => {
+      console.log('Survey completed, refreshing preferences...');
+      // Refresh preferences after survey completion
+      const refreshPreferences = async () => {
+        try {
+          const response = await fetch('/api/user/preferences');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.preferences) {
+              setUserPreferences({
+                userTypes: data.preferences.userTypes || [],
+                onboardingCompleted: data.preferences.onboardingCompleted || false,
+                preferences: data.preferences
+              });
+              console.log('Refreshed preferences after survey completion:', {
+                userTypes: data.preferences.userTypes || [],
+                onboardingCompleted: data.preferences.onboardingCompleted || false
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error refreshing preferences:', error);
+        }
+      };
+      refreshPreferences();
+    };
+
+    // Listen for survey completion event
+    window.addEventListener('surveyCompleted', handleSurveyCompleted);
+
+    return () => {
+      window.removeEventListener('surveyCompleted', handleSurveyCompleted);
+    };
+  }, []);
+
   // Save handler (keeping existing backend logic)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,6 +183,34 @@ export default function ProfilePage() {
   const handleViewDashboard = () => {
     console.log('View Dashboard button clicked');
     router.push('/dashboard');
+  };
+
+  const refreshPreferences = async () => {
+    console.log('Manually refreshing preferences...');
+    setLoadingPreferences(true);
+    try {
+      const response = await fetch('/api/user/preferences');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Refreshed preferences data:', data);
+        
+        if (data.preferences) {
+          setUserPreferences({
+            userTypes: data.preferences.userTypes || [],
+            onboardingCompleted: data.preferences.onboardingCompleted || false,
+            preferences: data.preferences
+          });
+          toast.success('Preferences refreshed successfully!');
+        }
+      } else {
+        toast.error('Failed to refresh preferences');
+      }
+    } catch (error) {
+      console.error('Error refreshing preferences:', error);
+      toast.error('Error refreshing preferences');
+    } finally {
+      setLoadingPreferences(false);
+    }
   };
 
   if (!session) {
@@ -576,6 +641,13 @@ export default function ProfilePage() {
                     <ClipboardList size={20} />
                     Onboarding Survey Status
                   </CardTitle>
+                  <button
+                    onClick={refreshPreferences}
+                    disabled={loadingPreferences}
+                    className="text-sm text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                  >
+                    {loadingPreferences ? 'Refreshing...' : 'Refresh'}
+                  </button>
                 </CardHeader>
                 
                 <CardContent className="p-6">
