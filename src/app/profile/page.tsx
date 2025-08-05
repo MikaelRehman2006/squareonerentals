@@ -318,14 +318,6 @@ export default function ProfilePage() {
                   {/* Action Buttons */}
                   <div className="space-y-3">
                     <button
-                      onClick={() => console.log('Test button clicked!')}
-                      className="w-full bg-red-500 text-white py-2 px-4 rounded-xl font-medium hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer relative z-10 pointer-events-auto"
-                      type="button"
-                    >
-                      🧪 Test Button (Click Me!)
-                    </button>
-
-                    <button
                       onClick={handleEditProfile}
                       onMouseEnter={() => console.log('Edit Profile button hovered')}
                       onMouseDown={() => console.log('Edit Profile button mouse down')}
