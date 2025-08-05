@@ -307,7 +307,7 @@ export function ListingFilters({ onFilterChange, resetTrigger = 0 }: ListingFilt
           </Button>
         </div>
         {/* Extra space to prevent bounce-back */}
-        <div className="h-16"></div>
+        <div className="h-30"></div>
       </div>
     );
 
