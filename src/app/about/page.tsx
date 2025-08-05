@@ -333,7 +333,7 @@ export default function AboutPage() {
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-300 shadow-md group"
 >
-              <Link href="/contact" className="flex items-center gap-2">
+              <Link href="/feedback" className="flex items-center gap-2">
                 Submit Your Experience
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
