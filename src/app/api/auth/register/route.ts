@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import { sendNotificationEmail } from '@/utils/sendgrid';
+import { sendWelcomeEmail } from '@/utils/resend';
 import { createNotification } from '@/lib/notification';
 import { Notification } from '@/models/Notification';
 
@@ -151,28 +151,19 @@ export async function POST(request: Request) {
     // Send welcome email
     try {
       console.log('Attempting to send welcome email to:', email);
-      console.log('EMAIL_API_KEY configured:', !!process.env.EMAIL_API_KEY);
-      console.log('EMAIL_API_KEY length:', process.env.EMAIL_API_KEY ? process.env.EMAIL_API_KEY.length : 0);
+      console.log('RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY);
+      console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0);
       
-      const emailResult = await sendNotificationEmail({
+      const emailResult = await sendWelcomeEmail({
         userEmail: email,
-        userName: name,
-        subject: 'Welcome to Square One Rentals',
-        message: `Welcome to Square One Rentals! We're excited to have you on board.
-
-To ensure you receive all our important notifications, please mark this email as "Not Spam" and add squareone.rental@gmail.com to your contacts.
-
-You'll see a 🔴 notification badge beside your profile icon when you have unread notifications. Click on it to view your notifications.
-
-You can now start browsing listings or create your own listing by logging into your account.`,
-        notificationType: 'WELCOME'
+        userName: name
       });
       
       console.log('Welcome email send result:', emailResult);
       console.log('Welcome email details (success):', {
         to: email,
-        from: 'squareone.rental@gmail.com',
-        subject: 'Welcome to Square One Rentals'
+        from: 'Square One Rentals <onboarding@resend.dev>',
+        subject: 'Welcome to Square One Rentals! 🎉'
       });
     } catch (emailError) {
       // Log error but don't fail registration
