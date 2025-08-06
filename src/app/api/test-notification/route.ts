@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { sendNotificationEmail } from '@/utils/sendgrid';
 import { createNotification } from '@/lib/notification';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import { Notification } from '@/models/Notification';
 
 // Specify runtime configuration to fix deployment errors
 export const dynamic = 'force-dynamic';
@@ -12,7 +10,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const email = url.searchParams.get('email');
-    const notificationType = (url.searchParams.get('type') || 'WELCOME') as 'WELCOME' | 'SYSTEM';
+    const notificationType = (url.searchParams.get('type') || 'SYSTEM') as 'SYSTEM' | 'NEWSLETTER' | 'MARKETING' | 'PAYMENT' | 'WELCOME';
     
     // If no email is provided, return an error
     if (!email) {
@@ -27,7 +25,7 @@ export async function GET(request: Request) {
       environment: {
         nodeEnv: process.env.NODE_ENV,
         vercelEnv: process.env.VERCEL_ENV,
-        hasEmailApiKey: !!process.env.EMAIL_API_KEY,
+        hasResendApiKey: !!process.env.RESEND_API_KEY,
         databaseConfigured: !!process.env.MONGODB_URI,
       },
       email: email,
@@ -74,62 +72,54 @@ export async function GET(request: Request) {
       return NextResponse.json(diagnosticInfo, { status: 500 });
     }
     
-    // Step 3: Create in-app notification
+    // Step 3: Create notification (this will automatically send email)
     let notification;
     try {
-      notification = await Notification.create({
+      const testMessages = {
+        SYSTEM: 'This is a test system alert to verify the notification and email system is working correctly.',
+        NEWSLETTER: 'This is a test newsletter to verify the notification and email system is working correctly.',
+        MARKETING: 'This is a test special offer to verify the notification and email system is working correctly.',
+        PAYMENT: 'This is a test payment notification to verify the notification and email system is working correctly.',
+        WELCOME: 'This is a test welcome message to verify the notification and email system is working correctly.',
+      };
+
+      notification = await createNotification({
         userId: user._id.toString(),
-        message: 'This is a test notification to verify the notification system is working correctly.',
+        message: testMessages[notificationType] || testMessages.SYSTEM,
         type: notificationType,
-        read: false,
+        sendEmail: true, // This will trigger email sending
       });
       
       diagnosticInfo.steps.push({ 
-        step: 'create_notification', 
+        step: 'create_notification_with_email', 
         status: 'success',
-        notificationId: notification._id.toString() 
+        notificationId: notification._id.toString(),
+        message: 'Notification created and email sent automatically'
       });
     } catch (notifError) {
       diagnosticInfo.steps.push({ 
-        step: 'create_notification', 
+        step: 'create_notification_with_email', 
         status: 'error',
-        error: notifError instanceof Error ? notifError.message : 'Unknown error' 
-      });
-      // Continue to next step even if this fails
-    }
-    
-    // Step 4: Send email notification
-    try {
-      const emailResult = await sendNotificationEmail({
-        userEmail: email,
-        userName: user.name || 'User',
-        subject: 'Test Notification',
-        message: 'This is a test notification to verify the email notification system is working correctly.',
-        notificationType: notificationType,
-      });
-      
-      diagnosticInfo.steps.push({ 
-        step: 'send_email', 
-        status: emailResult ? 'success' : 'error' 
-      });
-    } catch (emailError) {
-      diagnosticInfo.steps.push({ 
-        step: 'send_email', 
-        status: 'error',
-        error: emailError instanceof Error ? emailError.message : 'Unknown error',
-        stack: emailError instanceof Error ? emailError.stack : 'No stack trace'
+        error: notifError instanceof Error ? notifError.message : 'Unknown error',
+        stack: notifError instanceof Error ? notifError.stack : 'No stack trace'
       });
     }
     
-    // Check if both steps were successful
+    // Check if the step was successful
     const allSuccess = diagnosticInfo.steps.every((step: {status: string}) => step.status === 'success');
     
     return NextResponse.json({
       ...diagnosticInfo,
       success: allSuccess,
       message: allSuccess 
-        ? 'Both notification and email were sent successfully!' 
-        : 'There were issues with one or more steps. Check the details.'
+        ? 'Notification created and email sent successfully!' 
+        : 'There were issues with one or more steps. Check the details.',
+      notification: notification ? {
+        id: notification._id.toString(),
+        type: notification.type,
+        message: notification.message,
+        createdAt: notification.createdAt
+      } : null
     }, { status: allSuccess ? 200 : 500 });
     
   } catch (error: any) {

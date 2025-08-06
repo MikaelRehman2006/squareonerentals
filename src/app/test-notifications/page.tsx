@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 export default function TestNotificationsPage() {
   const { data: session } = useSession();
   const [email, setEmail] = useState('');
-  const [notificationType, setNotificationType] = useState('WELCOME');
+  const [notificationType, setNotificationType] = useState('SYSTEM');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [emailTestResult, setEmailTestResult] = useState<any>(null);
@@ -50,7 +50,15 @@ export default function TestNotificationsPage() {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Notification System Test Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">Email Notification System Test Dashboard</h1>
+      
+      <div className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h2 className="text-xl font-semibold mb-4 text-blue-800">📧 New Email System</h2>
+        <p className="text-blue-700 mb-4">
+          The notification system now automatically sends emails when notifications are created. 
+          This test will create a notification and send an email simultaneously.
+        </p>
+      </div>
       
       <div className="mb-8 p-4 bg-gray-100 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Test Configuration</h2>
@@ -73,12 +81,11 @@ export default function TestNotificationsPage() {
             onChange={(e) => setNotificationType(e.target.value)}
             className="border p-2 rounded w-full max-w-md"
           >
-            <option value="WELCOME">Welcome</option>
-            <option value="SYSTEM">System</option>
-            <option value="PAYMENT">Payment</option>
-            <option value="LISTING_UPDATE">Listing Update</option>
-            <option value="FAVORITE">Favorite</option>
-            <option value="MESSAGE">Message</option>
+            <option value="SYSTEM">System Alert</option>
+            <option value="NEWSLETTER">Newsletter</option>
+            <option value="MARKETING">Special Offer</option>
+            <option value="PAYMENT">Payment Notification</option>
+            <option value="WELCOME">Welcome Message</option>
           </select>
         </div>
         
@@ -86,15 +93,15 @@ export default function TestNotificationsPage() {
           <button 
             onClick={runNotificationTest}
             disabled={loading || !email}
-            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 hover:bg-blue-600"
           >
-            {loading ? 'Running...' : 'Test Notification'}
+            {loading ? 'Running...' : 'Test Notification + Email'}
           </button>
           
           <button 
             onClick={runEmailConfigTest}
             disabled={loading || !email}
-            className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+            className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-400 hover:bg-green-600"
           >
             {loading ? 'Running...' : 'Test Email Config'}
           </button>
@@ -103,9 +110,21 @@ export default function TestNotificationsPage() {
       
       {notificationTestResult && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Notification Test Results</h2>
-          <div className={`p-4 rounded-lg ${notificationTestResult.success ? 'bg-green-100' : 'bg-red-100'}`}>
+          <h2 className="text-xl font-semibold mb-4">Notification + Email Test Results</h2>
+          <div className={`p-4 rounded-lg ${notificationTestResult.success ? 'bg-green-100 border border-green-200' : 'bg-red-100 border border-red-200'}`}>
             <p className="font-bold mb-2">{notificationTestResult.message || 'Test completed'}</p>
+            
+            {notificationTestResult.notification && (
+              <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+                <h3 className="font-semibold mb-2 text-blue-800">📝 Created Notification:</h3>
+                <div className="text-sm">
+                  <p><strong>ID:</strong> {notificationTestResult.notification.id}</p>
+                  <p><strong>Type:</strong> {notificationTestResult.notification.type}</p>
+                  <p><strong>Message:</strong> {notificationTestResult.notification.message}</p>
+                  <p><strong>Created:</strong> {new Date(notificationTestResult.notification.createdAt).toLocaleString()}</p>
+                </div>
+              </div>
+            )}
             
             <div className="mt-4">
               <h3 className="font-semibold mb-2">Environment:</h3>
@@ -123,6 +142,7 @@ export default function TestNotificationsPage() {
                     {step.error && <p className="text-red-600">Error: {step.error}</p>}
                     {step.userId && <p>User ID: {step.userId}</p>}
                     {step.notificationId && <p>Notification ID: {step.notificationId}</p>}
+                    {step.message && <p className="text-green-600">{step.message}</p>}
                   </li>
                 ))}
               </ul>

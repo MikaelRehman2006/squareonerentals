@@ -1,11 +1,11 @@
 import { Notification, INotification } from '@/models/Notification';
 import { connectDB } from './mongodb';
 import mongoose from 'mongoose';
-import { sendNotificationEmail } from '@/utils/sendgrid';
+import { sendNotificationEmail } from '@/utils/resend';
 import { User } from '@/models/User';
 
 /**
- * Create a notification for a user
+ * Create a notification for a user and optionally send an email
  */
 export async function createNotification({
   userId,
@@ -13,7 +13,8 @@ export async function createNotification({
   type,
   listingId,
   relatedUserId,
-}: Pick<INotification, 'userId' | 'message' | 'type' | 'listingId' | 'relatedUserId'>) {
+  sendEmail = true,
+}: Pick<INotification, 'userId' | 'message' | 'type' | 'listingId' | 'relatedUserId'> & { sendEmail?: boolean }) {
   try {
     console.log(`Creating ${type} notification for user ${userId}`);
     
@@ -49,6 +50,21 @@ export async function createNotification({
       type: notification.type,
       message: notification.message
     });
+
+    // Send email notification if requested
+    if (sendEmail) {
+      try {
+        await sendNotificationEmailForUser(userId, {
+          message,
+          type,
+          listingId,
+          relatedUserId,
+        });
+      } catch (emailError) {
+        console.error('Failed to send notification email:', emailError);
+        // Don't throw error here - notification was created successfully
+      }
+    }
     
     return notification;
   } catch (error) {
@@ -63,6 +79,118 @@ export async function createNotification({
     // Re-throw the error to be handled by the caller
     throw error;
   }
+}
+
+/**
+ * Send notification email for a user
+ */
+async function sendNotificationEmailForUser(
+  userId: string, 
+  notificationData: {
+    message: string;
+    type: string;
+    listingId?: string;
+    relatedUserId?: string;
+  }
+) {
+  try {
+    // Get user information
+    const user = await User.findById(userId);
+    if (!user) {
+      console.error(`User not found for notification email: ${userId}`);
+      return;
+    }
+
+    // Check if user has email preferences (for now, default to true)
+    // In the future, this could be stored in user preferences
+    const shouldSendEmail = true; // TODO: Check user email preferences
+    
+    if (!shouldSendEmail) {
+      console.log(`Email notifications disabled for user ${userId}`);
+      return;
+    }
+
+    // Generate subject line based on notification type
+    const subject = generateEmailSubject(notificationData.type, notificationData.message);
+    
+    // Send email using Resend
+    const emailResult = await sendNotificationEmail({
+      userEmail: user.email,
+      userName: user.name,
+      subject,
+      message: notificationData.message,
+      notificationType: notificationData.type as any,
+      actionUrl: generateActionUrl(notificationData.type, notificationData.listingId),
+      actionText: generateActionText(notificationData.type),
+    });
+
+    if (emailResult) {
+      console.log(`Notification email sent successfully to ${user.email}`);
+    } else {
+      console.error(`Failed to send notification email to ${user.email}`);
+    }
+  } catch (error) {
+    console.error('Error sending notification email:', error);
+  }
+}
+
+/**
+ * Generate email subject based on notification type
+ */
+function generateEmailSubject(type: string, message: string): string {
+  const typeSubjects = {
+    SYSTEM: 'System Alert - Square One Rentals',
+    NEWSLETTER: 'Newsletter - Square One Rentals',
+    MARKETING: 'Special Offer - Square One Rentals',
+    PAYMENT: 'Payment Notification - Square One Rentals',
+    LISTING_UPDATE: 'Listing Update - Square One Rentals',
+    FAVORITE: 'Favorite Listing Update - Square One Rentals',
+    MESSAGE: 'New Message - Square One Rentals',
+    WELCOME: 'Welcome to Square One Rentals',
+  };
+
+  return typeSubjects[type as keyof typeof typeSubjects] || 'Notification - Square One Rentals';
+}
+
+/**
+ * Generate action URL based on notification type
+ */
+function generateActionUrl(type: string, listingId?: string): string {
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://squareonerentals.com';
+  
+  switch (type) {
+    case 'LISTING_UPDATE':
+    case 'FAVORITE':
+      return listingId ? `${baseUrl}/listings/${listingId}` : `${baseUrl}/listings`;
+    case 'PAYMENT':
+      return `${baseUrl}/dashboard/billing`;
+    case 'MESSAGE':
+      return `${baseUrl}/notifications`;
+    case 'SYSTEM':
+    case 'NEWSLETTER':
+    case 'MARKETING':
+      return `${baseUrl}/dashboard`;
+    default:
+      return baseUrl;
+  }
+}
+
+/**
+ * Generate action text based on notification type
+ */
+function generateActionText(type: string): string {
+  const actionTexts = {
+    SYSTEM: 'View Details',
+    NEWSLETTER: 'Read More',
+    MARKETING: 'View Offer',
+    PAYMENT: 'View Billing',
+    LISTING_UPDATE: 'View Listing',
+    FAVORITE: 'View Listing',
+    MESSAGE: 'View Message',
+    WELCOME: 'Get Started',
+  };
+
+  return actionTexts[type as keyof typeof actionTexts] || 'View Details';
 }
 
 /**
