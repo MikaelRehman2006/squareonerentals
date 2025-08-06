@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
-      console.log('Unauthorized - No user session');
+      console.log('❌ Unauthorized - No user session');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Check admin role
     const adminRole = getAdminRole(session.user.email);
     if (!adminRole) {
-      console.log('Unauthorized - Not an admin');
+      console.log('❌ Unauthorized - Not an admin');
       return NextResponse.json(
         { error: 'Unauthorized - Admin access required' },
         { status: 403 }
@@ -45,10 +45,16 @@ export async function POST(request: NextRequest) {
       scheduledFor 
     } = body;
 
-    console.log('Received notification request:', { type, title, sendToAll, specificUserIds });
+    console.log('📨 Received notification request:', { 
+      type, 
+      title, 
+      sendToAll, 
+      specificUserIds: specificUserIds?.length || 0,
+      messageLength: message?.length || 0
+    });
 
     if (!type || !title || !message) {
-      console.log('Missing required fields');
+      console.log('❌ Missing required fields');
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -57,20 +63,22 @@ export async function POST(request: NextRequest) {
 
     // Connect to database
     await connectDB();
+    console.log('✅ Database connected');
 
     // Get target user IDs if needed
     let targetUserIds: string[] = [];
     
     if (sendToAll) {
       // Get all users from database
-      const allUsers = await User.find({}).select('_id');
+      console.log('🔍 Fetching all users from database...');
+      const allUsers = await User.find({}).select('_id email name');
       targetUserIds = allUsers.map(user => user._id.toString());
-      console.log(`Sending to ALL users (${targetUserIds.length} users)`);
+      console.log(`✅ Found ${targetUserIds.length} users in database:`, allUsers.map(u => ({ id: u._id.toString(), email: u.email, name: u.name })));
     } else if (specificUserIds && specificUserIds.length > 0) {
       targetUserIds = specificUserIds;
-      console.log(`Sending to ${targetUserIds.length} specific users`);
+      console.log(`📋 Using ${targetUserIds.length} specific users`);
     } else {
-      console.log('No recipients specified');
+      console.log('❌ No recipients specified');
       return NextResponse.json(
         { error: 'No recipients specified' },
         { status: 400 }
@@ -80,9 +88,7 @@ export async function POST(request: NextRequest) {
     // Handle scheduled notifications
     if (scheduledFor) {
       const scheduledDate = new Date(scheduledFor);
-      // In a real app, you would save this to a scheduled jobs collection
-      // and use a cron job or similar to process them
-      console.log(`Notification scheduled for ${scheduledDate}`);
+      console.log(`⏰ Notification scheduled for ${scheduledDate}`);
     }
 
     // Use the appropriate notification function based on type
@@ -90,34 +96,43 @@ export async function POST(request: NextRequest) {
     let recipientCount = 0;
 
     try {
+      console.log(`🚀 Processing ${type} notification for ${targetUserIds.length} users...`);
+      
       switch (type) {
         case 'system':
+          console.log('📢 Creating system notifications...');
           results = await createSystemNotification(
             `${title}: ${message}`,
             targetUserIds
           );
           recipientCount = results.length;
+          console.log(`✅ Created ${recipientCount} system notifications`);
           break;
           
         case 'newsletter':
+          console.log('📰 Creating newsletter notifications...');
           results = await createNewsletterNotification(
             title,
             message,
             targetUserIds
           );
           recipientCount = results.length;
+          console.log(`✅ Created ${recipientCount} newsletter notifications`);
           break;
           
         case 'marketing':
+          console.log('🎁 Creating marketing notifications...');
           results = await createMarketingNotification(
             title,
             message,
             targetUserIds
           );
           recipientCount = results.length;
+          console.log(`✅ Created ${recipientCount} marketing notifications`);
           break;
           
         default:
+          console.log(`📝 Creating ${type} notifications manually...`);
           // For other types, create individual notifications manually
           for (const userId of targetUserIds) {
             try {
@@ -129,24 +144,25 @@ export async function POST(request: NextRequest) {
               });
               results.push(notification);
             } catch (error) {
-              console.error(`Failed to create notification for user ${userId}:`, error);
+              console.error(`❌ Failed to create notification for user ${userId}:`, error);
             }
           }
           recipientCount = results.length;
+          console.log(`✅ Created ${recipientCount} ${type} notifications`);
       }
 
-      console.log(`Successfully created ${recipientCount} notifications`);
+      console.log(`🎉 Successfully created ${recipientCount} notifications`);
 
       return NextResponse.json({
         success: true,
         recipientCount
       });
     } catch (error) {
-      console.error('Error creating notifications:', error);
+      console.error('❌ Error creating notifications:', error);
       throw error;
     }
   } catch (error) {
-    console.error('Error sending admin notification:', error);
+    console.error('❌ Error sending admin notification:', error);
     return NextResponse.json(
       { error: 'Failed to send notification' },
       { status: 500 }

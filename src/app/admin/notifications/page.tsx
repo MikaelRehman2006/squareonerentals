@@ -96,6 +96,8 @@ export default function AdminNotificationsPage() {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [notificationHistory, setNotificationHistory] = useState(sampleNotificationHistory);
   const [confirmSendDialog, setConfirmSendDialog] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   // Form state
   const [form, setForm] = useState<NotificationForm>({
@@ -107,10 +109,36 @@ export default function AdminNotificationsPage() {
     scheduledFor: null
   });
 
+  // Fetch users from database
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoadingUsers(true);
+      try {
+        const response = await fetch('/api/admin/users');
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data.users || []);
+        } else {
+          console.error('Failed to fetch users');
+          // Fallback to sample users if API fails
+          setUsers(sampleUsers);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        // Fallback to sample users if API fails
+        setUsers(sampleUsers);
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   // Filter users based on search term
-  const filteredUsers = sampleUsers.filter(user => 
-    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || 
-    user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+  const filteredUsers = users.filter(user => 
+    user.name?.toLowerCase().includes(userSearchTerm.toLowerCase()) || 
+    user.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
   );
 
   // Check if user has admin permissions
@@ -149,7 +177,7 @@ export default function AdminNotificationsPage() {
   // Handle select all users
   const handleSelectAllUsers = (checked: boolean) => {
     if (checked) {
-      setSelectedUsers(filteredUsers.map(user => user.id));
+      setSelectedUsers(filteredUsers.map(user => user._id || user.id));
     } else {
       setSelectedUsers([]);
     }
@@ -627,37 +655,44 @@ export default function AdminNotificationsPage() {
             <div className="flex items-center mb-2">
               <Checkbox 
                 id="select-all" 
-                checked={filteredUsers.length > 0 && filteredUsers.every(user => selectedUsers.includes(user.id))}
+                checked={filteredUsers.length > 0 && filteredUsers.every(user => selectedUsers.includes(user._id || user.id))}
                 onCheckedChange={handleSelectAllUsers}
               />
               <Label htmlFor="select-all" className="ml-2">Select all</Label>
             </div>
             
             <ScrollArea className="h-72">
-              <div className="space-y-2">
-                {filteredUsers.map(user => (
-                  <div key={user.id} className="flex items-center p-2 hover:bg-gray-50 rounded-md">
-                    <Checkbox 
-                      id={`user-${user.id}`} 
-                      checked={selectedUsers.includes(user.id)}
-                      onCheckedChange={() => toggleUserSelection(user.id)}
-                    />
-                    <Label htmlFor={`user-${user.id}`} className="ml-2 flex-1 cursor-pointer">
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
-                    </Label>
-                    <div className="text-xs bg-gray-100 px-2 py-1 rounded">
-                      {user.role}
+              {loadingUsers ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin text-gray-500" />
+                  <span className="ml-2 text-gray-500">Loading users...</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredUsers.map(user => (
+                    <div key={user._id || user.id} className="flex items-center p-2 hover:bg-gray-50 rounded-md">
+                      <Checkbox 
+                        id={`user-${user._id || user.id}`} 
+                        checked={selectedUsers.includes(user._id || user.id)}
+                        onCheckedChange={() => toggleUserSelection(user._id || user.id)}
+                      />
+                      <Label htmlFor={`user-${user._id || user.id}`} className="ml-2 flex-1 cursor-pointer">
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </Label>
+                      <div className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        {user.role || 'user'}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                
-                {filteredUsers.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No users found matching your search
-                  </div>
-                )}
-              </div>
+                  ))}
+                  
+                  {filteredUsers.length === 0 && !loadingUsers && (
+                    <div className="text-center py-8 text-gray-500">
+                      {userSearchTerm ? 'No users found matching your search' : 'No users found'}
+                    </div>
+                  )}
+                </div>
+              )}
             </ScrollArea>
           </div>
           
