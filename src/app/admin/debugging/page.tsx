@@ -5,13 +5,19 @@ import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bug, Mail, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Bug, Mail, CheckCircle, XCircle, Loader2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DebuggingPage() {
   const { data: session } = useSession();
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isTestingVerification, setIsTestingVerification] = useState(false);
   const [emailResult, setEmailResult] = useState<{
+    success: boolean;
+    message: string;
+    timestamp: string;
+  } | null>(null);
+  const [verificationResult, setVerificationResult] = useState<{
     success: boolean;
     message: string;
     timestamp: string;
@@ -68,6 +74,59 @@ export default function DebuggingPage() {
       toast.error('Network error occurred');
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const handleTestVerificationEmail = async () => {
+    if (!session?.user?.email) {
+      toast.error('No user email found in session');
+      return;
+    }
+
+    setIsTestingVerification(true);
+    setVerificationResult(null);
+
+    try {
+      console.log('Testing verification email to:', session.user.email);
+      
+      const res = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: session.user.email
+        }),
+      });
+
+      const data = await res.json();
+      console.log('Verification email response:', data);
+
+      if (res.ok) {
+        setVerificationResult({
+          success: true,
+          message: 'Verification email sent successfully!',
+          timestamp: new Date().toLocaleString()
+        });
+        toast.success('Verification email sent successfully!');
+      } else {
+        setVerificationResult({
+          success: false,
+          message: data.error || 'Failed to send verification email',
+          timestamp: new Date().toLocaleString()
+        });
+        toast.error(data.error || 'Failed to send verification email');
+      }
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      setVerificationResult({
+        success: false,
+        message: 'Network error occurred',
+        timestamp: new Date().toLocaleString()
+      });
+      toast.error('Network error occurred');
+    } finally {
+      setIsTestingVerification(false);
     }
   };
 
@@ -132,6 +191,60 @@ export default function DebuggingPage() {
                   </div>
                   <div className="text-sm">{emailResult.message}</div>
                   <div className="text-xs opacity-75">{emailResult.timestamp}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Shield className="h-5 w-5" />
+            Verification Email Test
+          </CardTitle>
+          <CardDescription>
+            Test the verification email API route specifically to isolate the issue.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button
+            onClick={handleTestVerificationEmail}
+            disabled={isTestingVerification || !session?.user?.email}
+            className="flex items-center space-x-2"
+          >
+            {isTestingVerification ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Testing...</span>
+              </>
+            ) : (
+              <>
+                <Shield className="h-4 w-4" />
+                <span>Test Verification Email</span>
+              </>
+            )}
+          </Button>
+
+          {verificationResult && (
+            <div className={`p-4 rounded-lg border ${
+              verificationResult.success 
+                ? 'bg-green-50 border-green-200 text-green-800' 
+                : 'bg-red-50 border-red-200 text-red-800'
+            }`}>
+              <div className="flex items-center space-x-2">
+                {verificationResult.success ? (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                ) : (
+                  <XCircle className="h-5 w-5 text-red-600" />
+                )}
+                <div>
+                  <div className="font-medium">
+                    {verificationResult.success ? 'Success' : 'Error'}
+                  </div>
+                  <div className="text-sm">{verificationResult.message}</div>
+                  <div className="text-xs opacity-75">{verificationResult.timestamp}</div>
                 </div>
               </div>
             </div>
