@@ -16,7 +16,7 @@ export async function createNotification({
   sendEmail = true,
 }: Pick<INotification, 'userId' | 'message' | 'type' | 'listingId' | 'relatedUserId'> & { sendEmail?: boolean }) {
   try {
-    console.log(`Creating ${type} notification for user ${userId}`);
+    console.log(`🔔 Creating ${type} notification for user ${userId} (sendEmail: ${sendEmail})`);
     
     // Ensure we have a valid MongoDB connection
     const db = await connectDB();
@@ -44,7 +44,7 @@ export async function createNotification({
       throw new Error('Failed to create notification - no notification object returned');
     }
     
-    console.log(`Notification created successfully:`, {
+    console.log(`✅ Notification created successfully:`, {
       id: notification._id,
       userId: notification.userId,
       type: notification.type,
@@ -53,6 +53,7 @@ export async function createNotification({
 
     // Send email notification if requested
     if (sendEmail) {
+      console.log(`📧 Email sending enabled - triggering email send...`);
       try {
         await sendNotificationEmailForUser(userId, {
           message,
@@ -60,20 +61,24 @@ export async function createNotification({
           listingId,
           relatedUserId,
         });
+        console.log(`✅ Email send process completed for user ${userId}`);
       } catch (emailError) {
-        console.error('Failed to send notification email:', emailError);
+        console.error(`❌ Failed to send notification email for user ${userId}:`, emailError);
         // Don't throw error here - notification was created successfully
       }
+    } else {
+      console.log(`⚠️ Email sending disabled for this notification`);
     }
     
     return notification;
   } catch (error) {
-    console.error('Error creating notification:', {
+    console.error('❌ Error creating notification:', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : 'No stack trace',
       userId,
       type,
-      message
+      message,
+      sendEmail
     });
     
     // Re-throw the error to be handled by the caller
@@ -94,26 +99,32 @@ async function sendNotificationEmailForUser(
   }
 ) {
   try {
+    console.log(`📧 Starting email send process for user ${userId}`);
+    
     // Get user information
     const user = await User.findById(userId);
     if (!user) {
-      console.error(`User not found for notification email: ${userId}`);
+      console.error(`❌ User not found for notification email: ${userId}`);
       return;
     }
+
+    console.log(`✅ User found: ${user.name} (${user.email})`);
 
     // Check if user has email preferences (for now, default to true)
     // In the future, this could be stored in user preferences
     const shouldSendEmail = true; // TODO: Check user email preferences
     
     if (!shouldSendEmail) {
-      console.log(`Email notifications disabled for user ${userId}`);
+      console.log(`⚠️ Email notifications disabled for user ${userId}`);
       return;
     }
 
     // Generate subject line based on notification type
     const subject = generateEmailSubject(notificationData.type, notificationData.message);
+    console.log(`📝 Generated subject: ${subject}`);
     
     // Send email using Resend
+    console.log(`🚀 Attempting to send email to ${user.email}...`);
     const emailResult = await sendNotificationEmail({
       userEmail: user.email,
       userName: user.name,
@@ -125,12 +136,18 @@ async function sendNotificationEmailForUser(
     });
 
     if (emailResult) {
-      console.log(`Notification email sent successfully to ${user.email}`);
+      console.log(`✅ Notification email sent successfully to ${user.email}`);
     } else {
-      console.error(`Failed to send notification email to ${user.email}`);
+      console.error(`❌ Failed to send notification email to ${user.email}`);
     }
   } catch (error) {
-    console.error('Error sending notification email:', error);
+    console.error('❌ Error sending notification email:', error);
+    console.error('Error details:', {
+      userId,
+      notificationData,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
   }
 }
 
@@ -588,6 +605,7 @@ export async function createSystemNotification(
           userId,
           message,
           type: 'SYSTEM',
+          sendEmail: true, // Explicitly enable email sending
         })
       )
     );
@@ -623,6 +641,7 @@ export async function createNewsletterNotification(
           userId,
           message: `${title}: ${content}`,
           type: 'NEWSLETTER',
+          sendEmail: true, // Explicitly enable email sending
         })
       )
     );
@@ -658,6 +677,7 @@ export async function createMarketingNotification(
           userId,
           message: `${offerTitle}: ${offerDetails}`,
           type: 'MARKETING',
+          sendEmail: true, // Explicitly enable email sending
         })
       )
     );
