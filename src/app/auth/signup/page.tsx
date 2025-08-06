@@ -29,6 +29,7 @@ export default function SignUp() {
     setError('');
     
     try {
+      console.log('Sending verification code to:', email);
       const res = await fetch('/api/auth/send-verification', {
         method: 'POST',
         headers: {
@@ -38,6 +39,7 @@ export default function SignUp() {
       });
 
       const data = await res.json();
+      console.log('Response:', data);
 
       if (res.ok) {
         setCodeSent(true);
@@ -51,10 +53,13 @@ export default function SignUp() {
             return prev - 1;
           });
         }, 1000);
+        console.log('Code sent successfully, codeSent set to true');
       } else {
         setError(data.error || 'Failed to send verification code');
+        console.log('Failed to send code:', data.error);
       }
     } catch (error) {
+      console.error('Error sending verification code:', error);
       setError('An error occurred while sending verification code');
     } finally {
       setIsSendingCode(false);
@@ -243,6 +248,11 @@ export default function SignUp() {
                 </p>
               </div>
             )}
+            
+            {/* Debug info */}
+            <div className="text-xs text-gray-400 mt-2">
+              Debug: codeSent = {codeSent.toString()}, verificationCode = "{verificationCode}"
+            </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
