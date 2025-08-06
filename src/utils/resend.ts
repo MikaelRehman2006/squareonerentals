@@ -201,49 +201,149 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
  * @param data Notification email data
  * @returns Promise with the send result
  */
+// Helper function to generate notification email templates
+function generateNotificationEmailTemplate(data: NotificationEmailData): string {
+  const baseTemplate = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+      <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0; font-size: 28px;">Square One Rentals</h1>
+        </div>
+        
+        ${getNotificationHeader(data)}
+        
+        <div style="margin-bottom: 25px;">
+          <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 22px;">Hello, ${data.userName}</h2>
+          ${getNotificationContent(data)}
+        </div>
+        
+        ${data.actionUrl ? getActionButton(data) : ''}
+        
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
+          <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
+            You can manage your notification preferences in your account settings.
+          </p>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+          © 2024 Square One Rentals. All rights reserved.
+        </p>
+      </div>
+    </div>
+  `;
+
+  return baseTemplate;
+}
+
+function getNotificationHeader(data: NotificationEmailData): string {
+  const headers = {
+    PAYMENT: `
+      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">💳 Payment Notification</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Important information about your account</div>
+      </div>
+    `,
+    LISTING_UPDATE: `
+      <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">🏠 Listing Update</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Your property listing has been updated</div>
+      </div>
+    `,
+    SYSTEM: `
+      <div style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">⚙️ System Alert</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Important platform information</div>
+      </div>
+    `,
+    MARKETING: `
+      <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">🎁 Special Offer</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Exclusive deals for our community</div>
+      </div>
+    `,
+    NEWSLETTER: `
+      <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">📰 Newsletter</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Latest news and updates</div>
+      </div>
+    `,
+    FAVORITE: `
+      <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">⭐ Saved Property Update</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">A property you saved has been updated</div>
+      </div>
+    `,
+    MESSAGE: `
+      <div style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">💬 New Message</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">You have a new message</div>
+      </div>
+    `,
+    WELCOME: `
+      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+        <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 5px;">🎉 Welcome!</div>
+        <div style="color: rgba(255,255,255,0.9); font-size: 14px;">Welcome to Square One Rentals</div>
+      </div>
+    `
+  };
+
+  return headers[data.notificationType] || headers.SYSTEM;
+}
+
+function getNotificationContent(data: NotificationEmailData): string {
+  const contentStyles = {
+    PAYMENT: 'background-color: #ecfdf5; border-left: 4px solid #10b981;',
+    LISTING_UPDATE: 'background-color: #eff6ff; border-left: 4px solid #3b82f6;',
+    SYSTEM: 'background-color: #f9fafb; border-left: 4px solid #6b7280;',
+    MARKETING: 'background-color: #fffbeb; border-left: 4px solid #f59e0b;',
+    NEWSLETTER: 'background-color: #faf5ff; border-left: 4px solid #8b5cf6;',
+    FAVORITE: 'background-color: #fef2f2; border-left: 4px solid #ef4444;',
+    MESSAGE: 'background-color: #ecfeff; border-left: 4px solid #06b6d4;',
+    WELCOME: 'background-color: #ecfdf5; border-left: 4px solid #10b981;'
+  };
+
+  const style = contentStyles[data.notificationType] || contentStyles.SYSTEM;
+
+  return `
+    <div style="${style} padding: 20px; border-radius: 6px;">
+      <p style="color: #475569; line-height: 1.6; margin: 0;">
+        ${data.message}
+      </p>
+    </div>
+  `;
+}
+
+function getActionButton(data: NotificationEmailData): string {
+  const buttonColors = {
+    PAYMENT: '#10b981',
+    LISTING_UPDATE: '#3b82f6',
+    SYSTEM: '#6b7280',
+    MARKETING: '#f59e0b',
+    NEWSLETTER: '#8b5cf6',
+    FAVORITE: '#ef4444',
+    MESSAGE: '#06b6d4',
+    WELCOME: '#10b981'
+  };
+
+  const color = buttonColors[data.notificationType] || buttonColors.SYSTEM;
+
+  return `
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${data.actionUrl}" 
+         style="background-color: ${color}; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+        ${data.actionText || 'View Details'}
+      </a>
+    </div>
+  `;
+}
+
 export const sendNotificationEmail = async (data: NotificationEmailData): Promise<boolean> => {
   try {
     console.log('Attempting to send notification email via Resend to:', data.userEmail);
     
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
-        <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">Square One Rentals</h1>
-          </div>
-          
-          <div style="margin-bottom: 25px;">
-            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 22px;">Hello, ${data.userName}</h2>
-            <div style="background-color: #f1f5f9; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb;">
-              <p style="color: #475569; line-height: 1.6; margin: 0;">
-                ${data.message}
-              </p>
-            </div>
-          </div>
-          
-          ${data.actionUrl ? `
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${data.actionUrl}" 
-                 style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-                ${data.actionText || 'View Details'}
-              </a>
-            </div>
-          ` : ''}
-          
-          <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
-            <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
-              You can manage your notification preferences in your account settings.
-            </p>
-          </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 20px;">
-          <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-            © 2024 Square One Rentals. All rights reserved.
-          </p>
-        </div>
-      </div>
-    `;
+    const html = generateNotificationEmailTemplate(data);
 
     const { data: result, error } = await resend.emails.send({
       from: 'Square One Rentals <onboarding@resend.dev>',
