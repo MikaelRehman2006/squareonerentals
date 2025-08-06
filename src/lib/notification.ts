@@ -590,29 +590,46 @@ export async function createSystemNotification(
   userIds?: string[]
 ) {
   try {
+    console.log('📢 Starting createSystemNotification...', { message, userIdsCount: userIds?.length || 0 });
     await connectDB();
+    console.log('✅ Database connected for system notification');
     
     // If no userIds specified, get all users
     if (!userIds || userIds.length === 0) {
+      console.log('🔍 No userIds provided, fetching all users...');
       const allUsers = await mongoose.model('User').find().select('_id');
       userIds = allUsers.map(user => user._id.toString());
+      console.log(`✅ Found ${userIds.length} users for system notification`);
+    } else {
+      console.log(`📋 Using provided ${userIds.length} userIds for system notification`);
     }
+    
+    console.log('🚀 Creating system notifications for users:', userIds);
     
     // Create notifications for all specified users
     const notifications = await Promise.all(
-      userIds.map(userId => 
-        createNotification({
-          userId,
-          message,
-          type: 'SYSTEM',
-          sendEmail: true, // Explicitly enable email sending
-        })
-      )
+      userIds!.map(async (userId, index) => {
+        console.log(`📝 Creating system notification ${index + 1}/${userIds!.length} for user ${userId}`);
+        try {
+          const notification = await createNotification({
+            userId,
+            message,
+            type: 'SYSTEM',
+            sendEmail: true, // Explicitly enable email sending
+          });
+          console.log(`✅ System notification created for user ${userId}:`, notification._id);
+          return notification;
+        } catch (error) {
+          console.error(`❌ Failed to create system notification for user ${userId}:`, error);
+          throw error;
+        }
+      })
     );
     
+    console.log(`🎉 Successfully created ${notifications.length} system notifications`);
     return notifications;
   } catch (error) {
-    console.error('Error creating system notification:', error);
+    console.error('❌ Error creating system notification:', error);
     throw error;
   }
 }
@@ -626,29 +643,46 @@ export async function createNewsletterNotification(
   userIds?: string[]
 ) {
   try {
+    console.log('📰 Starting createNewsletterNotification...', { title, content, userIdsCount: userIds?.length || 0 });
     await connectDB();
+    console.log('✅ Database connected for newsletter notification');
     
     // If no userIds specified, get all users
     if (!userIds || userIds.length === 0) {
+      console.log('🔍 No userIds provided, fetching all users...');
       const allUsers = await mongoose.model('User').find().select('_id');
       userIds = allUsers.map(user => user._id.toString());
+      console.log(`✅ Found ${userIds.length} users for newsletter notification`);
+    } else {
+      console.log(`📋 Using provided ${userIds.length} userIds for newsletter notification`);
     }
+    
+    console.log('🚀 Creating newsletter notifications for users:', userIds);
     
     // Create notifications for all specified users
     const notifications = await Promise.all(
-      userIds.map(userId => 
-        createNotification({
-          userId,
-          message: `${title}: ${content}`,
-          type: 'NEWSLETTER',
-          sendEmail: true, // Explicitly enable email sending
-        })
-      )
+      userIds!.map(async (userId, index) => {
+        console.log(`📝 Creating newsletter notification ${index + 1}/${userIds!.length} for user ${userId}`);
+        try {
+          const notification = await createNotification({
+            userId,
+            message: `${title}: ${content}`,
+            type: 'NEWSLETTER',
+            sendEmail: true, // Explicitly enable email sending
+          });
+          console.log(`✅ Newsletter notification created for user ${userId}:`, notification._id);
+          return notification;
+        } catch (error) {
+          console.error(`❌ Failed to create newsletter notification for user ${userId}:`, error);
+          throw error;
+        }
+      })
     );
     
+    console.log(`🎉 Successfully created ${notifications.length} newsletter notifications`);
     return notifications;
   } catch (error) {
-    console.error('Error creating newsletter notification:', error);
+    console.error('❌ Error creating newsletter notification:', error);
     throw error;
   }
 }
@@ -662,29 +696,46 @@ export async function createMarketingNotification(
   userIds?: string[]
 ) {
   try {
+    console.log('🎁 Starting createMarketingNotification...', { offerTitle, offerDetails, userIdsCount: userIds?.length || 0 });
     await connectDB();
+    console.log('✅ Database connected for marketing notification');
     
     // If no userIds specified, get all users
     if (!userIds || userIds.length === 0) {
+      console.log('🔍 No userIds provided, fetching all users...');
       const allUsers = await mongoose.model('User').find().select('_id');
       userIds = allUsers.map(user => user._id.toString());
+      console.log(`✅ Found ${userIds.length} users for marketing notification`);
+    } else {
+      console.log(`📋 Using provided ${userIds.length} userIds for marketing notification`);
     }
+    
+    console.log('🚀 Creating marketing notifications for users:', userIds);
     
     // Create notifications for all specified users
     const notifications = await Promise.all(
-      userIds.map(userId => 
-        createNotification({
-          userId,
-          message: `${offerTitle}: ${offerDetails}`,
-          type: 'MARKETING',
-          sendEmail: true, // Explicitly enable email sending
-        })
-      )
+      userIds!.map(async (userId, index) => {
+        console.log(`📝 Creating marketing notification ${index + 1}/${userIds!.length} for user ${userId}`);
+        try {
+          const notification = await createNotification({
+            userId,
+            message: `${offerTitle}: ${offerDetails}`,
+            type: 'MARKETING',
+            sendEmail: true, // Explicitly enable email sending
+          });
+          console.log(`✅ Marketing notification created for user ${userId}:`, notification._id);
+          return notification;
+        } catch (error) {
+          console.error(`❌ Failed to create marketing notification for user ${userId}:`, error);
+          throw error;
+        }
+      })
     );
     
+    console.log(`🎉 Successfully created ${notifications.length} marketing notifications`);
     return notifications;
   } catch (error) {
-    console.error('Error creating marketing notification:', error);
+    console.error('❌ Error creating marketing notification:', error);
     throw error;
   }
 }
