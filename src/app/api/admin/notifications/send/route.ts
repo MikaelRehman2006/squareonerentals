@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
       title, 
       sendToAll, 
       specificUserIds: specificUserIds?.length || 0,
+      specificUserIdsArray: specificUserIds,
       messageLength: message?.length || 0
     });
 
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       console.log(`✅ Found ${targetUserIds.length} users in database:`, allUsers.map(u => ({ id: u._id.toString(), email: u.email, name: u.name })));
     } else if (specificUserIds && specificUserIds.length > 0) {
       targetUserIds = specificUserIds;
-      console.log(`📋 Using ${targetUserIds.length} specific users`);
+      console.log(`📋 Using ${targetUserIds.length} specific users:`, targetUserIds);
     } else {
       console.log('❌ No recipients specified');
       return NextResponse.json(

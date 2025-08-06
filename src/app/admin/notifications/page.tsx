@@ -188,14 +188,25 @@ export default function AdminNotificationsPage() {
     setIsLoading(true);
     
     try {
+      const requestBody = {
+        ...form,
+        specificUserIds: form.sendToAll ? [] : selectedUsers
+      };
+      
+      console.log('🚀 Sending notification request:', {
+        type: form.type,
+        title: form.title,
+        sendToAll: form.sendToAll,
+        selectedUsersCount: selectedUsers.length,
+        selectedUsers: selectedUsers,
+        specificUserIds: requestBody.specificUserIds
+      });
+      
       // Call the API endpoint
       const response = await fetch('/api/admin/notifications/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...form,
-          specificUserIds: form.sendToAll ? [] : selectedUsers
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
@@ -204,6 +215,7 @@ export default function AdminNotificationsPage() {
       }
       
       const result = await response.json();
+      console.log('✅ API response:', result);
       
       // Add to notification history
       const newNotification = {
@@ -213,7 +225,7 @@ export default function AdminNotificationsPage() {
         message: form.message,
         sentBy: session?.user?.name || 'admin',
         sentAt: new Date(),
-        sentToCount: result.recipientCount || (form.sendToAll ? sampleUsers.length : selectedUsers.length)
+        sentToCount: result.recipientCount || (form.sendToAll ? users.length : selectedUsers.length)
       };
       
       setNotificationHistory([newNotification, ...notificationHistory]);
