@@ -1,1 +1,3 @@
-{}
+{
+  "/api/create-test-user/route": "app/api/create-test-user/route.js"
+}

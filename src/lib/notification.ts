@@ -105,10 +105,13 @@ async function sendNotificationEmailForUser(
     const user = await User.findById(userId);
     if (!user) {
       console.error(`❌ User not found for notification email: ${userId}`);
+      console.error(`❌ This means the user doesn't exist in the database`);
       return;
     }
 
     console.log(`✅ User found: ${user.name} (${user.email})`);
+    console.log(`📧 User email: ${user.email}`);
+    console.log(`👤 User name: ${user.name}`);
 
     // Check if user has email preferences (for now, default to true)
     // In the future, this could be stored in user preferences
