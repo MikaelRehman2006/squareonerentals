@@ -9,9 +9,15 @@ export function generateVerificationCode(): string {
 // Clean up expired verification codes
 export function cleanupExpiredCodes(): void {
   const now = Date.now();
-  for (const [email, data] of verificationCodes.entries()) {
+  const emailsToDelete: string[] = [];
+  
+  verificationCodes.forEach((data, email) => {
     if (now > data.expiresAt) {
-      verificationCodes.delete(email);
+      emailsToDelete.push(email);
     }
-  }
+  });
+  
+  emailsToDelete.forEach(email => {
+    verificationCodes.delete(email);
+  });
 } 
