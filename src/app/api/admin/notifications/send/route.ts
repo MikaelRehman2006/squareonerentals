@@ -61,10 +61,15 @@ export async function POST(request: NextRequest) {
     // Get target user IDs if needed
     let targetUserIds: string[] = [];
     
-    if (!sendToAll && specificUserIds && specificUserIds.length > 0) {
+    if (sendToAll) {
+      // Get all users from database
+      const allUsers = await User.find({}).select('_id');
+      targetUserIds = allUsers.map(user => user._id.toString());
+      console.log(`Sending to ALL users (${targetUserIds.length} users)`);
+    } else if (specificUserIds && specificUserIds.length > 0) {
       targetUserIds = specificUserIds;
       console.log(`Sending to ${targetUserIds.length} specific users`);
-    } else if (!sendToAll) {
+    } else {
       console.log('No recipients specified');
       return NextResponse.json(
         { error: 'No recipients specified' },
@@ -89,7 +94,7 @@ export async function POST(request: NextRequest) {
         case 'system':
           results = await createSystemNotification(
             `${title}: ${message}`,
-            sendToAll ? undefined : targetUserIds
+            targetUserIds
           );
           recipientCount = results.length;
           break;
@@ -98,7 +103,7 @@ export async function POST(request: NextRequest) {
           results = await createNewsletterNotification(
             title,
             message,
-            sendToAll ? undefined : targetUserIds
+            targetUserIds
           );
           recipientCount = results.length;
           break;
@@ -107,24 +112,20 @@ export async function POST(request: NextRequest) {
           results = await createMarketingNotification(
             title,
             message,
-            sendToAll ? undefined : targetUserIds
+            targetUserIds
           );
           recipientCount = results.length;
           break;
           
         default:
           // For other types, create individual notifications manually
-          if (sendToAll) {
-            const users = await User.find({}).select('_id');
-            targetUserIds = users.map(user => user._id.toString());
-          }
-          
           for (const userId of targetUserIds) {
             try {
               const notification = await createNotification({
                 userId,
                 message: `${title}: ${message}`,
                 type: mapNotificationType(type),
+                sendEmail: true, // Explicitly enable email sending
               });
               results.push(notification);
             } catch (error) {
