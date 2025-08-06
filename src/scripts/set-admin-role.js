@@ -24,7 +24,7 @@ async function main() {
     const User = mongoose.models.User || mongoose.model('User', userSchema);
 
     // Admin emails
-    const adminEmails = ['volcanxic@gmail.com', 'mikaelr112@gmail.com'];
+    const adminEmails = ['volcanxic@gmail.com', 'mikaelr112@gmail.com', 'squareone.rental@gmail.com'];
 
     // Update each admin user
     for (const email of adminEmails) {
