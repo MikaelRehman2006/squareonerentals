@@ -30,7 +30,11 @@ function SignInContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
     if (error) {
@@ -49,6 +53,53 @@ function SignInContent() {
     }
   }, [status, session, router, callbackUrl]);
 
+  const handleSendVerificationCode = async () => {
+    if (!email) {
+      toast.error('Please enter your email address first');
+      return;
+    }
+
+    setIsSendingCode(true);
+    
+    try {
+      console.log('Sending verification code to:', email);
+      const res = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      console.log('Response:', data);
+
+      if (res.ok) {
+        setCodeSent(true);
+        setCountdown(60); // Start 60-second countdown
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        console.log('Code sent successfully, codeSent set to true');
+        toast.success('Verification code sent to your email');
+      } else {
+        toast.error(data.error || 'Failed to send verification code');
+        console.log('Failed to send code:', data.error);
+      }
+    } catch (error) {
+      console.error('Error sending verification code:', error);
+      toast.error('An error occurred while sending verification code');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
   const handleGoogleSignIn = () => {
     setIsLoading(true);
     console.log('Starting Google sign-in...');
@@ -63,13 +114,20 @@ function SignInContent() {
       setIsLoading(true);
       
       if (isSignUp) {
+        // Validate that verification code is provided
+        if (!verificationCode || verificationCode.length !== 6) {
+          toast.error('Please enter the 6-digit verification code sent to your email');
+          setIsLoading(false);
+          return;
+        }
+
         // Handle sign up
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ name, email, password, verificationCode }),
         });
 
         const data = await res.json();
@@ -223,7 +281,38 @@ function SignInContent() {
                     className="mt-1 bg-white/10 text-white border border-gray-400/20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 rounded-lg transition-all"
                     required
                   />
+                  {isSignUp && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSendVerificationCode}
+                      disabled={isSendingCode || countdown > 0 || isLoading}
+                      className="w-full mt-2 bg-white/10 text-white border border-gray-400/20 hover:bg-white/20"
+                    >
+                      {isSendingCode ? 'Sending...' : countdown > 0 ? `Resend in ${countdown}s` : 'Send Verification Code'}
+                    </Button>
+                  )}
                 </div>
+
+                {isSignUp && codeSent && (
+                  <div>
+                    <Label htmlFor="verificationCode" className="text-gray-200">Verification Code</Label>
+                    <Input
+                      id="verificationCode"
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={verificationCode}
+                      onChange={e => setVerificationCode(e.target.value)}
+                      className="mt-1 bg-white/10 text-white border border-gray-400/20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 rounded-lg transition-all"
+                      required
+                      maxLength={6}
+                    />
+                    <p className="mt-1 text-xs text-gray-400">
+                      Check your email for the verification code
+                    </p>
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="password" className="text-gray-200">Password</Label>
                   <Input
@@ -239,7 +328,7 @@ function SignInContent() {
                 <Button
                   type="submit"
                   className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow-md transition-all duration-150 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                  disabled={isLoading}
+                  disabled={isLoading || (isSignUp && (!codeSent || !verificationCode || verificationCode.length !== 6))}
                 >
                   {isSignUp ? 'Sign Up' : 'Sign In'}
                   {isLoading && <LoadingSpinner />}
