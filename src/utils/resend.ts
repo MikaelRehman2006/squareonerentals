@@ -71,12 +71,12 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
             </div>
           </div>
           
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://squareonerentals-1234.vercel.app" 
-               style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-              Get Started
-            </a>
-          </div>
+                     <div style="text-align: center; margin: 30px 0;">
+             <a href="https://squareonerentals.com" 
+                style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+               Get Started
+             </a>
+           </div>
           
           <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
             <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
