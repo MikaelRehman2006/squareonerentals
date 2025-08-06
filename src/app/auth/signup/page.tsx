@@ -66,6 +66,13 @@ export default function SignUp() {
     setIsLoading(true);
     setError('');
     
+    // Validate that verification code is provided
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError('Please enter the 6-digit verification code sent to your email');
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -260,7 +267,7 @@ export default function SignUp() {
               <Button
                 type="submit"
                 className="w-full flex justify-center py-2 px-4"
-                disabled={isLoading}
+                disabled={isLoading || !codeSent || !verificationCode || verificationCode.length !== 6}
               >
                 {isLoading ? 'Creating account...' : 'Sign up'}
               </Button>
