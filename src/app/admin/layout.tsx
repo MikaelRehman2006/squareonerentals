@@ -20,6 +20,7 @@ import {
   Menu,
   X,
   AlertCircle,
+  Bug,
 } from 'lucide-react';
 
 const adminTabs = [
@@ -30,6 +31,7 @@ const adminTabs = [
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Reports', href: '/admin/reports', icon: FileText },
   { name: 'Feedback', href: '/admin/feedback', icon: AlertCircle },
+  { name: 'Debugging', href: '/admin/debugging', icon: Bug },
   { name: 'Settings', href: '/admin/settings', icon: Settings }
 ];
 
