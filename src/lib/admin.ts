@@ -10,6 +10,7 @@ export interface AdminPermissions {
 }
 
 export const OWNER_EMAIL = 'mikaelr112@gmail.com';
+export const ADMIN_EMAILS = ['volcanxic@gmail.com', 'squareone.rental@gmail.com'];
 
 export const rolePermissions: Record<AdminRole, AdminPermissions> = {
   OWNER: {
@@ -34,9 +35,14 @@ export const isOwner = (email: string | null | undefined): boolean => {
   return email?.toLowerCase() === OWNER_EMAIL.toLowerCase();
 };
 
+export const isAdmin = (email: string | null | undefined): boolean => {
+  if (!email) return false;
+  return ADMIN_EMAILS.some(adminEmail => email.toLowerCase() === adminEmail.toLowerCase());
+};
+
 export const getAdminRole = (email: string | null | undefined): AdminRole | null => {
   if (isOwner(email)) return 'OWNER';
-  // This will be replaced with a database check for admin status
+  if (isAdmin(email)) return 'ADMIN';
   return null;
 };
 
