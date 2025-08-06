@@ -80,8 +80,8 @@ export const sendVerificationEmail = async (data: VerificationEmailData): Promis
       </div>
     `;
 
-    // Use verified domain instead of sandbox domain
-    const fromEmail = process.env.RESEND_FROM || 'Square One Rentals <squareone.rental@gmail.com>';
+    // Use Resend sandbox domain
+    const fromEmail = 'Square One Rentals <onboarding@resend.dev>';
 
     const { data: result, error } = await resend.emails.send({
       from: fromEmail,
@@ -134,7 +134,7 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
             </p>
             <ul style="color: #1e40af; margin: 10px 0 0 0; padding-left: 20px;">
               <li>Mark this email as "Not Spam"</li>
-              <li>Add <strong>squareone.rental@gmail.com</strong> to your contacts</li>
+              <li>Add <strong>onboarding@resend.dev</strong> to your contacts</li>
               <li>Check your spam folder if you don't see future emails</li>
             </ul>
           </div>
@@ -179,8 +179,8 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
       </div>
     `;
 
-    // Use verified domain instead of sandbox domain
-    const fromEmail = process.env.RESEND_FROM || 'Square One Rentals <squareone.rental@gmail.com>';
+    // Use Resend sandbox domain
+    const fromEmail = 'Square One Rentals <onboarding@resend.dev>';
 
     const { data: result, error } = await resend.emails.send({
       from: fromEmail,
@@ -357,8 +357,10 @@ export const sendNotificationEmail = async (data: NotificationEmailData): Promis
     
     const html = generateNotificationEmailTemplate(data);
 
-    // Use verified domain instead of sandbox domain
-    const fromEmail = process.env.RESEND_FROM || 'Square One Rentals <squareone.rental@gmail.com>';
+    // Try sandbox domain first to test if domain verification is the issue
+    const fromEmail = 'Square One Rentals <onboarding@resend.dev>';
+
+    console.log('📧 Using from email:', fromEmail);
 
     const { data: result, error } = await resend.emails.send({
       from: fromEmail,
@@ -370,7 +372,8 @@ export const sendNotificationEmail = async (data: NotificationEmailData): Promis
     if (error) {
       console.error('❌ Resend notification email error:', error);
       console.error('❌ Error details:', {
-        message: error.message
+        message: error.message,
+        name: error.name
       });
       return false;
     }
