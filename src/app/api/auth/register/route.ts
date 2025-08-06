@@ -5,6 +5,7 @@ import { User } from '@/models/User';
 import { sendWelcomeEmail } from '@/utils/resend';
 import { createNotification } from '@/lib/notification';
 import { Notification } from '@/models/Notification';
+import { verificationCodes } from './send-verification/route';
 
 // Add password validation helper
 function validatePassword(password: string): { valid: boolean; message: string } {
@@ -33,10 +34,10 @@ function validatePassword(password: string): { valid: boolean; message: string }
 export async function POST(request: Request) {
   try {
     await connectDB();
-    const { name, email, password } = await request.json();
+    const { name, email, password, verificationCode } = await request.json();
 
     // Validate input
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !verificationCode) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -60,6 +61,33 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Verify email verification code
+    const storedVerification = verificationCodes.get(email);
+    if (!storedVerification) {
+      return NextResponse.json(
+        { error: 'Please request a verification code first' },
+        { status: 400 }
+      );
+    }
+
+    if (storedVerification.code !== verificationCode) {
+      return NextResponse.json(
+        { error: 'Invalid verification code' },
+        { status: 400 }
+      );
+    }
+
+    if (Date.now() > storedVerification.expiresAt) {
+      verificationCodes.delete(email);
+      return NextResponse.json(
+        { error: 'Verification code has expired. Please request a new one.' },
+        { status: 400 }
+      );
+    }
+
+    // Clear the verification code after successful verification
+    verificationCodes.delete(email);
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);

@@ -12,12 +12,60 @@ export default function SignUp() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  const handleSendVerificationCode = async () => {
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    setIsSendingCode(true);
+    setError('');
+    
+    try {
+      const res = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setCodeSent(true);
+        setCountdown(60); // Start 60-second countdown
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        setError(data.error || 'Failed to send verification code');
+      }
+    } catch (error) {
+      setError('An error occurred while sending verification code');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+    
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -28,6 +76,7 @@ export default function SignUp() {
           name,
           email,
           password,
+          verificationCode,
         }),
       });
 
@@ -149,7 +198,44 @@ export default function SignUp() {
                   disabled={isLoading}
                 />
               </div>
+              <div className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendVerificationCode}
+                  disabled={isSendingCode || countdown > 0 || isLoading}
+                  className="w-full"
+                >
+                  {isSendingCode ? 'Sending...' : countdown > 0 ? `Resend in ${countdown}s` : 'Send Verification Code'}
+                </Button>
+              </div>
             </div>
+
+            {codeSent && (
+              <div>
+                <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
+                  Verification Code
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="verificationCode"
+                    name="verificationCode"
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    required
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    disabled={isLoading}
+                    maxLength={6}
+                  />
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  Check your email for the verification code
+                </p>
+              </div>
+            )}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">

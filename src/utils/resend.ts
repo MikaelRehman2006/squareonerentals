@@ -17,6 +17,89 @@ interface NotificationEmailData {
   actionText?: string;
 }
 
+interface VerificationEmailData {
+  userEmail: string;
+  verificationCode: string;
+}
+
+/**
+ * Sends a verification code email using Resend
+ * @param data Verification email data including user email and verification code
+ * @returns Promise with the send result
+ */
+export const sendVerificationEmail = async (data: VerificationEmailData): Promise<boolean> => {
+  try {
+    console.log('Attempting to send verification email via Resend to:', data.userEmail);
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc;">
+        <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">Square One Rentals</h1>
+            <p style="color: #64748b; margin: 10px 0 0 0;">Email Verification</p>
+          </div>
+          
+          <div style="margin-bottom: 25px;">
+            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 22px;">Verify Your Email Address</h2>
+            <p style="color: #475569; line-height: 1.6; margin: 0 0 15px 0;">
+              To complete your registration with Square One Rentals, please enter the verification code below:
+            </p>
+          </div>
+          
+          <div style="background-color: #eff6ff; padding: 25px; border-radius: 8px; border: 2px solid #2563eb; margin: 20px 0; text-align: center;">
+            <h3 style="color: #1e40af; margin: 0 0 15px 0; font-size: 18px;">Your Verification Code</h3>
+            <div style="background-color: white; padding: 15px; border-radius: 6px; border: 2px dashed #2563eb; display: inline-block; min-width: 200px;">
+              <span style="color: #1e40af; font-size: 32px; font-weight: bold; letter-spacing: 4px; font-family: 'Courier New', monospace;">
+                ${data.verificationCode}
+              </span>
+            </div>
+            <p style="color: #1e40af; margin: 15px 0 0 0; font-size: 14px;">
+              This code will expire in 10 minutes
+            </p>
+          </div>
+          
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+            <h4 style="color: #92400e; margin: 0 0 8px 0; font-size: 16px;">⚠️ Important</h4>
+            <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.5;">
+              If you didn't request this verification code, please ignore this email. Your email address will not be verified.
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
+              Having trouble? Contact us at squareone.rental@gmail.com
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+            © 2024 Square One Rentals. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const { data: result, error } = await resend.emails.send({
+      from: 'Square One Rentals <onboarding@resend.dev>',
+      to: [data.userEmail],
+      subject: 'Verify Your Email - Square One Rentals',
+      html: html,
+    });
+
+    if (error) {
+      console.error('Resend verification email error:', error);
+      return false;
+    }
+
+    console.log('Verification email sent successfully via Resend:', result);
+    return true;
+  } catch (error) {
+    console.error('Error sending verification email via Resend:', error);
+    return false;
+  }
+};
+
 /**
  * Sends a welcome email using Resend
  * @param data Welcome email data including user email and name
@@ -71,12 +154,12 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
             </div>
           </div>
           
-                     <div style="text-align: center; margin: 30px 0;">
-             <a href="https://squareonerentals.com" 
-                style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-               Get Started
-             </a>
-           </div>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://squareonerentals.com" 
+               style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+              Get Started
+            </a>
+          </div>
           
           <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
             <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
