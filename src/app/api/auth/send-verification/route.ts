@@ -2,14 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendVerificationEmail } from '@/utils/resend';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-
-// In-memory storage for verification codes (in production, use Redis or database)
-const verificationCodes = new Map<string, { code: string; expiresAt: number }>();
-
-// Generate a 6-digit verification code
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
+import { verificationCodes, generateVerificationCode, cleanupExpiredCodes } from '@/lib/verification';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +34,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Clean up expired codes first
+    cleanupExpiredCodes();
 
     // Generate verification code
     const verificationCode = generateVerificationCode();
@@ -78,5 +74,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Export verification codes for use in registration
-export { verificationCodes }; 
+ 

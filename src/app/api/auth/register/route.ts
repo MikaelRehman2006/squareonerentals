@@ -5,7 +5,7 @@ import { User } from '@/models/User';
 import { sendWelcomeEmail } from '@/utils/resend';
 import { createNotification } from '@/lib/notification';
 import { Notification } from '@/models/Notification';
-import { verificationCodes } from './send-verification/route';
+import { verificationCodes, cleanupExpiredCodes } from '@/lib/verification';
 
 // Add password validation helper
 function validatePassword(password: string): { valid: boolean; message: string } {
@@ -61,6 +61,9 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // Clean up expired codes first
+    cleanupExpiredCodes();
 
     // Verify email verification code
     const storedVerification = verificationCodes.get(email);
