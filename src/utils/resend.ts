@@ -80,8 +80,11 @@ export const sendVerificationEmail = async (data: VerificationEmailData): Promis
       </div>
     `;
 
+    // Use verified domain instead of sandbox domain
+    const fromEmail = process.env.RESEND_FROM || 'Square One Rentals <squareone.rental@gmail.com>';
+
     const { data: result, error } = await resend.emails.send({
-      from: 'Square One Rentals <onboarding@resend.dev>',
+      from: fromEmail,
       to: [data.userEmail],
       subject: 'Verify Your Email - Square One Rentals',
       html: html,
@@ -176,8 +179,11 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
       </div>
     `;
 
+    // Use verified domain instead of sandbox domain
+    const fromEmail = process.env.RESEND_FROM || 'Square One Rentals <squareone.rental@gmail.com>';
+
     const { data: result, error } = await resend.emails.send({
-      from: 'Square One Rentals <onboarding@resend.dev>',
+      from: fromEmail,
       to: [data.userEmail],
       subject: 'Welcome to Square One Rentals! 🎉',
       html: html,
@@ -341,26 +347,47 @@ function getActionButton(data: NotificationEmailData): string {
 
 export const sendNotificationEmail = async (data: NotificationEmailData): Promise<boolean> => {
   try {
-    console.log('Attempting to send notification email via Resend to:', data.userEmail);
+    console.log('📧 Attempting to send notification email via Resend to:', data.userEmail);
+    console.log('📧 Email details:', {
+      subject: data.subject,
+      notificationType: data.notificationType,
+      actionUrl: data.actionUrl,
+      actionText: data.actionText
+    });
     
     const html = generateNotificationEmailTemplate(data);
 
+    // Use verified domain instead of sandbox domain
+    const fromEmail = process.env.RESEND_FROM || 'Square One Rentals <squareone.rental@gmail.com>';
+
     const { data: result, error } = await resend.emails.send({
-      from: 'Square One Rentals <onboarding@resend.dev>',
+      from: fromEmail,
       to: [data.userEmail],
       subject: data.subject,
       html: html,
     });
 
     if (error) {
-      console.error('Resend notification email error:', error);
+      console.error('❌ Resend notification email error:', error);
+      console.error('❌ Error details:', {
+        message: error.message
+      });
       return false;
     }
 
-    console.log('Notification email sent successfully via Resend:', result);
+    console.log('✅ Notification email sent successfully via Resend:', {
+      id: result?.id,
+      to: data.userEmail,
+      subject: data.subject,
+      from: fromEmail
+    });
     return true;
   } catch (error) {
-    console.error('Error sending notification email via Resend:', error);
+    console.error('❌ Error sending notification email via Resend:', error);
+    console.error('❌ Error details:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace'
+    });
     return false;
   }
 }; 
