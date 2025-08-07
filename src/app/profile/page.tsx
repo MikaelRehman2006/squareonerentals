@@ -83,18 +83,16 @@ export default function ProfilePage() {
           const data = await response.json();
           console.log('Fetched preferences data:', data);
           
-          // The API returns { preferences: { userTypes, onboardingCompleted, etc } }
-          if (data.preferences) {
-            setUserPreferences({
-              userTypes: data.preferences.userTypes || [],
-              onboardingCompleted: data.preferences.onboardingCompleted || false,
-              preferences: data.preferences
-            });
-            console.log('Set user preferences:', {
-              userTypes: data.preferences.userTypes || [],
-              onboardingCompleted: data.preferences.onboardingCompleted || false
-            });
-          }
+          // The API returns { userTypes, onboardingCompleted, preferences, etc }
+          setUserPreferences({
+            userTypes: data.userTypes || [],
+            onboardingCompleted: data.onboardingCompleted || false,
+            preferences: data.preferences || {}
+          });
+          console.log('Set user preferences:', {
+            userTypes: data.userTypes || [],
+            onboardingCompleted: data.onboardingCompleted || false
+          });
         } else {
           console.error('Failed to fetch preferences:', response.status);
         }
@@ -120,17 +118,15 @@ export default function ProfilePage() {
           const response = await fetch('/api/user/preferences');
           if (response.ok) {
             const data = await response.json();
-            if (data.preferences) {
-              setUserPreferences({
-                userTypes: data.preferences.userTypes || [],
-                onboardingCompleted: data.preferences.onboardingCompleted || false,
-                preferences: data.preferences
-              });
-              console.log('Refreshed preferences after survey completion:', {
-                userTypes: data.preferences.userTypes || [],
-                onboardingCompleted: data.preferences.onboardingCompleted || false
-              });
-            }
+            setUserPreferences({
+              userTypes: data.userTypes || [],
+              onboardingCompleted: data.onboardingCompleted || false,
+              preferences: data.preferences || {}
+            });
+            console.log('Refreshed preferences after survey completion:', {
+              userTypes: data.userTypes || [],
+              onboardingCompleted: data.onboardingCompleted || false
+            });
           }
         } catch (error) {
           console.error('Error refreshing preferences:', error);

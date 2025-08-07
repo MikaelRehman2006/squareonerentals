@@ -261,7 +261,7 @@ export default function PostSignupSurvey() { // Define the main component functi
           const response = await fetch('/api/user/preferences'); // Fetch user preferences from API
           const data = await response.json(); // Parse response as JSON
           
-          if (!data.preferences?.onboardingCompleted) { // Check if onboarding is not completed
+          if (!data.onboardingCompleted) { // Check if onboarding is not completed
             // Clear any existing localStorage data before opening the survey
             clearAllSurveyData(); // Clear existing data
             setIsOpen(true); // Open the survey modal
@@ -440,6 +440,10 @@ export default function PostSignupSurvey() { // Define the main component functi
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
+      
+      // Dispatch survey completion event to refresh other components
+      window.dispatchEvent(new CustomEvent('surveyCompleted'));
+      
       toast.success('Preferences saved successfully!'); // Show success toast
       setIsOpen(false); // Close the modal
     } catch (error) { // Catch any errors
@@ -475,6 +479,10 @@ export default function PostSignupSurvey() { // Define the main component functi
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
+      
+      // Dispatch survey completion event to refresh other components
+      window.dispatchEvent(new CustomEvent('surveyCompleted'));
+      
       toast.success('Onboarding complete!'); // Show success toast
       setIsOpen(false); // Close the modal
     } catch (error) { // Catch any errors
@@ -509,24 +517,22 @@ export default function PostSignupSurvey() { // Define the main component functi
             const data = await response.json();
             console.log('Loaded existing preferences:', data);
             
+            // Load existing user types
+            if (data.userTypes && data.userTypes.length > 0) {
+              setSelectedTypes(data.userTypes);
+              console.log('Set existing user types:', data.userTypes);
+            }
+            
+            // Load existing form data for each role
             if (data.preferences) {
-              // Load existing user types
-              if (data.preferences.userTypes && data.preferences.userTypes.length > 0) {
-                setSelectedTypes(data.preferences.userTypes);
-                console.log('Set existing user types:', data.preferences.userTypes);
-              }
-              
-              // Load existing form data for each role
-              if (data.preferences.preferences) {
-                const existingRoleForms = { ...roleForms };
-                Object.keys(data.preferences.preferences).forEach(role => {
-                  if (data.preferences.preferences[role]) {
-                    existingRoleForms[role] = data.preferences.preferences[role];
-                  }
-                });
-                setRoleForms(existingRoleForms);
-                console.log('Set existing form data:', existingRoleForms);
-              }
+              const existingRoleForms = { ...roleForms };
+              Object.keys(data.preferences).forEach(role => {
+                if (data.preferences[role]) {
+                  existingRoleForms[role] = data.preferences[role];
+                }
+              });
+              setRoleForms(existingRoleForms);
+              console.log('Set existing form data:', existingRoleForms);
             }
           }
         } catch (error) {

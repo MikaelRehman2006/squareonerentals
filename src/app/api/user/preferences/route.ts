@@ -43,6 +43,7 @@ export async function GET() {
     // Return in the structure expected by the frontend
     return NextResponse.json({
       preferences: allPreferences,
+      // Include top-level properties for backward compatibility
       userTypes: allPreferences.userTypes,
       onboardingCompleted: allPreferences.onboardingCompleted,
       notificationSettings: allPreferences.notificationSettings
