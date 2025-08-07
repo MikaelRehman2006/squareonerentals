@@ -137,7 +137,8 @@ export async function POST(request: Request) {
       const notification = await createNotification({
         userId: user._id.toString(),
         message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
-        type: 'WELCOME'
+        type: 'WELCOME',
+        sendEmail: true, // Explicitly enable email sending
       });
       
       if (!notification) {
@@ -164,7 +165,8 @@ export async function POST(request: Request) {
         const retryNotification = await createNotification({
           userId: user._id.toString(),
           message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
-          type: 'WELCOME'
+          type: 'WELCOME',
+          sendEmail: true, // Explicitly enable email sending
         });
         
         if (retryNotification) {

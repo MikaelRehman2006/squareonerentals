@@ -337,6 +337,7 @@ export async function notifyFavoritedListingChange(
           type: 'FAVORITE',
           listingId,
           relatedUserId: actorUserId,
+          sendEmail: true, // Explicitly enable email sending
         });
       })
     );
@@ -397,6 +398,7 @@ export async function notifyAdminStatusChange(
       type: 'LISTING_UPDATE',
       listingId,
       relatedUserId: adminId,
+      sendEmail: true, // Explicitly enable email sending
     });
     
     return notification;
@@ -773,6 +775,7 @@ export async function createPaymentNotification(
       userId,
       message,
       type: 'PAYMENT',
+      sendEmail: true, // Explicitly enable email sending
     });
     
     return notification;
