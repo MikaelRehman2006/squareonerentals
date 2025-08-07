@@ -108,7 +108,7 @@ export default function DebugSurveyPage() {
       });
 
       const data = await response.json();
-      setDebugData(prev => ({ ...prev, debugSubmission: { status: response.status, data } }));
+      setDebugData((prev: any) => ({ ...prev, debugSubmission: { status: response.status, data } }));
     } catch (error) {
       console.error('Debug submission test error:', error);
     }
