@@ -48,11 +48,12 @@ export async function GET() {
 
     // Return in the structure expected by the frontend
     return NextResponse.json({
-      preferences: allPreferences,
-      // Include top-level properties for backward compatibility
+      // Top-level properties for frontend compatibility
       userTypes: allPreferences.userTypes,
       onboardingCompleted: allPreferences.onboardingCompleted,
-      notificationSettings: allPreferences.notificationSettings
+      notificationSettings: allPreferences.notificationSettings,
+      // Nested preferences for backward compatibility
+      preferences: allPreferences.preferences
     });
   } catch (error) {
     console.error('Error fetching user preferences:', error);
@@ -93,9 +94,8 @@ export async function POST(request: Request) {
       
       // Handle nested preferences object from survey
       if (requestData.preferences) {
-        Object.keys(requestData.preferences).forEach(key => {
-          (user.preferences as any)[key] = requestData.preferences[key];
-        });
+        // Save the preferences object directly
+        (user.preferences as any).preferences = requestData.preferences;
       }
 
       console.log('💾 Saving user preferences:', user.preferences);

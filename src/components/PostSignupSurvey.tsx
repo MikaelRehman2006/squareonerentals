@@ -168,6 +168,7 @@ export default function PostSignupSurvey() { // Define the main component functi
   const [openCityPopover, setOpenCityPopover] = useState(false); // State for city popover open/close, initialized to false
   const [cityInput, setCityInput] = useState(''); // State for city input text, initialized as empty string
   const [cities, setCities] = useState<string[]>([]); // State for cities array, initialized as empty array
+  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false); // State to track if we've checked onboarding status
   
   // Store form data per role (realtor, landlord, renter, buyer)
   const [roleForms, setRoleForms] = useState<Record<string, FormData>>({}); // State for storing form data per role, initialized as empty object
@@ -214,6 +215,7 @@ export default function PostSignupSurvey() { // Define the main component functi
       setRoleForms({}); // Reset role forms to empty object
       setCityInput(''); // Reset city input to empty string
       setCities([]); // Reset cities to empty array
+      setHasCheckedOnboarding(false); // Reset onboarding check state
     }
   }, [session?.user?.email]); // Dependency array with session user email
 
@@ -256,13 +258,15 @@ export default function PostSignupSurvey() { // Define the main component functi
   // Check onboarding status and show survey if not completed
   useEffect(() => { // Effect hook to check onboarding status
     const checkOnboardingStatus = async () => { // Define async function to check status
-      if (session?.user?.email) { // Check if session has user email
+      if (session?.user?.email && !hasCheckedOnboarding) { // Check if session has user email and we haven't checked yet
         try { // Try to check onboarding status
           console.log('🔍 Checking onboarding status for:', session.user.email);
           const response = await fetch('/api/user/preferences'); // Fetch user preferences from API
           const data = await response.json(); // Parse response as JSON
           console.log('📊 Onboarding status data:', data);
           console.log('✅ onboardingCompleted:', data.onboardingCompleted);
+          
+          setHasCheckedOnboarding(true); // Mark that we've checked onboarding status
           
           if (!data.onboardingCompleted) { // Check if onboarding is not completed
             console.log('🚀 Opening survey - onboarding not completed');
@@ -271,15 +275,30 @@ export default function PostSignupSurvey() { // Define the main component functi
             setIsOpen(true); // Open the survey modal
           } else {
             console.log('✅ Onboarding already completed, not opening survey');
+            setIsOpen(false); // Ensure survey is closed if onboarding is completed
           }
         } catch (error) { // Catch any errors
           console.error('Error checking onboarding status:', error); // Log error to console
+          setHasCheckedOnboarding(true); // Mark as checked even on error
         }
       }
     };
 
     checkOnboardingStatus(); // Call the async function
-  }, [session]); // Dependency array with session
+  }, [session, hasCheckedOnboarding]); // Dependency array with session and hasCheckedOnboarding
+
+  // Listen for survey completion events to close the survey
+  useEffect(() => {
+    const handleSurveyCompleted = () => {
+      console.log('🎉 Survey completion event received, closing survey...');
+      setIsOpen(false);
+    };
+
+    window.addEventListener('surveyCompleted', handleSurveyCompleted);
+    return () => {
+      window.removeEventListener('surveyCompleted', handleSurveyCompleted);
+    };
+  }, []);
 
   // Toggle user type selection (multiple selection allowed)
   const handleTypeToggle = (typeId: string) => { // Define function to toggle user type selection
@@ -443,6 +462,10 @@ export default function PostSignupSurvey() { // Define the main component functi
         console.error('API Error Response:', errorText);
         throw new Error(`Failed to save preferences: ${response.status} ${response.statusText}`);
       }
+      
+      // Log successful response
+      const responseData = await response.json();
+      console.log('✅ Survey submitted successfully:', responseData);
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
@@ -482,6 +505,10 @@ export default function PostSignupSurvey() { // Define the main component functi
         console.error('API Error Response (None):', errorText);
         throw new Error(`Failed to skip survey: ${response.status} ${response.statusText}`);
       }
+      
+      // Log successful response
+      const responseData = await response.json();
+      console.log('✅ Survey skipped successfully:', responseData);
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
