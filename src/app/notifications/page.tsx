@@ -289,10 +289,14 @@ export default function NotificationsPage() {
                   
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
-                      <h3 className={`font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
-                        {notification.message}
+                      <div className={`font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <div 
+                          dangerouslySetInnerHTML={{ 
+                            __html: notification.message.replace(/\n/g, '<br>') 
+                          }} 
+                        />
                         {!notification.read && <span className="ml-2 inline-block w-2 h-2 bg-blue-500 rounded-full"></span>}
-                      </h3>
+                      </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-500">{formatRelativeTime(notification.createdAt || notification.time)}</span>
                         

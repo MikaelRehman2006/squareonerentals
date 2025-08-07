@@ -491,7 +491,7 @@ function generateChangeMessage(previousState: any, currentState: any) {
 
   // Handle address/location changes
   if (previousState.address !== currentState.address) {
-    changes.push(`Address updated`);
+    changes.push(`Address has been updated`);
   }
   
   if (typeof previousState.location === 'string' && 
@@ -540,7 +540,7 @@ function generateChangeMessage(previousState: any, currentState: any) {
 
   // Handle parking changes
   if (previousState.parking !== currentState.parking) {
-    changes.push(`Parking information updated`);
+    changes.push(`Parking information has been updated`);
   }
   
   // Handle image changes
@@ -555,7 +555,7 @@ function generateChangeMessage(previousState: any, currentState: any) {
 
   // Handle amenities changes
   if (JSON.stringify(previousState.amenities) !== JSON.stringify(currentState.amenities)) {
-    changes.push(`Amenities have been updated`);
+    changes.push(`Building amenities have been updated`);
   }
 
   // Handle unit features changes
@@ -565,7 +565,7 @@ function generateChangeMessage(previousState: any, currentState: any) {
 
   // Handle utilities changes
   if (JSON.stringify(previousState.utilities) !== JSON.stringify(currentState.utilities)) {
-    changes.push(`Utilities information has been updated`);
+    changes.push(`Utilities included have been updated`);
   }
 
   // Handle description changes
@@ -583,8 +583,8 @@ function generateChangeMessage(previousState: any, currentState: any) {
     return `A listing you favorited has been updated: ${changes[0]}.`;
   }
   
-  // For multiple changes, create a bulleted list
-  return `A listing you favorited has been updated with multiple changes:\n• ${changes.join('\n• ')}`;
+  // For multiple changes, create a bulleted list with proper HTML formatting
+  return `A listing you favorited has been updated with multiple changes:<br><br>• ${changes.join('<br>• ')}`;
 }
 
 /**
