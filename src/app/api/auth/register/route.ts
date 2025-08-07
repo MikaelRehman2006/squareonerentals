@@ -114,7 +114,7 @@ export async function POST(request: Request) {
       
       const notification = await createNotification({
         userId: user._id.toString(),
-        message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
+        message: `🎉 Welcome to Square One Rentals! We're thrilled to have you join our community. Whether you're looking for your next home or managing rental properties, we're here to make your rental journey seamless and successful. Complete your profile to get personalized recommendations, browse thousands of verified properties, save your favorites, and connect directly with landlords and tenants through our secure messaging system.`,
         type: 'WELCOME',
         sendEmail: true, // Explicitly enable email sending
       });
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
         await connectDB();
         const retryNotification = await createNotification({
           userId: user._id.toString(),
-          message: `Welcome to Square One Rentals! Please check your email for important instructions on how to receive all notifications. If you don't see the email in your inbox, please check your spam folder.`,
+          message: `🎉 Welcome to Square One Rentals! We're thrilled to have you join our community. Whether you're looking for your next home or managing rental properties, we're here to make your rental journey seamless and successful. Complete your profile to get personalized recommendations, browse thousands of verified properties, save your favorites, and connect directly with landlords and tenants through our secure messaging system.`,
           type: 'WELCOME',
           sendEmail: true, // Explicitly enable email sending
         });
