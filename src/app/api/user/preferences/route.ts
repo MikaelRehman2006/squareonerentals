@@ -99,8 +99,15 @@ export async function POST(request: Request) {
       }
 
       console.log('💾 Saving user preferences:', user.preferences);
-      await user.save();
-      console.log('✅ User preferences saved successfully');
+      
+      // Use findOneAndUpdate for more reliable saving
+      const updateResult = await User.findOneAndUpdate(
+        { email: session.user.email },
+        { preferences: user.preferences },
+        { new: true, runValidators: true }
+      );
+      
+      console.log('✅ User preferences saved successfully:', updateResult?.preferences);
       
       return NextResponse.json({ 
         message: 'Onboarding preferences updated successfully',
@@ -113,7 +120,13 @@ export async function POST(request: Request) {
       console.log('Processing notification settings data');
       
       (user.preferences as any).notificationSettings = requestData.notificationSettings;
-      await user.save();
+      
+      // Use findOneAndUpdate for more reliable saving
+      const updateResult = await User.findOneAndUpdate(
+        { email: session.user.email },
+        { preferences: user.preferences },
+        { new: true, runValidators: true }
+      );
 
       return NextResponse.json({ 
         message: 'Notification preferences updated successfully',

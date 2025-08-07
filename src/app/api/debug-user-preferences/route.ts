@@ -78,8 +78,13 @@ export async function POST(request: Request) {
 
       console.log('🔍 Debug POST - After setting preferences:', user.preferences);
       
-      const saveResult = await user.save();
-      console.log('🔍 Debug POST - Save result:', saveResult);
+      // Use findOneAndUpdate for more reliable saving
+      const updateResult = await User.findOneAndUpdate(
+        { email: session.user.email },
+        { preferences: user.preferences },
+        { new: true, runValidators: true }
+      );
+      console.log('🔍 Debug POST - Update result:', updateResult?.preferences);
       
       // Fetch the user again to see what was actually saved
       const updatedUser = await User.findOne({ email: session.user.email });
@@ -89,7 +94,8 @@ export async function POST(request: Request) {
         message: 'Debug preferences updated successfully',
         beforeSave: user.preferences,
         afterSave: updatedUser?.preferences,
-        saveResult: saveResult._id ? 'Success' : 'Failed'
+        updateResult: updateResult?.preferences,
+        saveResult: updateResult?._id ? 'Success' : 'Failed'
       });
     }
 

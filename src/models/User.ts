@@ -12,9 +12,19 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   preferences?: {
-    userTypes: string[];
-    city: string;
-    completedOnboarding: boolean;
+    userTypes?: string[];
+    city?: string;
+    onboardingCompleted?: boolean;
+    notificationSettings?: {
+      systemAlerts: { inApp: boolean; email: boolean };
+      newsletter: { inApp: boolean; email: boolean };
+      specialOffers: { inApp: boolean; email: boolean };
+      favoriteUpdates: { inApp: boolean; email: boolean };
+      listingChanges: { inApp: boolean; email: boolean };
+      paymentNotifications: { inApp: boolean; email: boolean };
+    };
+    preferences?: any;
+    [key: string]: any;
   };
   membership?: {
     type: 'BASIC' | 'FEATURED' | null;
