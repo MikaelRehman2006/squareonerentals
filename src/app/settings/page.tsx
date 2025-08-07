@@ -30,34 +30,38 @@ export default function SettingsPage() {
   // State for notification settings - now with inApp and email for each type
   const [notificationSettings, setNotificationSettings] = useState<Record<string, { inApp: boolean, email: boolean }>>({});
   
-  // Load settings from localStorage on component mount
+  // Load settings from API on component mount
   useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('notificationSettings');
-      if (savedSettings) {
-        setNotificationSettings(JSON.parse(savedSettings));
-      } else {
-        // Default all settings to true
-        const defaultSettings: Record<string, { inApp: boolean, email: boolean }> = {};
+    async function loadSettings() {
+      try {
+        const response = await fetch('/api/user/preferences');
+        if (response.ok) {
+          const preferences = await response.json();
+          setNotificationSettings(preferences);
+        } else {
+          // Default all settings to true if API fails
+          const defaultSettings: Record<string, { inApp: boolean, email: boolean }> = {};
+          NOTIFICATION_TYPES.forEach(type => {
+            defaultSettings[type.id] = { inApp: true, email: true };
+          });
+          setNotificationSettings(defaultSettings);
+        }
+      } catch (error) {
+        console.error('Error loading notification settings:', error);
+        // Set defaults on error
+        const fallbackSettings: Record<string, { inApp: boolean, email: boolean }> = {};
         NOTIFICATION_TYPES.forEach(type => {
-          defaultSettings[type.id] = { inApp: true, email: true };
+          fallbackSettings[type.id] = { inApp: true, email: true };
         });
-        setNotificationSettings(defaultSettings);
-        localStorage.setItem('notificationSettings', JSON.stringify(defaultSettings));
+        setNotificationSettings(fallbackSettings);
       }
-    } catch (error) {
-      console.error('Error loading notification settings:', error);
-      // Set defaults on error
-      const fallbackSettings: Record<string, { inApp: boolean, email: boolean }> = {};
-      NOTIFICATION_TYPES.forEach(type => {
-        fallbackSettings[type.id] = { inApp: true, email: true };
-      });
-      setNotificationSettings(fallbackSettings);
     }
+
+    loadSettings();
   }, []);
 
-  // Update setting and save to localStorage
-  const updateSetting = (key: string, channel: 'inApp' | 'email', value: boolean) => {
+  // Update setting and save to backend
+  const updateSetting = async (key: string, channel: 'inApp' | 'email', value: boolean) => {
     const newSettings = { 
       ...notificationSettings, 
       [key]: {
@@ -67,34 +71,22 @@ export default function SettingsPage() {
     };
     setNotificationSettings(newSettings);
     
-    // Save to localStorage
+    // Save to backend
     try {
-      localStorage.setItem('notificationSettings', JSON.stringify(newSettings));
+      const response = await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationSettings: newSettings }),
+      });
       
-      // Also save to backend (this would be replaced with your actual API endpoint)
-      saveSettingsToBackend(newSettings);
+      if (response.ok) {
+        toast.success('Settings saved');
+      } else {
+        toast.error('Failed to save settings');
+      }
     } catch (error) {
       console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
-    }
-  };
-
-  // Simulate saving to backend
-  const saveSettingsToBackend = async (settings: Record<string, { inApp: boolean, email: boolean }>) => {
-    try {
-      // This would be your actual API call
-      // const response = await fetch('/api/user/settings', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ settings }),
-      // });
-      
-      // For now, just show a success toast occasionally to give feedback
-      if (Math.random() > 0.7) {
-        toast.success('Settings saved');
-      }
-    } catch (error) {
-      console.error('Error saving settings to backend:', error);
     }
   };
 

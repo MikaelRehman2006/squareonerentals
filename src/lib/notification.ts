@@ -5,6 +5,55 @@ import { sendNotificationEmail } from '@/utils/resend';
 import { User } from '@/models/User';
 
 /**
+ * Check if user should receive notifications based on their preferences
+ */
+async function shouldSendNotification(userId: string, notificationType: string, channel: 'inApp' | 'email'): Promise<boolean> {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log(`❌ User not found for notification preferences: ${userId}`);
+      return false;
+    }
+
+    const preferences = (user.preferences as any)?.notificationSettings;
+    if (!preferences) {
+      console.log(`📋 No notification preferences found for user ${userId}, defaulting to true`);
+      return true; // Default to true if no preferences set
+    }
+
+    // Map notification types to preference keys
+    const typeMapping: Record<string, string> = {
+      'SYSTEM': 'systemAlerts',
+      'NEWSLETTER': 'newsletter',
+      'MARKETING': 'specialOffers',
+      'FAVORITE': 'favoriteUpdates',
+      'LISTING_UPDATE': 'listingChanges',
+      'PAYMENT': 'paymentNotifications',
+      'WELCOME': 'systemAlerts', // Welcome notifications fall under system alerts
+    };
+
+    const preferenceKey = typeMapping[notificationType];
+    if (!preferenceKey) {
+      console.log(`⚠️ Unknown notification type: ${notificationType}, defaulting to true`);
+      return true; // Default to true for unknown types
+    }
+
+    const userPreference = preferences[preferenceKey];
+    if (!userPreference) {
+      console.log(`📋 No preference found for ${preferenceKey}, defaulting to true`);
+      return true; // Default to true if preference not set
+    }
+
+    const shouldSend = userPreference[channel] !== false;
+    console.log(`🔔 Notification preference check: user=${userId}, type=${notificationType}, channel=${channel}, preference=${preferenceKey}, shouldSend=${shouldSend}`);
+    return shouldSend; // Only return false if explicitly set to false
+  } catch (error) {
+    console.error('Error checking user notification preferences:', error);
+    return true; // Default to true on error
+  }
+}
+
+/**
  * Create a notification for a user and optionally send an email
  */
 export async function createNotification({
@@ -30,6 +79,22 @@ export async function createNotification({
       throw new Error(`Invalid notification type: ${type}`);
     }
     
+    // Check if user wants in-app notifications
+    const shouldSendInApp = await shouldSendNotification(userId, type, 'inApp');
+    if (!shouldSendInApp) {
+      console.log(`⚠️ In-app notifications disabled for user ${userId}, type ${type}`);
+      // Still create notification but mark as read immediately
+      const notification = await Notification.create({
+        userId,
+        message,
+        type,
+        listingId,
+        relatedUserId,
+        read: true, // Mark as read since user doesn't want to see it
+      });
+      return notification;
+    }
+    
     // Create the notification
     const notification = await Notification.create({
       userId,
@@ -53,18 +118,24 @@ export async function createNotification({
 
     // Send email notification if requested
     if (sendEmail) {
-      console.log(`📧 Email sending enabled - triggering email send...`);
-      try {
-        await sendNotificationEmailForUser(userId, {
-          message,
-          type,
-          listingId,
-          relatedUserId,
-        });
-        console.log(`✅ Email send process completed for user ${userId}`);
-      } catch (emailError) {
-        console.error(`❌ Failed to send notification email for user ${userId}:`, emailError);
-        // Don't throw error here - notification was created successfully
+      // Check if user wants email notifications
+      const shouldSendEmail = await shouldSendNotification(userId, type, 'email');
+      if (!shouldSendEmail) {
+        console.log(`⚠️ Email notifications disabled for user ${userId}, type ${type}`);
+      } else {
+        console.log(`📧 Email sending enabled - triggering email send...`);
+        try {
+          await sendNotificationEmailForUser(userId, {
+            message,
+            type,
+            listingId,
+            relatedUserId,
+          });
+          console.log(`✅ Email send process completed for user ${userId}`);
+        } catch (emailError) {
+          console.error(`❌ Failed to send notification email for user ${userId}:`, emailError);
+          // Don't throw error here - notification was created successfully
+        }
       }
     } else {
       console.log(`⚠️ Email sending disabled for this notification`);
