@@ -22,7 +22,7 @@ export default function TestVerification() {
       const data = await res.json();
       setResult({ type: 'send', status: res.status, data });
     } catch (error) {
-      setResult({ type: 'send', error: error.message });
+      setResult({ type: 'send', error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export default function TestVerification() {
       const data = await res.json();
       setResult({ type: 'verify', status: res.status, data });
     } catch (error) {
-      setResult({ type: 'verify', error: error.message });
+      setResult({ type: 'verify', error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function TestVerification() {
       const data = await res.json();
       setResult({ type: 'status', status: res.status, data });
     } catch (error) {
-      setResult({ type: 'status', error: error.message });
+      setResult({ type: 'status', error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ export default function TestVerification() {
       const data = await res.json();
       setResult({ type: 'cleanup', status: res.status, data });
     } catch (error) {
-      setResult({ type: 'cleanup', error: error.message });
+      setResult({ type: 'cleanup', error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
