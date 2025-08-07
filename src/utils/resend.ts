@@ -117,92 +117,131 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
         <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
             <h1 style="color: #2563eb; margin: 0; font-size: 28px;">Square One Rentals</h1>
-            <p style="color: #64748b; margin: 10px 0 0 0;">Welcome to the community!</p>
+            <p style="color: #64748b; margin: 10px 0 0 0;">Your trusted partner in finding the perfect rental in the Greater Toronto Area</p>
           </div>
           
           <div style="margin-bottom: 25px;">
-            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 22px;">Welcome, ${data.userName}! 🎉</h2>
+            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 22px;">Welcome to Square One Rentals, ${data.userName}! 🎉</h2>
             <p style="color: #475569; line-height: 1.6; margin: 0 0 15px 0;">
-              We're excited to have you join Square One Rentals! You're now part of a community of renters and landlords in the Greater Toronto Area.
+              We're thrilled to have you join our community! Whether you're looking for your next home or managing rental properties, we're here to make your rental journey seamless and successful.
             </p>
           </div>
           
-          <div style="background-color: #fef3c7; padding: 20px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 20px 0;">
-            <h3 style="color: #92400e; margin: 0 0 10px 0; font-size: 18px;">🚀 Getting Started</h3>
-            <p style="color: #92400e; margin: 0; line-height: 1.5;">
-              Here's what you can do right now to get the most out of Square One Rentals:
-            </p>
-            <ul style="color: #92400e; margin: 10px 0 0 0; padding-left: 20px;">
-              <li>Complete your profile to help us personalize your experience</li>
-              <li>Set your notification preferences in your account settings</li>
-              <li>Browse our extensive collection of rental listings</li>
-              <li>Save your favorite properties for easy access</li>
-            </ul>
-          </div>
-          
-          <div style="margin: 25px 0;">
-            <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 18px;">What's Next?</h3>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="background-color: #2563eb; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">1</span>
-                <span style="color: #475569;">Browse available rental listings</span>
+          <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 25px; border-radius: 8px; margin: 25px 0;">
+            <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 20px;">🌟 What Makes Us Different</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+              <div style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px;">
+                <h4 style="color: #92400e; margin: 0 0 8px 0; font-size: 16px;">🏠 Verified Listings</h4>
+                <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.4;">All properties are verified and regularly updated</p>
               </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="background-color: #2563eb; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">2</span>
-                <span style="color: #475569;">Create your own listing if you're a landlord</span>
+              <div style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px;">
+                <h4 style="color: #92400e; margin: 0 0 8px 0; font-size: 16px;">🔒 Secure Platform</h4>
+                <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.4;">Your data is protected with industry-standard security</p>
               </div>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="background-color: #2563eb; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">3</span>
-                <span style="color: #475569;">Set up your profile and preferences</span>
+              <div style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px;">
+                <h4 style="color: #92400e; margin: 0 0 8px 0; font-size: 16px;">💬 Direct Communication</h4>
+                <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.4;">Connect directly with landlords and tenants</p>
+              </div>
+              <div style="background: rgba(255,255,255,0.7); padding: 15px; border-radius: 6px;">
+                <h4 style="color: #92400e; margin: 0 0 8px 0; font-size: 16px;">📱 Mobile Friendly</h4>
+                <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.4;">Access your account from any device</p>
               </div>
             </div>
           </div>
           
-          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
-            <h3 style="color: #0c4a6e; margin: 0 0 10px 0; font-size: 18px;">💡 Pro Tips</h3>
-            <ul style="color: #0c4a6e; margin: 0; padding-left: 20px;">
-              <li>Use our advanced search filters to find your perfect rental</li>
-              <li>Set up alerts for new listings in your preferred areas</li>
-              <li>Contact landlords directly through our secure messaging system</li>
-              <li>Read our rental guides for helpful tips and advice</li>
-            </ul>
+          <div style="background-color: #f0f9ff; padding: 25px; border-radius: 8px; border-left: 4px solid #0ea5e9; margin: 25px 0;">
+            <h3 style="color: #0c4a6e; margin: 0 0 15px 0; font-size: 20px;">🚀 Your First Steps</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="background-color: #0ea5e9; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">1</span>
+                <div>
+                  <h4 style="color: #0c4a6e; margin: 0 0 4px 0; font-size: 16px;">Complete Your Profile</h4>
+                  <p style="color: #0c4a6e; margin: 0; font-size: 14px; line-height: 1.4;">Tell us about your preferences to get personalized recommendations</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="background-color: #0ea5e9; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">2</span>
+                <div>
+                  <h4 style="color: #0c4a6e; margin: 0 0 4px 0; font-size: 16px;">Browse Listings</h4>
+                  <p style="color: #0c4a6e; margin: 0; font-size: 14px; line-height: 1.4;">Explore thousands of verified rental properties in your area</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="background-color: #0ea5e9; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">3</span>
+                <div>
+                  <h4 style="color: #0c4a6e; margin: 0 0 4px 0; font-size: 16px;">Save Favorites</h4>
+                  <p style="color: #0c4a6e; margin: 0; font-size: 14px; line-height: 1.4;">Bookmark properties you love and get notified of updates</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="background-color: #0ea5e9; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">4</span>
+                <div>
+                  <h4 style="color: #0c4a6e; margin: 0 0 4px 0; font-size: 16px;">Connect & Communicate</h4>
+                  <p style="color: #0c4a6e; margin: 0; font-size: 14px; line-height: 1.4;">Reach out to landlords or tenants through our secure messaging</p>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 6px; border-left: 4px solid #22c55e; margin: 20px 0;">
-            <h3 style="color: #166534; margin: 0 0 10px 0; font-size: 18px;">🔒 Security & Privacy</h3>
-            <p style="color: #166534; margin: 0; line-height: 1.5;">
-              Your privacy and security are our top priorities. We use industry-standard encryption and never share your personal information with third parties without your consent.
+          <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #22c55e; margin: 25px 0;">
+            <h3 style="color: #166534; margin: 0 0 15px 0; font-size: 20px;">💡 Pro Tips for Success</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div>
+                <h4 style="color: #166534; margin: 0 0 8px 0; font-size: 16px;">🔍 Smart Searching</h4>
+                <ul style="color: #166534; margin: 0; padding-left: 20px; font-size: 14px;">
+                  <li>Use advanced filters for precise results</li>
+                  <li>Set up alerts for new listings</li>
+                  <li>Save your search criteria</li>
+                </ul>
+              </div>
+              <div>
+                <h4 style="color: #166534; margin: 0 0 8px 0; font-size: 16px;">📱 Stay Connected</h4>
+                <ul style="color: #166534; margin: 0; padding-left: 20px; font-size: 14px;">
+                  <li>Enable push notifications</li>
+                  <li>Check your dashboard regularly</li>
+                  <li>Respond to messages promptly</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin: 25px 0;">
+            <h3 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">🛡️ Safety & Security</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div>
+                <h4 style="color: #991b1b; margin: 0 0 8px 0; font-size: 16px;">✅ Verified Properties</h4>
+                <p style="color: #991b1b; margin: 0; font-size: 14px; line-height: 1.4;">All listings are verified and regularly monitored for accuracy</p>
+              </div>
+              <div>
+                <h4 style="color: #991b1b; margin: 0 0 8px 0; font-size: 16px;">🔐 Secure Communication</h4>
+                <p style="color: #991b1b; margin: 0; font-size: 14px; line-height: 1.4;">All messages are encrypted and your privacy is protected</p>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background-color: #faf5ff; padding: 25px; border-radius: 8px; border-left: 4px solid #a855f7; margin: 25px 0;">
+            <h3 style="color: #581c87; margin: 0 0 15px 0; font-size: 20px;">📧 Stay Informed</h3>
+            <p style="color: #581c87; margin: 0 0 15px 0; line-height: 1.6;">
+              We'll keep you updated with important information about your account, new listings that match your preferences, and helpful rental tips. You can customize your notification preferences anytime in your account settings.
             </p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <span style="background-color: #a855f7; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;">New Listings</span>
+              <span style="background-color: #a855f7; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;">Price Updates</span>
+              <span style="background-color: #a855f7; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;">Messages</span>
+              <span style="background-color: #a855f7; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;">System Alerts</span>
+            </div>
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="https://squareone-rentals.com" 
-               style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-              Get Started
+               style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; font-size: 16px;">
+              Start Exploring Now
             </a>
           </div>
           
           <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
             <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
-              You'll see a 🔴 notification badge beside your profile icon when you have unread notifications.
-            </p>
-          </div>
-        </div>
-        
-        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px;">
-          <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 16px; text-align: center;">📧 Email Delivery Instructions</h3>
-          <div style="background-color: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
-            <p style="color: #475569; margin: 0 0 10px 0; font-size: 14px; line-height: 1.5;">
-              <strong>To ensure you receive all our important emails:</strong>
-            </p>
-            <ol style="color: #475569; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
-              <li><strong>Add to contacts:</strong> Add <span style="color: #2563eb; font-weight: bold;">noreply@squareone-rentals.com</span> to your email contacts</li>
-              <li><strong>Mark as safe:</strong> Move this email to your inbox (not spam/junk folder)</li>
-              <li><strong>Check spam folder:</strong> If you don't see future emails, check your spam/junk folder</li>
-              <li><strong>Whitelist domain:</strong> Add <span style="color: #2563eb; font-weight: bold;">squareone-rentals.com</span> to your email whitelist</li>
-            </ol>
-            <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px; line-height: 1.4;">
-              <em>These steps help ensure you receive important notifications about your account, rental updates, and new opportunities.</em>
+              Need help? Our support team is available 24/7 to assist you with any questions.
             </p>
           </div>
         </div>

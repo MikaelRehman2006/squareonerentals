@@ -192,14 +192,12 @@ export default function ProfilePage() {
         const data = await response.json();
         console.log('Refreshed preferences data:', data);
         
-        if (data.preferences) {
-          setUserPreferences({
-            userTypes: data.preferences.userTypes || [],
-            onboardingCompleted: data.preferences.onboardingCompleted || false,
-            preferences: data.preferences
-          });
-          toast.success('Preferences refreshed successfully!');
-        }
+                 setUserPreferences({
+           userTypes: data.userTypes || [],
+           onboardingCompleted: data.onboardingCompleted || false,
+           preferences: data.preferences || {}
+         });
+         toast.success('Preferences refreshed successfully!');
       } else {
         toast.error('Failed to refresh preferences');
       }

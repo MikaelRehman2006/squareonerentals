@@ -258,13 +258,19 @@ export default function PostSignupSurvey() { // Define the main component functi
     const checkOnboardingStatus = async () => { // Define async function to check status
       if (session?.user?.email) { // Check if session has user email
         try { // Try to check onboarding status
+          console.log('🔍 Checking onboarding status for:', session.user.email);
           const response = await fetch('/api/user/preferences'); // Fetch user preferences from API
           const data = await response.json(); // Parse response as JSON
+          console.log('📊 Onboarding status data:', data);
+          console.log('✅ onboardingCompleted:', data.onboardingCompleted);
           
           if (!data.onboardingCompleted) { // Check if onboarding is not completed
+            console.log('🚀 Opening survey - onboarding not completed');
             // Clear any existing localStorage data before opening the survey
             clearAllSurveyData(); // Clear existing data
             setIsOpen(true); // Open the survey modal
+          } else {
+            console.log('✅ Onboarding already completed, not opening survey');
           }
         } catch (error) { // Catch any errors
           console.error('Error checking onboarding status:', error); // Log error to console

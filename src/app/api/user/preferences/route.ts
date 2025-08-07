@@ -40,6 +40,12 @@ export async function GET() {
       }
     };
 
+    console.log('📤 Returning user preferences:', {
+      userTypes: allPreferences.userTypes,
+      onboardingCompleted: allPreferences.onboardingCompleted,
+      preferences: allPreferences.preferences
+    });
+
     // Return in the structure expected by the frontend
     return NextResponse.json({
       preferences: allPreferences,
@@ -79,7 +85,7 @@ export async function POST(request: Request) {
 
     // Handle onboarding survey data structure
     if (requestData.userTypes !== undefined || requestData.onboardingCompleted !== undefined) {
-      console.log('Processing onboarding survey data');
+      console.log('📝 Processing onboarding survey data:', requestData);
       
       // Update onboarding-related preferences
       (user.preferences as any).userTypes = requestData.userTypes || [];
@@ -92,7 +98,9 @@ export async function POST(request: Request) {
         });
       }
 
+      console.log('💾 Saving user preferences:', user.preferences);
       await user.save();
+      console.log('✅ User preferences saved successfully');
       
       return NextResponse.json({ 
         message: 'Onboarding preferences updated successfully',
