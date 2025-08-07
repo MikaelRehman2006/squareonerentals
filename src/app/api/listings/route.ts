@@ -366,7 +366,7 @@ export async function POST(request: NextRequest) {
         console.log('Facebook auto-post triggered for listing:', listing._id.toString());
         
         // Prepare message for Facebook post
-        const listingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.squareonerentals.com'}/listings/${listing._id}`;
+        const listingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://squareone-rentals.com'}/listings/${listing._id}`;
         const message = `🏠 New Listing: ${sanitizedData.title}\n\n💰 Price: $${sanitizedData.price}/month\n📍 Location: ${sanitizedData.location}\n\n${sanitizedData.description.substring(0, 200)}${sanitizedData.description.length > 200 ? '...' : ''}\n\nView full listing: ${listingUrl}`;
 
         // Get the first image if available

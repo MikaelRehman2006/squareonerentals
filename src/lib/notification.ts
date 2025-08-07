@@ -176,7 +176,7 @@ function generateEmailSubject(type: string, message: string): string {
  * Generate action URL based on notification type
  */
 function generateActionUrl(type: string, listingId?: string): string {
-  const baseUrl = process.env.NEXTAUTH_URL || 'https://squareonerentals.com';
+  const baseUrl = process.env.NEXTAUTH_URL || 'https://squareone-rentals.com';
   
   switch (type) {
     case 'LISTING_UPDATE':

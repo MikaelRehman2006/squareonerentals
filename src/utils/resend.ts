@@ -80,8 +80,8 @@ export const sendVerificationEmail = async (data: VerificationEmailData): Promis
       </div>
     `;
 
-    // Use Resend sandbox domain
-    const fromEmail = 'Square One Rentals <onboarding@resend.dev>';
+    // Use verified domain
+    const fromEmail = 'Square One Rentals <noreply@squareone-rentals.com>';
 
     const { data: result, error } = await resend.emails.send({
       from: fromEmail,
@@ -134,7 +134,7 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
             </p>
             <ul style="color: #1e40af; margin: 10px 0 0 0; padding-left: 20px;">
               <li>Mark this email as "Not Spam"</li>
-              <li>Add <strong>onboarding@resend.dev</strong> to your contacts</li>
+              <li>Add <strong>noreply@squareone-rentals.com</strong> to your contacts</li>
               <li>Check your spam folder if you don't see future emails</li>
             </ul>
           </div>
@@ -158,7 +158,7 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
           </div>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="https://squareonerentals.com" 
+            <a href="https://squareone-rentals.com" 
                style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
               Get Started
             </a>
@@ -179,8 +179,8 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
       </div>
     `;
 
-    // Use Resend sandbox domain
-    const fromEmail = 'Square One Rentals <onboarding@resend.dev>';
+    // Use verified domain
+    const fromEmail = 'Square One Rentals <noreply@squareone-rentals.com>';
 
     const { data: result, error } = await resend.emails.send({
       from: fromEmail,
@@ -357,8 +357,8 @@ export const sendNotificationEmail = async (data: NotificationEmailData): Promis
     
     const html = generateNotificationEmailTemplate(data);
 
-    // Try sandbox domain first to test if domain verification is the issue
-    const fromEmail = 'Square One Rentals <onboarding@resend.dev>';
+    // Use verified domain
+    const fromEmail = 'Square One Rentals <noreply@squareone-rentals.com>';
 
     console.log('📧 Using from email:', fromEmail);
 
