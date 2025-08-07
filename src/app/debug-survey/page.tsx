@@ -14,7 +14,7 @@ export default function DebugSurveyPage() {
     try {
       const response = await fetch('/api/test-session');
       const data = await response.json();
-      setDebugData(prev => ({ ...prev, session: data }));
+      setDebugData((prev: any) => ({ ...prev, session: data }));
     } catch (error) {
       console.error('Session test error:', error);
     }
@@ -26,7 +26,7 @@ export default function DebugSurveyPage() {
     try {
       const response = await fetch('/api/user/preferences');
       const data = await response.json();
-      setDebugData(prev => ({ ...prev, preferences: data }));
+      setDebugData((prev: any) => ({ ...prev, preferences: data }));
     } catch (error) {
       console.error('Preferences test error:', error);
     }
@@ -38,7 +38,7 @@ export default function DebugSurveyPage() {
     try {
       const response = await fetch('/api/debug-user-preferences');
       const data = await response.json();
-      setDebugData(prev => ({ ...prev, debugPreferences: data }));
+      setDebugData((prev: any) => ({ ...prev, debugPreferences: data }));
     } catch (error) {
       console.error('Debug preferences test error:', error);
     }
@@ -73,7 +73,7 @@ export default function DebugSurveyPage() {
       });
 
       const data = await response.json();
-      setDebugData(prev => ({ ...prev, submission: { status: response.status, data } }));
+      setDebugData((prev: any) => ({ ...prev, submission: { status: response.status, data } }));
     } catch (error) {
       console.error('Survey submission test error:', error);
     }
