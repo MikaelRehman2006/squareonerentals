@@ -159,31 +159,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // Send welcome email
-    try {
-      console.log('Attempting to send welcome email to:', email);
-      console.log('RESEND_API_KEY configured:', !!process.env.RESEND_API_KEY);
-      console.log('RESEND_API_KEY length:', process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.length : 0);
-      
-      const emailResult = await sendWelcomeEmail({
-        userEmail: email,
-        userName: name
-      });
-      
-      console.log('Welcome email send result:', emailResult);
-      console.log('Welcome email details (success):', {
-        to: email,
-        from: 'Square One Rentals <onboarding@resend.dev>',
-        subject: 'Welcome to Square One Rentals! 🎉'
-      });
-    } catch (emailError) {
-      // Log error but don't fail registration
-      console.error('Error sending welcome email:', emailError);
-      console.error('Error details:', {
-        error: emailError instanceof Error ? emailError.message : 'Unknown error',
-        stack: emailError instanceof Error ? emailError.stack : 'No stack trace',
-      });
-    }
+    // Note: Welcome email is now sent through the notification system above
+    // This ensures only one welcome email is sent with comprehensive content
 
     return NextResponse.json({
       user: {

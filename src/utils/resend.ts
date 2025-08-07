@@ -127,15 +127,16 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
             </p>
           </div>
           
-          <div style="background-color: #eff6ff; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb; margin: 20px 0;">
-            <h3 style="color: #1e40af; margin: 0 0 10px 0; font-size: 18px;">📧 Important: Email Notifications</h3>
-            <p style="color: #1e40af; margin: 0; line-height: 1.5;">
-              To ensure you receive all our important notifications, please:
+          <div style="background-color: #fef3c7; padding: 20px; border-radius: 6px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+            <h3 style="color: #92400e; margin: 0 0 10px 0; font-size: 18px;">🚀 Getting Started</h3>
+            <p style="color: #92400e; margin: 0; line-height: 1.5;">
+              Here's what you can do right now to get the most out of Square One Rentals:
             </p>
-            <ul style="color: #1e40af; margin: 10px 0 0 0; padding-left: 20px;">
-              <li>Mark this email as "Not Spam"</li>
-              <li>Add <strong>noreply@squareone-rentals.com</strong> to your contacts</li>
-              <li>Check your spam folder if you don't see future emails</li>
+            <ul style="color: #92400e; margin: 10px 0 0 0; padding-left: 20px;">
+              <li>Complete your profile to help us personalize your experience</li>
+              <li>Set your notification preferences in your account settings</li>
+              <li>Browse our extensive collection of rental listings</li>
+              <li>Save your favorite properties for easy access</li>
             </ul>
           </div>
           
@@ -157,6 +158,23 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
             </div>
           </div>
           
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
+            <h3 style="color: #0c4a6e; margin: 0 0 10px 0; font-size: 18px;">💡 Pro Tips</h3>
+            <ul style="color: #0c4a6e; margin: 0; padding-left: 20px;">
+              <li>Use our advanced search filters to find your perfect rental</li>
+              <li>Set up alerts for new listings in your preferred areas</li>
+              <li>Contact landlords directly through our secure messaging system</li>
+              <li>Read our rental guides for helpful tips and advice</li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #f0fdf4; padding: 20px; border-radius: 6px; border-left: 4px solid #22c55e; margin: 20px 0;">
+            <h3 style="color: #166534; margin: 0 0 10px 0; font-size: 18px;">🔒 Security & Privacy</h3>
+            <p style="color: #166534; margin: 0; line-height: 1.5;">
+              Your privacy and security are our top priorities. We use industry-standard encryption and never share your personal information with third parties without your consent.
+            </p>
+          </div>
+          
           <div style="text-align: center; margin: 30px 0;">
             <a href="https://squareone-rentals.com" 
                style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
@@ -167,6 +185,24 @@ export const sendWelcomeEmail = async (data: WelcomeEmailData): Promise<boolean>
           <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
             <p style="color: #64748b; font-size: 14px; margin: 0; text-align: center;">
               You'll see a 🔴 notification badge beside your profile icon when you have unread notifications.
+            </p>
+          </div>
+        </div>
+        
+        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px;">
+          <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 16px; text-align: center;">📧 Email Delivery Instructions</h3>
+          <div style="background-color: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <p style="color: #475569; margin: 0 0 10px 0; font-size: 14px; line-height: 1.5;">
+              <strong>To ensure you receive all our important emails:</strong>
+            </p>
+            <ol style="color: #475569; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+              <li><strong>Add to contacts:</strong> Add <span style="color: #2563eb; font-weight: bold;">noreply@squareone-rentals.com</span> to your email contacts</li>
+              <li><strong>Mark as safe:</strong> Move this email to your inbox (not spam/junk folder)</li>
+              <li><strong>Check spam folder:</strong> If you don't see future emails, check your spam/junk folder</li>
+              <li><strong>Whitelist domain:</strong> Add <span style="color: #2563eb; font-weight: bold;">squareone-rentals.com</span> to your email whitelist</li>
+            </ol>
+            <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px; line-height: 1.4;">
+              <em>These steps help ensure you receive important notifications about your account, rental updates, and new opportunities.</em>
             </p>
           </div>
         </div>
