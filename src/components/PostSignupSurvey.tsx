@@ -270,11 +270,23 @@ export default function PostSignupSurvey() { // Define the main component functi
           
           if (!data.onboardingCompleted) { // Check if onboarding is not completed
             console.log('🚀 Opening survey - onboarding not completed');
+            console.log('🔍 Data structure:', {
+              userTypes: data.userTypes,
+              onboardingCompleted: data.onboardingCompleted,
+              hasUserTypes: !!data.userTypes,
+              userTypesLength: data.userTypes?.length
+            });
             // Clear any existing localStorage data before opening the survey
             clearAllSurveyData(); // Clear existing data
             setIsOpen(true); // Open the survey modal
           } else {
             console.log('✅ Onboarding already completed, not opening survey');
+            console.log('🔍 Completed data structure:', {
+              userTypes: data.userTypes,
+              onboardingCompleted: data.onboardingCompleted,
+              hasUserTypes: !!data.userTypes,
+              userTypesLength: data.userTypes?.length
+            });
             setIsOpen(false); // Ensure survey is closed if onboarding is completed
           }
         } catch (error) { // Catch any errors
@@ -294,8 +306,10 @@ export default function PostSignupSurvey() { // Define the main component functi
       setIsOpen(false);
     };
 
+    console.log('📡 Adding surveyCompleted event listener');
     window.addEventListener('surveyCompleted', handleSurveyCompleted);
     return () => {
+      console.log('📡 Removing surveyCompleted event listener');
       window.removeEventListener('surveyCompleted', handleSurveyCompleted);
     };
   }, []);
@@ -452,11 +466,14 @@ export default function PostSignupSurvey() { // Define the main component functi
       // Debug logging for mobile issues
       console.log('Frontend Request Body:', JSON.stringify(requestBody, null, 2));
       
+      console.log('🔍 Survey - About to send request to /api/user/preferences');
       const response = await fetch('/api/user/preferences', { // Send POST request to API
         method: 'POST', // Use POST method
         headers: { 'Content-Type': 'application/json' }, // Set content type header
         body: JSON.stringify(requestBody) // Stringify request body
       });
+      console.log('🔍 Survey - Response status:', response.status);
+      console.log('🔍 Survey - Response ok:', response.ok);
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
@@ -471,9 +488,11 @@ export default function PostSignupSurvey() { // Define the main component functi
       }
       
       // Dispatch survey completion event to refresh other components
+      console.log('🎉 Dispatching surveyCompleted event');
       window.dispatchEvent(new CustomEvent('surveyCompleted'));
       
       toast.success('Preferences saved successfully!'); // Show success toast
+      console.log('🔒 Closing survey modal');
       setIsOpen(false); // Close the modal
     } catch (error) { // Catch any errors
       toast.error('Failed to save preferences. Please try again.'); // Show error toast
@@ -495,11 +514,14 @@ export default function PostSignupSurvey() { // Define the main component functi
       // Debug logging for mobile issues
       console.log('Frontend None Request Body:', JSON.stringify(requestBody, null, 2));
       
+      console.log('🔍 Survey None - About to send request to /api/user/preferences');
       const response = await fetch('/api/user/preferences', { // Send POST request to API
         method: 'POST', // Use POST method
         headers: { 'Content-Type': 'application/json' }, // Set content type header
         body: JSON.stringify(requestBody) // Stringify request body
       });
+      console.log('🔍 Survey None - Response status:', response.status);
+      console.log('🔍 Survey None - Response ok:', response.ok);
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response (None):', errorText);
@@ -514,9 +536,11 @@ export default function PostSignupSurvey() { // Define the main component functi
       }
       
       // Dispatch survey completion event to refresh other components
+      console.log('🎉 Dispatching surveyCompleted event (None)');
       window.dispatchEvent(new CustomEvent('surveyCompleted'));
       
       toast.success('Onboarding complete!'); // Show success toast
+      console.log('🔒 Closing survey modal (None)');
       setIsOpen(false); // Close the modal
     } catch (error) { // Catch any errors
       toast.error('Failed to skip survey. Please try again.'); // Show error toast
