@@ -23,7 +23,7 @@ export async function GET() {
     
     // Test different notification types
     const testTypes = ['SYSTEM', 'NEWSLETTER', 'MARKETING', 'FAVORITE', 'LISTING_UPDATE', 'PAYMENT'];
-    const testResults = {};
+    const testResults: Record<string, any> = {};
 
     for (const type of testTypes) {
       const typeMapping: Record<string, string> = {

@@ -5,7 +5,7 @@ import { User } from '@/models/User';
 import { sendWelcomeEmail } from '@/utils/resend';
 import { createNotification } from '@/lib/notification';
 import { Notification } from '@/models/Notification';
-import { verificationCodes, cleanupExpiredCodes } from '@/lib/verification';
+import { verifyCode } from '@/lib/verification';
 
 // Add password validation helper
 function validatePassword(password: string): { valid: boolean; message: string } {
@@ -63,8 +63,6 @@ export async function POST(request: Request) {
     }
 
     // Verify email verification code using new system
-    const { verifyCode } = await import('@/lib/verification');
-    
     if (!verifyCode(email, verificationCode)) {
       return NextResponse.json(
         { error: 'Invalid or expired verification code. Please request a new one.' },
