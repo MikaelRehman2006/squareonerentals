@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendVerificationEmail } from '@/utils/resend';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
-import { verificationCodes, generateVerificationCode, cleanupExpiredCodes } from '@/lib/verification';
+import { 
+  generateVerificationCode, 
+  storeVerificationCode, 
+  isRateLimited, 
+  getRemainingRateLimitTime,
+  getVerificationInfo 
+} from '@/lib/verification';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,15 +41,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clean up expired codes first
-    cleanupExpiredCodes();
+    // Check rate limiting
+    if (isRateLimited(email)) {
+      const remainingTime = getRemainingRateLimitTime(email);
+      return NextResponse.json(
+        { 
+          error: `Please wait ${remainingTime} seconds before requesting another code`,
+          remainingTime 
+        },
+        { status: 429 }
+      );
+    }
 
     // Generate verification code
     const verificationCode = generateVerificationCode();
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes from now
 
-    // Store verification code (in production, use Redis or database)
-    verificationCodes.set(email, { code: verificationCode, expiresAt });
+    // Store verification code with rate limiting
+    const stored = storeVerificationCode(email, verificationCode);
+    if (!stored) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait before requesting another code.' },
+        { status: 429 }
+      );
+    }
 
     console.log('Sending verification email to:', email);
     console.log('Verification code:', verificationCode);
@@ -57,7 +77,8 @@ export async function POST(request: NextRequest) {
     if (emailResult) {
       return NextResponse.json({ 
         success: true, 
-        message: 'Verification code sent to your email' 
+        message: 'Verification code sent to your email',
+        expiresIn: '15 minutes'
       });
     } else {
       return NextResponse.json({ 
@@ -71,6 +92,24 @@ export async function POST(request: NextRequest) {
       success: false, 
       message: 'Internal server error' 
     }, { status: 500 });
+  }
+}
+
+// Debug endpoint to check verification status
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const email = searchParams.get('email');
+    
+    if (!email) {
+      return NextResponse.json({ error: 'Email parameter required' }, { status: 400 });
+    }
+
+    const info = getVerificationInfo(email);
+    return NextResponse.json(info);
+  } catch (error) {
+    console.error('Debug verification error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

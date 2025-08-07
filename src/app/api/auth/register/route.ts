@@ -62,35 +62,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // Clean up expired codes first
-    cleanupExpiredCodes();
-
-    // Verify email verification code
-    const storedVerification = verificationCodes.get(email);
-    if (!storedVerification) {
+    // Verify email verification code using new system
+    const { verifyCode } = await import('@/lib/verification');
+    
+    if (!verifyCode(email, verificationCode)) {
       return NextResponse.json(
-        { error: 'Please request a verification code first' },
+        { error: 'Invalid or expired verification code. Please request a new one.' },
         { status: 400 }
       );
     }
-
-    if (storedVerification.code !== verificationCode) {
-      return NextResponse.json(
-        { error: 'Invalid verification code' },
-        { status: 400 }
-      );
-    }
-
-    if (Date.now() > storedVerification.expiresAt) {
-      verificationCodes.delete(email);
-      return NextResponse.json(
-        { error: 'Verification code has expired. Please request a new one.' },
-        { status: 400 }
-      );
-    }
-
-    // Clear the verification code after successful verification
-    verificationCodes.delete(email);
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
