@@ -103,18 +103,29 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        console.log('Fetching user data...');
+        console.log('🔍 Fetching user data...');
         const response = await fetch('/api/user/preferences');
-        console.log('Response status:', response.status);
+        console.log('🔍 Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched user data:', data);
+          console.log('🔍 Fetched user data:', data);
+          
+          // Handle both old and new data structures
+          const userTypes = data.userTypes || data.preferences?.userTypes || [];
+          const onboardingCompleted = data.onboardingCompleted || data.preferences?.onboardingCompleted || false;
+          const preferences = data.preferences || {};
           
           setUserPreferences({
-            userTypes: data.userTypes || [],
-            onboardingCompleted: data.onboardingCompleted || false,
-            preferences: data.preferences || {}
+            userTypes,
+            onboardingCompleted,
+            preferences
+          });
+          
+          console.log('✅ Set user preferences:', {
+            userTypes,
+            onboardingCompleted,
+            hasPreferences: Object.keys(preferences).length > 0
           });
           
           // Check for pending email change
@@ -123,10 +134,10 @@ export default function ProfilePage() {
             // Don't automatically show email change UI - only show when user clicks "Change Email" button
           }
         } else {
-          console.error('Failed to fetch user data:', response.status);
+          console.error('❌ Failed to fetch user data:', response.status);
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('❌ Error fetching user data:', error);
       } finally {
         setLoadingPreferences(false);
       }
@@ -148,20 +159,35 @@ export default function ProfilePage() {
   // Listen for survey completion events
   useEffect(() => {
     const handleSurveyCompleted = () => {
-      console.log('Survey completed, refreshing preferences...');
+      console.log('🎉 Survey completed, refreshing preferences...');
       const refreshPreferences = async () => {
         try {
           const response = await fetch('/api/user/preferences');
           if (response.ok) {
             const data = await response.json();
+            console.log('🔍 Refreshed preferences data:', data);
+            
+            // Handle both old and new data structures
+            const userTypes = data.userTypes || data.preferences?.userTypes || [];
+            const onboardingCompleted = data.onboardingCompleted || data.preferences?.onboardingCompleted || false;
+            const preferences = data.preferences || {};
+            
             setUserPreferences({
-              userTypes: data.userTypes || [],
-              onboardingCompleted: data.onboardingCompleted || false,
-              preferences: data.preferences || {}
+              userTypes,
+              onboardingCompleted,
+              preferences
             });
+            
+            console.log('✅ Updated user preferences after survey completion:', {
+              userTypes,
+              onboardingCompleted,
+              hasPreferences: Object.keys(preferences).length > 0
+            });
+          } else {
+            console.error('❌ Failed to refresh preferences:', response.status);
           }
         } catch (error) {
-          console.error('Error refreshing preferences:', error);
+          console.error('❌ Error refreshing preferences:', error);
         }
       };
       refreshPreferences();

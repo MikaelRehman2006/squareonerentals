@@ -262,35 +262,40 @@ export default function PostSignupSurvey() { // Define the main component functi
         try { // Try to check onboarding status
           console.log('🔍 Checking onboarding status for:', session.user.email);
           const response = await fetch('/api/user/preferences'); // Fetch user preferences from API
+          
+          if (!response.ok) {
+            console.error('❌ Failed to fetch preferences:', response.status);
+            setHasCheckedOnboarding(true);
+            return;
+          }
+          
           const data = await response.json(); // Parse response as JSON
           console.log('📊 Onboarding status data:', data);
-          console.log('✅ onboardingCompleted:', data.onboardingCompleted);
+          
+          // Handle both old and new data structures
+          const userTypes = data.userTypes || data.preferences?.userTypes || [];
+          const onboardingCompleted = data.onboardingCompleted || data.preferences?.onboardingCompleted || false;
+          
+          console.log('✅ Processed onboarding status:', {
+            userTypes,
+            onboardingCompleted,
+            hasUserTypes: !!userTypes,
+            userTypesLength: userTypes?.length
+          });
           
           setHasCheckedOnboarding(true); // Mark that we've checked onboarding status
           
-          if (!data.onboardingCompleted) { // Check if onboarding is not completed
+          if (!onboardingCompleted) { // Check if onboarding is not completed
             console.log('🚀 Opening survey - onboarding not completed');
-            console.log('🔍 Data structure:', {
-              userTypes: data.userTypes,
-              onboardingCompleted: data.onboardingCompleted,
-              hasUserTypes: !!data.userTypes,
-              userTypesLength: data.userTypes?.length
-            });
             // Clear any existing localStorage data before opening the survey
             clearAllSurveyData(); // Clear existing data
             setIsOpen(true); // Open the survey modal
           } else {
             console.log('✅ Onboarding already completed, not opening survey');
-            console.log('🔍 Completed data structure:', {
-              userTypes: data.userTypes,
-              onboardingCompleted: data.onboardingCompleted,
-              hasUserTypes: !!data.userTypes,
-              userTypesLength: data.userTypes?.length
-            });
             setIsOpen(false); // Ensure survey is closed if onboarding is completed
           }
         } catch (error) { // Catch any errors
-          console.error('Error checking onboarding status:', error); // Log error to console
+          console.error('❌ Error checking onboarding status:', error); // Log error to console
           setHasCheckedOnboarding(true); // Mark as checked even on error
         }
       }
@@ -464,7 +469,7 @@ export default function PostSignupSurvey() { // Define the main component functi
       };
       
       // Debug logging for mobile issues
-      console.log('Frontend Request Body:', JSON.stringify(requestBody, null, 2));
+      console.log('🔍 Survey - Frontend Request Body:', JSON.stringify(requestBody, null, 2));
       
       console.log('🔍 Survey - About to send request to /api/user/preferences');
       const response = await fetch('/api/user/preferences', { // Send POST request to API
@@ -474,15 +479,22 @@ export default function PostSignupSurvey() { // Define the main component functi
       });
       console.log('🔍 Survey - Response status:', response.status);
       console.log('🔍 Survey - Response ok:', response.ok);
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`Failed to save preferences: ${response.status} ${response.statusText}`);
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`Failed to save preferences: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       // Log successful response
       const responseData = await response.json();
       console.log('✅ Survey submitted successfully:', responseData);
+      
+      // Verify the response contains the expected data
+      if (!responseData.onboardingCompleted && !responseData.preferences?.onboardingCompleted) {
+        console.warn('⚠️ Warning: onboardingCompleted not found in response:', responseData);
+      }
+      
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
@@ -495,7 +507,8 @@ export default function PostSignupSurvey() { // Define the main component functi
       console.log('🔒 Closing survey modal');
       setIsOpen(false); // Close the modal
     } catch (error) { // Catch any errors
-      toast.error('Failed to save preferences. Please try again.'); // Show error toast
+      console.error('❌ Error submitting survey:', error);
+      toast.error(`Failed to save preferences: ${error instanceof Error ? error.message : 'Unknown error'}`); // Show error toast
     } finally { // Finally block
       setIsSubmitting(false); // Set submitting state to false
     }
@@ -512,7 +525,7 @@ export default function PostSignupSurvey() { // Define the main component functi
       };
       
       // Debug logging for mobile issues
-      console.log('Frontend None Request Body:', JSON.stringify(requestBody, null, 2));
+      console.log('🔍 Survey None - Frontend Request Body:', JSON.stringify(requestBody, null, 2));
       
       console.log('🔍 Survey None - About to send request to /api/user/preferences');
       const response = await fetch('/api/user/preferences', { // Send POST request to API
@@ -522,15 +535,22 @@ export default function PostSignupSurvey() { // Define the main component functi
       });
       console.log('🔍 Survey None - Response status:', response.status);
       console.log('🔍 Survey None - Response ok:', response.ok);
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response (None):', errorText);
-        throw new Error(`Failed to skip survey: ${response.status} ${response.statusText}`);
+        console.error('❌ API Error Response (None):', errorText);
+        throw new Error(`Failed to skip survey: ${response.status} ${response.statusText} - ${errorText}`);
       }
       
       // Log successful response
       const responseData = await response.json();
       console.log('✅ Survey skipped successfully:', responseData);
+      
+      // Verify the response contains the expected data
+      if (!responseData.onboardingCompleted && !responseData.preferences?.onboardingCompleted) {
+        console.warn('⚠️ Warning: onboardingCompleted not found in response (None):', responseData);
+      }
+      
       if (session?.user?.email) { // Check if session has user email
         localStorage.removeItem(`survey_progress_${session.user.email}`); // Remove saved progress from localStorage
       }
@@ -543,7 +563,8 @@ export default function PostSignupSurvey() { // Define the main component functi
       console.log('🔒 Closing survey modal (None)');
       setIsOpen(false); // Close the modal
     } catch (error) { // Catch any errors
-      toast.error('Failed to skip survey. Please try again.'); // Show error toast
+      console.error('❌ Error skipping survey:', error);
+      toast.error(`Failed to skip survey: ${error instanceof Error ? error.message : 'Unknown error'}`); // Show error toast
     } finally { // Finally block
       setIsSubmitting(false); // Set submitting state to false
     }
@@ -568,48 +589,57 @@ export default function PostSignupSurvey() { // Define the main component functi
     const loadExistingPreferences = async () => {
       if (session?.user?.email && isOpen) {
         try {
-          console.log('Loading existing preferences for survey...');
+          console.log('🔍 Loading existing preferences for survey...');
           const response = await fetch('/api/user/preferences');
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Loaded existing preferences:', data);
-            
-            // Only load existing user types if the survey is being reopened and user has already started
-            // For first-time users or users who haven't completed the survey, always start at the role selection page
-            if (data.userTypes && data.userTypes.length > 0 && data.onboardingCompleted === false) {
-              // Only load existing data if the user has already started the survey
-              // Check if there's actual form data, not just empty preferences
-              const hasFormData = data.preferences && Object.keys(data.preferences).length > 0;
-              if (hasFormData) {
-                setSelectedTypes(data.userTypes);
-                console.log('Set existing user types:', data.userTypes);
-                
-                // Load existing form data for each role
-                const existingRoleForms = { ...roleForms };
-                Object.keys(data.preferences).forEach(role => {
-                  if (data.preferences[role]) {
-                    existingRoleForms[role] = data.preferences[role];
-                  }
-                });
-                setRoleForms(existingRoleForms);
-                console.log('Set existing form data:', existingRoleForms);
-              } else {
-                // Reset to initial state for new users or users without form data
-                setSelectedTypes([]);
-                setCurrentType('');
-                setRoleForms({});
-                console.log('Reset to initial state - no existing form data');
-              }
+          
+          if (!response.ok) {
+            console.error('❌ Failed to fetch preferences for survey:', response.status);
+            return;
+          }
+          
+          const data = await response.json();
+          console.log('🔍 Loaded existing preferences:', data);
+          
+          // Handle both old and new data structures
+          const userTypes = data.userTypes || data.preferences?.userTypes || [];
+          const onboardingCompleted = data.onboardingCompleted || data.preferences?.onboardingCompleted || false;
+          const preferences = data.preferences || {};
+          
+          // Only load existing user types if the survey is being reopened and user has already started
+          // For first-time users or users who haven't completed the survey, always start at the role selection page
+          if (userTypes && userTypes.length > 0 && onboardingCompleted === false) {
+            // Only load existing data if the user has already started the survey
+            // Check if there's actual form data, not just empty preferences
+            const hasFormData = preferences && Object.keys(preferences).length > 0;
+            if (hasFormData) {
+              setSelectedTypes(userTypes);
+              console.log('✅ Set existing user types:', userTypes);
+              
+              // Load existing form data for each role
+              const existingRoleForms = { ...roleForms };
+              Object.keys(preferences).forEach(role => {
+                if (preferences[role]) {
+                  existingRoleForms[role] = preferences[role];
+                }
+              });
+              setRoleForms(existingRoleForms);
+              console.log('✅ Set existing form data:', existingRoleForms);
             } else {
-              // Reset to initial state for new users
+              // Reset to initial state for new users or users without form data
               setSelectedTypes([]);
               setCurrentType('');
               setRoleForms({});
-              console.log('Reset to initial state - new user or completed onboarding');
+              console.log('🔄 Reset to initial state - no existing form data');
             }
+          } else {
+            // Reset to initial state for new users
+            setSelectedTypes([]);
+            setCurrentType('');
+            setRoleForms({});
+            console.log('🔄 Reset to initial state - new user or completed onboarding');
           }
         } catch (error) {
-          console.error('Error loading existing preferences:', error);
+          console.error('❌ Error loading existing preferences:', error);
           // Reset to initial state on error
           setSelectedTypes([]);
           setCurrentType('');

@@ -12,18 +12,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    console.log('🔍 GET preferences - Session user:', { email: session.user.email, id: session.user.id });
+
     await connectDB();
     
     let user = await User.findOne({ email: session.user.email });
+    console.log('🔍 GET preferences - User found by email:', !!user);
     
     // If user not found by email, try to find by ID (for cases where email was changed)
     if (!user && session.user.id) {
       user = await User.findById(session.user.id);
+      console.log('🔍 GET preferences - User found by ID:', !!user);
     }
     
     if (!user) {
+      console.log('❌ GET preferences - User not found');
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    console.log('✅ GET preferences - User found:', { id: user._id, email: user.email });
 
     // Get user preferences
     const userPrefs = (user.preferences as any) || {};
@@ -49,8 +56,8 @@ export async function GET() {
       pendingEmailChange: user.pendingEmailChange ? {
         newEmail: user.pendingEmailChange.newEmail,
         verificationCode: user.pendingEmailChange.verificationCode,
-        expiresAt: user.pendingEmailChange.expiresAt.toISOString(),
-        createdAt: user.pendingEmailChange.createdAt.toISOString()
+        expiresAt: user.pendingEmailChange.expiresAt ? user.pendingEmailChange.expiresAt.toISOString() : null,
+        createdAt: user.pendingEmailChange.createdAt ? user.pendingEmailChange.createdAt.toISOString() : null
       } : null
     };
 
@@ -73,7 +80,7 @@ export async function GET() {
       pendingEmailChange: allPreferences.pendingEmailChange
     });
   } catch (error) {
-    console.error('Error fetching user preferences:', error);
+    console.error('❌ Error fetching user preferences:', error);
     return NextResponse.json({ error: 'Failed to fetch preferences' }, { status: 500 });
   }
 }
@@ -87,7 +94,7 @@ export async function POST(request: Request) {
     }
 
     const requestData = await request.json();
-    console.log('Received preferences data:', requestData);
+    console.log('📝 Received preferences data:', JSON.stringify(requestData, null, 2));
 
     await connectDB();
     
@@ -99,17 +106,25 @@ export async function POST(request: Request) {
     }
     
     if (!user) {
+      console.error('❌ User not found for email:', session.user.email);
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    console.log('✅ Found user:', { id: user._id, email: user.email });
 
     // Initialize preferences if not exists
     if (!user.preferences) {
       user.preferences = {} as any;
+      console.log('🔧 Initialized empty preferences');
     }
 
     // Handle onboarding survey data structure
     if (requestData.userTypes !== undefined || requestData.onboardingCompleted !== undefined) {
-      console.log('📝 Processing onboarding survey data:', requestData);
+      console.log('📝 Processing onboarding survey data:', {
+        userTypes: requestData.userTypes,
+        onboardingCompleted: requestData.onboardingCompleted,
+        hasPreferences: !!requestData.preferences
+      });
       
       // Update onboarding-related preferences
       (user.preferences as any).userTypes = requestData.userTypes || [];
@@ -121,49 +136,94 @@ export async function POST(request: Request) {
         (user.preferences as any).preferences = requestData.preferences;
       }
 
-      console.log('💾 Saving user preferences:', user.preferences);
+      console.log('💾 About to save user preferences:', JSON.stringify(user.preferences, null, 2));
       
-      // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
-      const updateResult = await User.findByIdAndUpdate(
-        user._id,
-        { preferences: user.preferences },
-        { new: true }
-      );
-      
-      console.log('✅ User preferences saved successfully:', updateResult?.preferences);
-      
-      return NextResponse.json({ 
-        message: 'Onboarding preferences updated successfully',
-        preferences: user.preferences
-      });
+      try {
+        // Use findOneAndUpdate for more reliable saving
+        const updateResult = await User.findByIdAndUpdate(
+          user._id,
+          { 
+            $set: { 
+              preferences: user.preferences 
+            } 
+          },
+          { 
+            new: true,
+            runValidators: false // Disable validators to prevent issues
+          }
+        );
+        
+        if (!updateResult) {
+          console.error('❌ Failed to update user preferences - no result returned');
+          return NextResponse.json({ error: 'Failed to save preferences' }, { status: 500 });
+        }
+        
+        console.log('✅ User preferences saved successfully:', JSON.stringify(updateResult.preferences, null, 2));
+        
+        // Verify the save by fetching the user again
+        const verifiedUser = await User.findById(user._id);
+        if (!verifiedUser) {
+          console.error('❌ Failed to verify saved preferences - user not found');
+          return NextResponse.json({ error: 'Failed to verify saved preferences' }, { status: 500 });
+        }
+        
+        console.log('✅ Verified saved preferences:', JSON.stringify(verifiedUser.preferences, null, 2));
+        
+        return NextResponse.json({ 
+          message: 'Onboarding preferences updated successfully',
+          preferences: verifiedUser.preferences,
+          userTypes: verifiedUser.preferences?.userTypes || [],
+          onboardingCompleted: verifiedUser.preferences?.onboardingCompleted || false
+        });
+      } catch (updateError) {
+        console.error('❌ Error updating user preferences:', updateError);
+        return NextResponse.json({ error: 'Failed to save preferences to database' }, { status: 500 });
+      }
     }
 
     // Handle notification settings data structure
     if (requestData.notificationSettings) {
-      console.log('Processing notification settings data');
+      console.log('📝 Processing notification settings data');
       
       (user.preferences as any).notificationSettings = requestData.notificationSettings;
       
-      // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
-      const updateResult = await User.findByIdAndUpdate(
-        user._id,
-        { preferences: user.preferences },
-        { new: true }
-      );
+      try {
+        const updateResult = await User.findByIdAndUpdate(
+          user._id,
+          { 
+            $set: { 
+              preferences: user.preferences 
+            } 
+          },
+          { 
+            new: true,
+            runValidators: false
+          }
+        );
 
-      return NextResponse.json({ 
-        message: 'Notification preferences updated successfully',
-        preferences: requestData.notificationSettings 
-      });
+        if (!updateResult) {
+          console.error('❌ Failed to update notification settings');
+          return NextResponse.json({ error: 'Failed to save notification settings' }, { status: 500 });
+        }
+
+        return NextResponse.json({ 
+          message: 'Notification preferences updated successfully',
+          preferences: requestData.notificationSettings 
+        });
+      } catch (updateError) {
+        console.error('❌ Error updating notification settings:', updateError);
+        return NextResponse.json({ error: 'Failed to save notification settings' }, { status: 500 });
+      }
     }
 
     // If neither structure is provided, return error
+    console.error('❌ Invalid request data - no valid structure provided');
     return NextResponse.json({ 
       error: 'Invalid request data. Must include either onboarding data or notification settings.' 
     }, { status: 400 });
 
   } catch (error) {
-    console.error('Error updating user preferences:', error);
+    console.error('❌ Error updating user preferences:', error);
     return NextResponse.json({ error: 'Failed to update preferences' }, { status: 500 });
   }
 } 
