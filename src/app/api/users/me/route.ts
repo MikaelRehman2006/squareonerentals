@@ -47,6 +47,8 @@ export async function GET() {
       userId: user._id
     }).select('images id').lean() as ListingType[];
 
+    console.log(`Found ${userListings.length} listings for user ${user._id}`);
+
     // Get actual storage usage from ImageMetadata collection
     let totalStorageUsed = 0;
     let totalImageCount = 0;
@@ -71,6 +73,12 @@ export async function GET() {
 
       // Get all image metadata for the user
       const metadata = await ImageMetadata.find({ userId: user._id.toString() }).lean();
+      console.log(`Found ${metadata.length} image metadata records for user ${user._id}`);
+      
+      // Log each metadata record for debugging
+      metadata.forEach((item, index) => {
+        console.log(`Metadata ${index + 1}: url=${item.url}, size=${item.size}, listingId=${item.listingId}`);
+      });
       
       // Calculate total size from actual metadata
       totalStorageUsed = metadata.reduce((total: number, item: any) => {
@@ -79,6 +87,9 @@ export async function GET() {
       }, 0);
       
       totalImageCount = metadata.length;
+      
+      console.log(`Total storage used: ${totalStorageUsed} bytes (${(totalStorageUsed / (1024 * 1024)).toFixed(2)} MB)`);
+      console.log(`Total image count: ${totalImageCount}`);
     } catch (error) {
       console.error('Error getting image metadata:', error);
       
