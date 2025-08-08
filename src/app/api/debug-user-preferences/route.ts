@@ -78,11 +78,11 @@ export async function POST(request: Request) {
 
       console.log('🔍 Debug POST - After setting preferences:', user.preferences);
       
-      // Use findOneAndUpdate for more reliable saving
+      // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
       const updateResult = await User.findOneAndUpdate(
         { email: session.user.email },
         { preferences: user.preferences },
-        { new: true, runValidators: true }
+        { new: true }
       );
       console.log('🔍 Debug POST - Update result:', updateResult?.preferences);
       

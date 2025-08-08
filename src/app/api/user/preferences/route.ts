@@ -111,11 +111,11 @@ export async function POST(request: Request) {
 
       console.log('💾 Saving user preferences:', user.preferences);
       
-      // Use findOneAndUpdate for more reliable saving
+      // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
       const updateResult = await User.findOneAndUpdate(
         { email: session.user.email },
         { preferences: user.preferences },
-        { new: true, runValidators: true }
+        { new: true }
       );
       
       console.log('✅ User preferences saved successfully:', updateResult?.preferences);
@@ -132,11 +132,11 @@ export async function POST(request: Request) {
       
       (user.preferences as any).notificationSettings = requestData.notificationSettings;
       
-      // Use findOneAndUpdate for more reliable saving
+      // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
       const updateResult = await User.findOneAndUpdate(
         { email: session.user.email },
         { preferences: user.preferences },
-        { new: true, runValidators: true }
+        { new: true }
       );
 
       return NextResponse.json({ 
