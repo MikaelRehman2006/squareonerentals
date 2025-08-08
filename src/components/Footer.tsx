@@ -17,7 +17,7 @@ export default function Footer() {
             <li><Link href="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
             <li><Link href="/terms-and-conditions" className="text-gray-400 hover:text-white">Terms & Conditions</Link></li>
             <li><Link href="/careers" className="text-gray-400 hover:text-white">Careers</Link></li>
-            <li><Link href="/realtors" className="text-gray-400 hover:text-white">For Realtors</Link></li>
+            <li><Link href="/realtors" className="text-gray-400 hover:text-white">Find a Realtor</Link></li>
           </ul>
         </div>
         <div>
