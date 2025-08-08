@@ -364,7 +364,7 @@ export async function DELETE(request: NextRequest, { params }: Props) {
       }
 
       // Get the listing's image URLs
-      const listingImages = listing.images;
+      const listingImages = listing.images as string | string[] | undefined;
       const images = Array.isArray(listingImages) 
         ? listingImages 
         : typeof listingImages === 'string' 
