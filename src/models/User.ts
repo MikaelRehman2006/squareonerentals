@@ -11,6 +11,12 @@ export interface IUser extends Document {
   favorites: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
+  pendingEmailChange?: {
+    newEmail: string;
+    verificationCode: string;
+    expiresAt: Date;
+    createdAt: Date;
+  };
   preferences?: {
     userTypes?: string[];
     city?: string;
@@ -45,6 +51,12 @@ const userSchema: Schema = new mongoose.Schema({
   password: { type: String },
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
   favorites: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
+  pendingEmailChange: {
+    newEmail: { type: String },
+    verificationCode: { type: String },
+    expiresAt: { type: Date },
+    createdAt: { type: Date }
+  },
   preferences: {
     type: Schema.Types.Mixed,
     default: {}

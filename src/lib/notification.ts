@@ -825,33 +825,36 @@ export async function createPaymentNotification(
   amount: number,
   details: string
 ) {
-  try {
-    await connectDB();
-    
-    let message = '';
-    
-    switch (paymentType) {
-      case 'receipt':
-        message = `Payment Receipt: $${amount} - ${details}`;
-        break;
-      case 'invoice':
-        message = `New Invoice: $${amount} - ${details}`;
-        break;
-      case 'failure':
-        message = `Payment Failed: $${amount} - ${details}`;
-        break;
-    }
-    
-    const notification = await createNotification({
-      userId,
-      message,
-      type: 'PAYMENT',
-      sendEmail: true, // Explicitly enable email sending
-    });
-    
-    return notification;
-  } catch (error) {
-    console.error('Error creating payment notification:', error);
-    throw error;
-  }
+  const messages = {
+    receipt: `Payment received: $${amount.toFixed(2)} - ${details}`,
+    invoice: `New invoice: $${amount.toFixed(2)} - ${details}`,
+    failure: `Payment failed: $${amount.toFixed(2)} - ${details}`
+  };
+
+  const message = messages[paymentType];
+  
+  await createNotification({
+    userId,
+    message,
+    type: 'PAYMENT',
+    sendEmail: true
+  });
+}
+
+/**
+ * Create an email change notification
+ */
+export async function createEmailChangeNotification(
+  userId: string,
+  oldEmail: string,
+  newEmail: string
+) {
+  const message = `Your email address has been successfully updated from ${oldEmail} to ${newEmail}. You'll now receive all notifications at your new email address.`;
+  
+  await createNotification({
+    userId,
+    message,
+    type: 'SYSTEM',
+    sendEmail: false // Don't send email since the email just changed
+  });
 }

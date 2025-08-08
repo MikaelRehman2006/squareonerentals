@@ -41,7 +41,10 @@ import {
   ClipboardList,
   Target,
   Users,
-  Building2
+  Building2,
+  X,
+  Clock,
+  Send
 } from 'lucide-react';
 
 interface UserPreferences {
@@ -50,6 +53,13 @@ interface UserPreferences {
   preferences?: {
     [key: string]: any;
   };
+}
+
+interface PendingEmailChange {
+  newEmail: string;
+  verificationCode: string;
+  expiresAt: string;
+  createdAt: string;
 }
 
 export default function ProfilePage() {
@@ -61,6 +71,16 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
   const [loadingPreferences, setLoadingPreferences] = useState(true);
+  
+  // Email change states
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChange | null>(null);
+  const [countdown, setCountdown] = useState(0);
+  
   const router = useRouter();
 
   // Preload name and email from session
@@ -71,48 +91,56 @@ export default function ProfilePage() {
     }
   }, [session]);
 
-  // Fetch user preferences
+  // Fetch user preferences and pending email change
   useEffect(() => {
-    const fetchPreferences = async () => {
+    const fetchUserData = async () => {
       try {
-        console.log('Fetching user preferences...');
+        console.log('Fetching user data...');
         const response = await fetch('/api/user/preferences');
         console.log('Response status:', response.status);
         
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched preferences data:', data);
+          console.log('Fetched user data:', data);
           
-          // The API returns { userTypes, onboardingCompleted, preferences, etc }
           setUserPreferences({
             userTypes: data.userTypes || [],
             onboardingCompleted: data.onboardingCompleted || false,
             preferences: data.preferences || {}
           });
-          console.log('Set user preferences:', {
-            userTypes: data.userTypes || [],
-            onboardingCompleted: data.onboardingCompleted || false
-          });
+          
+          // Check for pending email change
+          if (data.pendingEmailChange) {
+            setPendingEmailChange(data.pendingEmailChange);
+            setIsChangingEmail(true);
+          }
         } else {
-          console.error('Failed to fetch preferences:', response.status);
+          console.error('Failed to fetch user data:', response.status);
         }
       } catch (error) {
-        console.error('Error fetching preferences:', error);
+        console.error('Error fetching user data:', error);
       } finally {
         setLoadingPreferences(false);
       }
     };
 
     if (session?.user) {
-      fetchPreferences();
+      fetchUserData();
     }
   }, [session]);
+
+  // Countdown timer for rate limiting
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   // Listen for survey completion events
   useEffect(() => {
     const handleSurveyCompleted = () => {
       console.log('Survey completed, refreshing preferences...');
-      // Refresh preferences after survey completion
       const refreshPreferences = async () => {
         try {
           const response = await fetch('/api/user/preferences');
@@ -123,10 +151,6 @@ export default function ProfilePage() {
               onboardingCompleted: data.onboardingCompleted || false,
               preferences: data.preferences || {}
             });
-            console.log('Refreshed preferences after survey completion:', {
-              userTypes: data.userTypes || [],
-              onboardingCompleted: data.onboardingCompleted || false
-            });
           }
         } catch (error) {
           console.error('Error refreshing preferences:', error);
@@ -135,9 +159,7 @@ export default function ProfilePage() {
       refreshPreferences();
     };
 
-    // Listen for survey completion event
     window.addEventListener('surveyCompleted', handleSurveyCompleted);
-
     return () => {
       window.removeEventListener('surveyCompleted', handleSurveyCompleted);
     };
@@ -148,7 +170,6 @@ export default function ProfilePage() {
     e.preventDefault();
     setIsSaving(true);
     try {      
-      // Save name to API
       const response = await fetch('/api/user/update', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -160,7 +181,6 @@ export default function ProfilePage() {
         throw new Error(data.error || 'Failed to update profile');
       }
       
-      // Update session so name appears everywhere
       await update();
       toast.success('Profile updated successfully!');
       setIsEditing(false);
@@ -168,6 +188,140 @@ export default function ProfilePage() {
       toast.error(error.message || 'Failed to update profile');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Email change handlers
+  const handleRequestEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newEmail || !currentPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/user/change-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newEmail, currentPassword }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          setCountdown(data.remainingTime || 30);
+          toast.error(data.error || 'Rate limit exceeded');
+        } else {
+          toast.error(data.error || 'Failed to request email change');
+        }
+        return;
+      }
+
+      toast.success('Verification code sent to new email address');
+      setPendingEmailChange({
+        newEmail,
+        verificationCode: '',
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        createdAt: new Date().toISOString()
+      });
+      setIsChangingEmail(true);
+      setCurrentPassword('');
+      setNewEmail('');
+    } catch (error) {
+      toast.error('Failed to request email change');
+    }
+  };
+
+  const handleResendVerificationCode = async () => {
+    if (!pendingEmailChange) return;
+
+    try {
+      const response = await fetch('/api/user/change-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          newEmail: pendingEmailChange.newEmail, 
+          currentPassword: currentPassword 
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          setCountdown(data.remainingTime || 30);
+          toast.error(data.error || 'Rate limit exceeded');
+        } else {
+          toast.error(data.error || 'Failed to resend verification code');
+        }
+        return;
+      }
+
+      toast.success('Verification code resent to your new email address');
+      setPendingEmailChange({
+        ...pendingEmailChange,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      toast.error('Failed to resend verification code');
+    }
+  };
+
+  const handleVerifyEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verificationCode) {
+      toast.error('Please enter the verification code');
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const response = await fetch('/api/user/change-email', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verificationCode }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to verify email change');
+        return;
+      }
+
+      toast.success('Email updated successfully!');
+      setEmail(data.newEmail);
+      setPendingEmailChange(null);
+      setIsChangingEmail(false);
+      setVerificationCode('');
+      await update(); // Update session
+    } catch (error) {
+      toast.error('Failed to verify email change');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleCancelEmailChange = async () => {
+    try {
+      const response = await fetch('/api/user/change-email', {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setPendingEmailChange(null);
+        setIsChangingEmail(false);
+        setNewEmail('');
+        setCurrentPassword('');
+        setVerificationCode('');
+        toast.success('Email change cancelled');
+      } else {
+        toast.error('Failed to cancel email change');
+      }
+    } catch (error) {
+      toast.error('Failed to cancel email change');
     }
   };
 
@@ -192,12 +346,12 @@ export default function ProfilePage() {
         const data = await response.json();
         console.log('Refreshed preferences data:', data);
         
-                 setUserPreferences({
-           userTypes: data.userTypes || [],
-           onboardingCompleted: data.onboardingCompleted || false,
-           preferences: data.preferences || {}
-         });
-         toast.success('Preferences refreshed successfully!');
+        setUserPreferences({
+          userTypes: data.userTypes || [],
+          onboardingCompleted: data.onboardingCompleted || false,
+          preferences: data.preferences || {}
+        });
+        toast.success('Preferences refreshed successfully!');
       } else {
         toast.error('Failed to refresh preferences');
       }
@@ -345,6 +499,215 @@ export default function ProfilePage() {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2 space-y-6"
           >
+            {/* Email Change Section */}
+            <AnimatePresence>
+              {isChangingEmail && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <Card className="bg-white rounded-3xl shadow-xl border-0">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <Mail size={20} />
+                        Change Email Address
+                      </CardTitle>
+                      <CardDescription>
+                        {pendingEmailChange 
+                          ? 'Enter the verification code sent to your new email address'
+                          : 'Enter your new email address and current password'
+                        }
+                      </CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent className="p-6">
+                      {!pendingEmailChange ? (
+                        // Request email change form
+                        <form onSubmit={handleRequestEmailChange} className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">Current Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type={showPassword ? "text" : "password"}
+                                  value={currentPassword}
+                                  onChange={(e) => setCurrentPassword(e.target.value)}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter current password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">New Email Address</label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type="email"
+                                  value={newEmail}
+                                  onChange={(e) => setNewEmail(e.target.value)}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter new email address"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
+                            <div className="flex items-start gap-3">
+                              <Shield className="text-blue-600 mt-1" size={20} />
+                              <div>
+                                <h3 className="text-sm font-medium text-blue-800 mb-1">Email Change Process</h3>
+                                <p className="text-sm text-blue-700">
+                                  We'll send a verification code to your new email address. 
+                                  You'll need to enter this code to complete the email change.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="submit"
+                              disabled={countdown > 0}
+                              className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                              {countdown > 0 ? (
+                                <>
+                                  <Clock size={18} />
+                                  Wait {countdown}s
+                                </>
+                              ) : (
+                                <>
+                                  <Send size={18} />
+                                  Send Verification Code
+                                </>
+                              )}
+                            </motion.button>
+                            
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleResendVerificationCode}
+                              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
+                            >
+                              Resend Code
+                            </motion.button>
+
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={() => setIsChangingEmail(false)}
+                              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
+                            >
+                              Cancel
+                            </motion.button>
+                          </div>
+                        </form>
+                      ) : (
+                        // Verify email change form
+                        <form onSubmit={handleVerifyEmailChange} className="space-y-6">
+                          <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                            <div className="flex items-start gap-3">
+                              <AlertCircle className="text-yellow-600 mt-1" size={20} />
+                              <div>
+                                <h3 className="text-sm font-medium text-yellow-800 mb-1">Verification Required</h3>
+                                <p className="text-sm text-yellow-700">
+                                  We've sent a verification code to <strong>{pendingEmailChange.newEmail}</strong>. 
+                                  Please check your email and enter the code below.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="block text-gray-700 font-medium text-sm">Verification Code</label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                              <Input 
+                                type="text"
+                                value={verificationCode}
+                                onChange={(e) => setVerificationCode(e.target.value)}
+                                className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-center text-lg font-mono tracking-widest"
+                                placeholder="000000"
+                                maxLength={6}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex gap-3">
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="submit"
+                              disabled={isVerifying || !verificationCode}
+                              className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 text-white py-3 px-6 rounded-xl font-medium hover:from-green-700 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                              {isVerifying ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  Verifying...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle size={18} />
+                                  Verify Email Change
+                                </>
+                              )}
+                            </motion.button>
+                            
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleResendVerificationCode}
+                              disabled={countdown > 0}
+                              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50"
+                            >
+                              {countdown > 0 ? (
+                                <>
+                                  <Clock size={16} />
+                                  {countdown}s
+                                </>
+                              ) : (
+                                <>
+                                  <Send size={16} />
+                                  Resend
+                                </>
+                              )}
+                            </motion.button>
+
+                            <motion.button
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handleCancelEmailChange}
+                              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200"
+                            >
+                              Cancel
+                            </motion.button>
+                          </div>
+                        </form>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Edit Profile Form */}
             <AnimatePresence>
               {isEditing && (
@@ -393,100 +756,21 @@ export default function ProfilePage() {
                               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                               <Input 
                                 value={email} 
-                                onChange={e => setEmail(e.target.value)}
-                                className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-black"
-                                placeholder="Enter your email address"
+                                disabled
+                                className="w-full pl-10 border-gray-300 bg-gray-50 rounded-xl text-gray-500"
+                                placeholder="Email address"
                               />
                             </div>
+                            <p className="text-xs text-gray-500">
+                              To change your email, use the "Change Email" section above
+                            </p>
                           </motion.div>
                         </div>
 
-                        {/* Email Change Section */}
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
-                          className="space-y-4"
-                        >
-                          <h3 className="text-lg font-medium text-gray-900">Change Email Address</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-gray-700 font-medium text-sm">Current Password</label>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <Input 
-                                  type={showPassword ? "text" : "password"}
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
-                                  placeholder="Enter current password"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-gray-700 font-medium text-sm">New Email Address</label>
-                              <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <Input 
-                                  type="email"
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
-                                  placeholder="Enter new email address"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-
-                        {/* Password Change Section */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="space-y-4"
-                        >
-                          <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-gray-700 font-medium text-sm">Current Password</label>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <Input 
-                                  type={showPassword ? "text" : "password"}
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
-                                  placeholder="Enter current password"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPassword(!showPassword)}
-                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-gray-700 font-medium text-sm">New Password</label>
-                              <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                <Input 
-                                  type="password"
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
-                                  placeholder="Enter new password"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
                           className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100"
                         >
                           <div className="flex items-start gap-3">
@@ -494,8 +778,8 @@ export default function ProfilePage() {
                             <div>
                               <h3 className="text-sm font-medium text-blue-800 mb-1">Account Security</h3>
                               <p className="text-sm text-blue-700">
-                                Password changes are processed through our secure system. 
-                                Contact support if you need assistance with password recovery.
+                                Your email address is used for account verification and important notifications. 
+                                Use the email change feature above to update it securely.
                               </p>
                             </div>
                           </div>
@@ -504,7 +788,7 @@ export default function ProfilePage() {
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
+                          transition={{ delay: 0.3 }}
                           className="flex gap-3"
                         >
                           <motion.button
@@ -560,11 +844,28 @@ export default function ProfilePage() {
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => router.push('/contact')}
+                      onClick={() => setIsChangingEmail(true)}
                       className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 text-left group"
                     >
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-600 rounded-lg group-hover:bg-blue-700 transition-colors">
+                          <Mail className="text-white" size={20} />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">Change Email</div>
+                          <div className="text-sm text-gray-600">Update your email address</div>
+                        </div>
+                      </div>
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => router.push('/contact')}
+                      className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all duration-200 text-left group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-600 rounded-lg group-hover:bg-purple-700 transition-colors">
                           <Mail className="text-white" size={20} />
                         </div>
                         <div>
@@ -578,10 +879,10 @@ export default function ProfilePage() {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => router.push('/settings')}
-                      className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 transition-all duration-200 text-left group"
+                      className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 transition-all duration-200 text-left group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-600 rounded-lg group-hover:bg-purple-700 transition-colors">
+                        <div className="p-2 bg-green-600 rounded-lg group-hover:bg-green-700 transition-colors">
                           <Settings className="text-white" size={20} />
                         </div>
                         <div>
@@ -595,32 +896,15 @@ export default function ProfilePage() {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => router.push('/dashboard')}
-                      className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 transition-all duration-200 text-left group"
+                      className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:from-orange-100 hover:to-orange-200 transition-all duration-200 text-left group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-600 rounded-lg group-hover:bg-green-700 transition-colors">
+                        <div className="p-2 bg-orange-600 rounded-lg group-hover:bg-orange-700 transition-colors">
                           <User className="text-white" size={20} />
                         </div>
                         <div>
                           <div className="font-medium text-gray-900">My Dashboard</div>
                           <div className="text-sm text-gray-600">View your listings</div>
-                        </div>
-                      </div>
-                    </motion.button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => router.push('/listings/create')}
-                      className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200 hover:from-orange-100 hover:to-orange-200 transition-all duration-200 text-left group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-600 rounded-lg group-hover:bg-orange-700 transition-colors">
-                          <Plus className="text-white" size={20} />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">List Property</div>
-                          <div className="text-sm text-gray-600">Create new listing</div>
                         </div>
                       </div>
                     </motion.button>

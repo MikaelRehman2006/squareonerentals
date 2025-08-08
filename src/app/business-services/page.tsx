@@ -116,6 +116,151 @@ export default function BusinessServices() {
           </div>
         </div>
 
+                 {/* Comprehensive Data Access */}
+         <div className="mb-16">
+           <h2 className="text-3xl font-bold text-black text-center mb-8">Connect with Renters & Buyers</h2>
+           <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-8 rounded-2xl border border-purple-200">
+             <div className="text-center mb-8">
+               <div className="w-16 h-16 bg-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                 </svg>
+               </div>
+               <h3 className="text-2xl font-bold text-purple-900 mb-4">Access Renter & Buyer Information</h3>
+               <p className="text-purple-800 text-lg max-w-3xl mx-auto">
+                 Realtors and property managers get comprehensive access to detailed profiles of renters and buyers, 
+                 including their preferences, contact information, and search history - making it easy to connect with potential clients.
+               </p>
+             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                             {/* Renter & Buyer Data */}
+               <div className="bg-white p-6 rounded-xl border border-purple-200">
+                 <h4 className="text-xl font-bold text-purple-900 mb-4 flex items-center">
+                   <svg className="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                   </svg>
+                   Renter & Buyer Profiles
+                 </h4>
+                 <ul className="space-y-3 text-purple-800">
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Detailed Preferences:</strong> Bedrooms, bathrooms, price range, property type, move-in dates
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Location Preferences:</strong> Preferred neighborhoods, areas served, commute requirements
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Financial Information:</strong> Pre-approval status, income verification, credit history
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Contact Information:</strong> Direct contact details for immediate communication
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Activity History:</strong> Search patterns, saved properties, application history
+                   </li>
+                 </ul>
+               </div>
+
+               {/* Connection Benefits */}
+               <div className="bg-white p-6 rounded-xl border border-purple-200">
+                 <h4 className="text-xl font-bold text-purple-900 mb-4 flex items-center">
+                   <svg className="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                   </svg>
+                   Easy Connection & Communication
+                 </h4>
+                 <ul className="space-y-3 text-purple-800">
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Direct Contact:</strong> Reach out to renters and buyers directly with their contact information
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Targeted Outreach:</strong> Contact people who match your specific property criteria
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Qualified Leads:</strong> Connect with people who have verified preferences and financial information
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Faster Deals:</strong> Close transactions quicker with pre-qualified prospects
+                   </li>
+                   <li className="flex items-start">
+                     <svg className="w-5 h-5 text-purple-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                     </svg>
+                     <strong>Increased Revenue:</strong> Generate more business with direct access to potential clients
+                   </li>
+                 </ul>
+               </div>
+            </div>
+
+                         {/* Benefits Section */}
+             <div className="bg-white p-6 rounded-xl border border-purple-200">
+               <h4 className="text-xl font-bold text-purple-900 mb-4">Why Realtors & Property Managers Choose Us</h4>
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div className="text-center">
+                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                     </svg>
+                   </div>
+                   <h5 className="font-semibold text-purple-900 mb-2">Direct Access</h5>
+                   <p className="text-purple-700 text-sm">
+                     Get direct contact information for renters and buyers to reach out immediately
+                   </p>
+                 </div>
+                 <div className="text-center">
+                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                   </div>
+                   <h5 className="font-semibold text-purple-900 mb-2">Qualified Prospects</h5>
+                   <p className="text-purple-700 text-sm">
+                     Connect with people who have verified preferences and financial information
+                   </p>
+                 </div>
+                 <div className="text-center">
+                   <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                     <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                     </svg>
+                   </div>
+                   <h5 className="font-semibold text-purple-900 mb-2">More Business</h5>
+                   <p className="text-purple-700 text-sm">
+                     Generate more revenue with direct access to potential clients and faster deal closing
+                   </p>
+                 </div>
+               </div>
+             </div>
+          </div>
+        </div>
+
         {/* Unified Features */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-black text-center mb-8">Unified Business Features</h2>

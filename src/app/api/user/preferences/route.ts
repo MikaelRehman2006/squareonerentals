@@ -37,13 +37,17 @@ export async function GET() {
         favoriteUpdates: { inApp: true, email: true },
         listingChanges: { inApp: true, email: true },
         paymentNotifications: { inApp: true, email: true },
-      }
+      },
+      
+      // Pending email change
+      pendingEmailChange: user.pendingEmailChange || null
     };
 
     console.log('📤 Returning user preferences:', {
       userTypes: allPreferences.userTypes,
       onboardingCompleted: allPreferences.onboardingCompleted,
-      preferences: allPreferences.preferences
+      preferences: allPreferences.preferences,
+      pendingEmailChange: allPreferences.pendingEmailChange
     });
 
     // Return in the structure expected by the frontend
@@ -53,7 +57,9 @@ export async function GET() {
       onboardingCompleted: allPreferences.onboardingCompleted,
       notificationSettings: allPreferences.notificationSettings,
       // Nested preferences for backward compatibility
-      preferences: allPreferences.preferences
+      preferences: allPreferences.preferences,
+      // Pending email change
+      pendingEmailChange: allPreferences.pendingEmailChange
     });
   } catch (error) {
     console.error('Error fetching user preferences:', error);
