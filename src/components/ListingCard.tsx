@@ -14,6 +14,22 @@ interface ListingCardProps {
   isFavorited?: boolean;
 }
 
+// Helper function to check if a field is empty or has a default value
+function isEmptyOrDefault(value: any, defaultValue: any = 0): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'number' && value === defaultValue) return true;
+  if (typeof value === 'string' && value.trim() === '') return true;
+  return false;
+}
+
+// Helper function to format field value
+function formatFieldValue(value: any, defaultValue: any = 0): string {
+  if (isEmptyOrDefault(value, defaultValue)) {
+    return 'Unknown';
+  }
+  return String(value);
+}
+
 export function ListingCard({ listing, isFavorited = false }: ListingCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -186,15 +202,17 @@ export function ListingCard({ listing, isFavorited = false }: ListingCardProps) 
         <div className="grid grid-cols-3 gap-2 mb-3 text-xs sm:text-sm">
           <div className="flex items-center text-gray-600">
             <Bed className="w-4 h-4 min-w-4 mr-1" />
-            <span>{listing.bedrooms} Bed</span>
+            <span>{formatFieldValue(listing.bedrooms, 0)} Bed</span>
           </div>
           <div className="flex items-center text-gray-600">
             <Bath className="w-4 h-4 min-w-4 mr-1" />
-            <span>{listing.bathrooms} Bath</span>
+            <span>{formatFieldValue(listing.bathrooms, 0)} Bath</span>
           </div>
           <div className="flex items-center text-gray-600">
             <Square className="w-4 h-4 min-w-4 mr-1" />
-            <span>{listing.squareFeet.toLocaleString()} ft²</span>
+            <span>
+              {formatFieldValue(listing.squareFeet, 0, ' ft²')}
+            </span>
           </div>
         </div>
 

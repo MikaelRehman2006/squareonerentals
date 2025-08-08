@@ -6,6 +6,22 @@ interface ListingCardProps {
   listing: Listing;
 }
 
+// Helper function to check if a field is empty or has a default value
+function isEmptyOrDefault(value: any, defaultValue: any = 0): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'number' && value === defaultValue) return true;
+  if (typeof value === 'string' && value.trim() === '') return true;
+  return false;
+}
+
+// Helper function to format field value
+function formatFieldValue(value: any, defaultValue: any = 0): string {
+  if (isEmptyOrDefault(value, defaultValue)) {
+    return 'Unknown';
+  }
+  return String(value);
+}
+
 export default function ListingCard({ listing }: ListingCardProps) {
   return (
     <Link
@@ -27,7 +43,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         </h3>
         <p className="text-gray-600 mb-2">${listing.price.toLocaleString()}/month</p>
         <p className="text-gray-500 text-sm mb-2">
-          {listing.bedrooms} beds • {listing.bathrooms} baths
+          {formatFieldValue(listing.bedrooms, 0)} beds • {formatFieldValue(listing.bathrooms, 0)} baths
         </p>
         <p className="text-gray-500 text-sm">{listing.location}</p>
       </div>

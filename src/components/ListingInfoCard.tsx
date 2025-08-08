@@ -30,6 +30,42 @@ interface ListingInfoCardProps {
   featured?: boolean;
 }
 
+// Helper function to check if a field is empty or has a default value
+function isEmptyOrDefault(value: any, defaultValue: any = 0): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === 'number' && value === defaultValue) return true;
+  if (typeof value === 'string' && value.trim() === '') return true;
+  if (typeof value === 'string' && value.trim().toLowerCase() === 'unknown') return true;
+  return false;
+}
+
+// Helper function to format field value
+function formatFieldValue(value: any, defaultValue: any = 0, suffix: string = ''): string {
+  if (isEmptyOrDefault(value, defaultValue)) {
+    return 'Unknown';
+  }
+  if (suffix) {
+    return `${value}${suffix}`;
+  }
+  return String(value);
+}
+
+// Helper function to format address
+function formatAddress(address: string | null | undefined): string {
+  if (!address || address.trim() === '') {
+    return 'Didn\'t state';
+  }
+  return address;
+}
+
+// Helper function to format parking
+function formatParking(parking: string | null | undefined): string {
+  if (!parking || parking.trim() === '') {
+    return 'Didn\'t state';
+  }
+  return parking;
+}
+
 export function ListingInfoCard({
   propertyType,
   location,
@@ -67,7 +103,7 @@ export function ListingInfoCard({
             <MapPin className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-500">Address</p>
-              <p className="font-semibold text-gray-900">{address || 'No address provided'}</p>
+              <p className="font-semibold text-gray-900">{formatAddress(address)}</p>
             </div>
           </div>
         </div>
@@ -80,21 +116,23 @@ export function ListingInfoCard({
             <Bed className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-500">Bedrooms</p>
-              <p className="font-semibold text-gray-900">{bedrooms}</p>
+              <p className="font-semibold text-gray-900">{formatFieldValue(bedrooms, 0)}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Bath className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-500">Bathrooms</p>
-              <p className="font-semibold text-gray-900">{bathrooms}</p>
+              <p className="font-semibold text-gray-900">{formatFieldValue(bathrooms, 0)}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Square className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-500">Square Feet</p>
-              <p className="font-semibold text-gray-900">{squareFeet.toLocaleString()}</p>
+              <p className="font-semibold text-gray-900">
+                {formatFieldValue(squareFeet, 0, ' sq ft')}
+              </p>
             </div>
           </div>
         </div>
@@ -141,7 +179,7 @@ export function ListingInfoCard({
             <Car className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-500">Parking</p>
-              <p className="font-semibold text-gray-900">{parking ? parking : 'None'}</p>
+              <p className="font-semibold text-gray-900">{formatParking(parking)}</p>
             </div>
           </div>
           {featured && (

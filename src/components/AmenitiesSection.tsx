@@ -20,12 +20,12 @@ export function AmenitiesSection({
   
   return (
     <div className="space-y-8">
-      {safeAmenities.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Building className="h-5 w-5 text-green-600" />
-            Building Amenities
-          </h3>
+      <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Building className="h-5 w-5 text-green-600" />
+          Building Amenities
+        </h3>
+        {safeAmenities.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {safeAmenities.map((amenity, index) => (
               <div
@@ -37,15 +37,17 @@ export function AmenitiesSection({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-gray-500 text-center py-4">Didn't state</p>
+        )}
+      </div>
 
-      {safeFeatures.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Home className="h-5 w-5 text-blue-600" />
-            Unit Features
-          </h3>
+      <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Home className="h-5 w-5 text-blue-600" />
+          Unit Features
+        </h3>
+        {safeFeatures.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {safeFeatures.map((feature, index) => (
               <div
@@ -57,15 +59,17 @@ export function AmenitiesSection({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-gray-500 text-center py-4">Didn't state</p>
+        )}
+      </div>
 
-      {safeUtilities.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Zap className="h-5 w-5 text-purple-600" />
-            Included Utilities
-          </h3>
+      <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <Zap className="h-5 w-5 text-purple-600" />
+          Included Utilities
+        </h3>
+        {safeUtilities.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {safeUtilities.map((utility, index) => (
               <div
@@ -77,14 +81,10 @@ export function AmenitiesSection({
               </div>
             ))}
           </div>
-        </div>
-      )}
-      
-      {safeAmenities.length === 0 && safeFeatures.length === 0 && safeUtilities.length === 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-          <p className="text-gray-500 text-center py-4">No amenities or features specified for this listing.</p>
-        </div>
-      )}
+        ) : (
+          <p className="text-gray-500 text-center py-4">Didn't state</p>
+        )}
+      </div>
     </div>
   );
 }

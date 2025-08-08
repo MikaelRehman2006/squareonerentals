@@ -66,7 +66,7 @@ export function ListingContactCard({
               <div className="bg-white p-2 rounded-md">
                 <Phone className="h-5 w-5 text-gray-400" />
               </div>
-              <span>Phone not provided</span>
+              <span>Didn't state</span>
             </div>
           )}
 
@@ -86,9 +86,9 @@ export function ListingContactCard({
           ) : (
             <div className="flex items-center gap-3 bg-gray-100 px-4 py-3 rounded-xl border border-gray-200 text-gray-400">
               <div className="bg-white p-2 rounded-md">
-                <Facebook className="h-5 w-5 text-gray-400" />
+                <Facebook className="h-5 w-4 text-gray-400" />
               </div>
-              <span>Facebook not provided</span>
+              <span>Didn't state</span>
             </div>
           )}
         </div>
