@@ -197,57 +197,69 @@ export default function EditListingPage({ params }: { params: { listingId: strin
         // Log the address we received from the API for debugging
         console.log('Address from API:', data.address);
         
-        // Force update fields that might not be properly loaded
-        setTimeout(() => {
-          // Enhanced address field handling
-          if (data.address) {
-            console.log('Setting address to:', data.address);
-            
-            // First set it directly in the form state
-            form.setValue('address', data.address, { 
-              shouldValidate: true, 
-              shouldDirty: true, 
-              shouldTouch: true 
-            });
-            
-            // Also try to set it directly on the DOM element
-            const addressField = document.getElementById('address-field') as HTMLInputElement;
-            if (addressField) {
-              addressField.value = data.address;
-              console.log('Manually updated address input element to:', data.address);
+                  // Force update fields that might not be properly loaded
+          setTimeout(() => {
+            // Enhanced address field handling
+            if (data.address) {
+              console.log('Setting address to:', data.address);
               
-              // Dispatch events to trigger any form listeners
-              const inputEvent = new Event('input', { bubbles: true });
-              addressField.dispatchEvent(inputEvent);
+              // First set it directly in the form state
+              form.setValue('address', data.address, { 
+                shouldValidate: true, 
+                shouldDirty: true, 
+                shouldTouch: true 
+              });
               
-              const changeEvent = new Event('change', { bubbles: true });
-              addressField.dispatchEvent(changeEvent);
-            } else {
-              console.warn('Could not find address field element by ID');
-              
-              // Try using querySelector as a fallback
-              const addressFieldByName = document.querySelector('input[name="address"]') as HTMLInputElement;
-              if (addressFieldByName) {
-                addressFieldByName.value = data.address;
-                console.log('Updated address input by name selector to:', data.address);
+              // Also try to set it directly on the DOM element
+              const addressField = document.getElementById('address-field') as HTMLInputElement;
+              if (addressField) {
+                addressField.value = data.address;
+                console.log('Manually updated address input element to:', data.address);
                 
+                // Dispatch events to trigger any form listeners
                 const inputEvent = new Event('input', { bubbles: true });
-                addressFieldByName.dispatchEvent(inputEvent);
+                addressField.dispatchEvent(inputEvent);
                 
                 const changeEvent = new Event('change', { bubbles: true });
-                addressFieldByName.dispatchEvent(changeEvent);
+                addressField.dispatchEvent(changeEvent);
+              } else {
+                console.warn('Could not find address field element by ID');
+                
+                // Try using querySelector as a fallback
+                const addressFieldByName = document.querySelector('input[name="address"]') as HTMLInputElement;
+                if (addressFieldByName) {
+                  addressFieldByName.value = data.address;
+                  console.log('Updated address input by name selector to:', data.address);
+                  
+                  const inputEvent = new Event('input', { bubbles: true });
+                  addressFieldByName.dispatchEvent(inputEvent);
+                  
+                  const changeEvent = new Event('change', { bubbles: true });
+                  addressFieldByName.dispatchEvent(changeEvent);
+                }
               }
             }
-          }
-          
-          if (data.phoneNumber) form.setValue('phoneNumber', data.phoneNumber, { shouldValidate: true });
-          if (data.facebookUrl) form.setValue('facebookUrl', data.facebookUrl, { shouldValidate: true });
-          
-          // Force update features and utilities if needed
-          if (data.features) {
-            console.log('Forcing features update');
-            form.trigger('features');
-          }
+            
+            if (data.phoneNumber) form.setValue('phoneNumber', data.phoneNumber, { shouldValidate: true });
+            if (data.facebookUrl) form.setValue('facebookUrl', data.facebookUrl, { shouldValidate: true });
+            
+            // Force update features and utilities if needed
+            if (data.features) {
+              console.log('Forcing features update');
+              form.trigger('features');
+            }
+            
+            // Additional attempt to ensure address is set
+            setTimeout(() => {
+              if (data.address && form.getValues('address') !== data.address) {
+                console.log('Retrying address set after delay');
+                form.setValue('address', data.address, { 
+                  shouldValidate: true, 
+                  shouldDirty: true, 
+                  shouldTouch: true 
+                });
+              }
+            }, 100);
           if (data.utilities) {
             console.log('Forcing utilities update');
             form.trigger('utilities');

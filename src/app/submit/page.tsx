@@ -51,7 +51,7 @@ const listingSchema = z.object({
   featured: z.boolean().default(false),
   status: z.string().default('ACTIVE'),
   phoneNumber: z.string().optional(),
-  facebookUrl: z.string().url("Please enter a valid Facebook URL").optional(),
+  facebookUrl: z.string().optional(),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
