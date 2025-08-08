@@ -942,7 +942,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
                         <div style={{ width: '100%', padding: '0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}> {/* Main container with fixed padding and centered content */}
                           {/* Stepper Progress Bar - Centered */}
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', width: '240px', margin: '0 auto 32px auto' }} className="sm:mb-8 sm:w-[240px] mb-2 w-[120px]"> {/* Stepper container centered - 20% smaller */}
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '32px', width: '100%', margin: '0 auto 32px auto' }} className="sm:mb-8 sm:w-full mb-2 w-full"> {/* Stepper container centered - full width */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
                               <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
                                 <div style={{ 
@@ -964,7 +964,7 @@ export default function PostSignupSurvey() { // Define the main component functi
                           </div>
 
                           {/* Step Header - Centered */}
-                          <div style={{ textAlign: 'center', marginBottom: '32px', width: '240px', margin: '0 auto 32px auto' }} className="sm:mb-8 sm:w-[240px] mb-2 w-[120px]"> {/* Header container centered - 20% smaller */}
+                          <div style={{ textAlign: 'center', marginBottom: '32px', width: '100%', margin: '0 auto 32px auto' }} className="sm:mb-8 sm:w-full mb-2 w-full"> {/* Header container centered - full width */}
                             <UserCircle style={{ width: '51px', height: '51px', color: '#3b82f6', margin: '0 auto 13px' }} className="sm:w-13 sm:h-13 w-6 h-6" /> {/* Icon - 20% smaller */}
                             <h2 style={{ fontSize: '19px', fontWeight: 'bold', color: '#1d4ed8', marginBottom: '6px' }} className="sm:text-xl sm:mb-2 text-sm mb-1">{REALTOR_STEPS[realtorStep]}</h2> {/* Step title - 20% smaller */}
                             <p style={{ color: '#6b7280' }}> {/* Step description */}
