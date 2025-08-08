@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/utils/authOptions';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { sendVerificationEmail } from '@/utils/resend';
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store pending email change in user document
-    await User.findOneAndUpdate(
+    const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
       { 
         pendingEmailChange: {
@@ -105,12 +105,19 @@ export async function POST(request: NextRequest) {
           expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
           createdAt: new Date()
         }
-      }
+      },
+      { new: true }
     );
 
     return NextResponse.json({
       success: true,
-      message: 'Verification code sent to new email address'
+      message: 'Verification code sent to new email address',
+      pendingEmailChange: updatedUser?.pendingEmailChange ? {
+        newEmail: updatedUser.pendingEmailChange.newEmail,
+        verificationCode: updatedUser.pendingEmailChange.verificationCode,
+        expiresAt: updatedUser.pendingEmailChange.expiresAt.toISOString(),
+        createdAt: updatedUser.pendingEmailChange.createdAt.toISOString()
+      } : null
     });
 
   } catch (error) {

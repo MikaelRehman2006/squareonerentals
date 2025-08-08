@@ -40,7 +40,12 @@ export async function GET() {
       },
       
       // Pending email change
-      pendingEmailChange: user.pendingEmailChange || null
+      pendingEmailChange: user.pendingEmailChange ? {
+        newEmail: user.pendingEmailChange.newEmail,
+        verificationCode: user.pendingEmailChange.verificationCode,
+        expiresAt: user.pendingEmailChange.expiresAt.toISOString(),
+        createdAt: user.pendingEmailChange.createdAt.toISOString()
+      } : null
     };
 
     console.log('📤 Returning user preferences:', {

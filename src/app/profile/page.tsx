@@ -75,11 +75,20 @@ export default function ProfilePage() {
   // Email change states
   const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
+  const [currentPasswordForEmailChange, setCurrentPasswordForEmailChange] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChange | null>(null);
   const [countdown, setCountdown] = useState(0);
+  
+  // Password change states
+  const [currentPasswordForPasswordChange, setCurrentPasswordForPasswordChange] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   
   const router = useRouter();
 
@@ -112,7 +121,7 @@ export default function ProfilePage() {
           // Check for pending email change
           if (data.pendingEmailChange) {
             setPendingEmailChange(data.pendingEmailChange);
-            setIsChangingEmail(true);
+            // Don't automatically show email change UI - only show when user clicks "Change Email" button
           }
         } else {
           console.error('Failed to fetch user data:', response.status);
@@ -194,7 +203,7 @@ export default function ProfilePage() {
   // Email change handlers
   const handleRequestEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail || !currentPassword) {
+    if (!newEmail || !currentPasswordForEmailChange) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -203,7 +212,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/user/change-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newEmail, currentPassword }),
+        body: JSON.stringify({ newEmail, currentPassword: currentPasswordForEmailChange }),
       });
 
       const data = await response.json();
@@ -219,14 +228,22 @@ export default function ProfilePage() {
       }
 
       toast.success('Verification code sent to new email address');
-      setPendingEmailChange({
-        newEmail,
-        verificationCode: '',
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-        createdAt: new Date().toISOString()
-      });
+      
+      // Update pendingEmailChange from the server response if available
+      if (data.pendingEmailChange) {
+        setPendingEmailChange(data.pendingEmailChange);
+      } else {
+        // Fallback to local state if server doesn't return it
+        setPendingEmailChange({
+          newEmail,
+          verificationCode: '',
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString()
+        });
+      }
+      
       setIsChangingEmail(true);
-      setCurrentPassword('');
+      setCurrentPasswordForEmailChange('');
       setNewEmail('');
     } catch (error) {
       toast.error('Failed to request email change');
@@ -242,7 +259,7 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           newEmail: pendingEmailChange.newEmail, 
-          currentPassword: currentPassword 
+          currentPassword: currentPasswordForEmailChange || '' // Handle empty password case
         }),
       });
 
@@ -314,7 +331,7 @@ export default function ProfilePage() {
         setPendingEmailChange(null);
         setIsChangingEmail(false);
         setNewEmail('');
-        setCurrentPassword('');
+        setCurrentPasswordForEmailChange('');
         setVerificationCode('');
         toast.success('Email change cancelled');
       } else {
@@ -322,6 +339,51 @@ export default function ProfilePage() {
       }
     } catch (error) {
       toast.error('Failed to cancel email change');
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!currentPasswordForPasswordChange || !newPassword || !confirmNewPassword) {
+      toast.error('Please fill in all password fields');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast.error('New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const response = await fetch('/api/user/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword: currentPasswordForPasswordChange,
+          newPassword: newPassword
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to change password');
+        return;
+      }
+
+      toast.success('Password changed successfully!');
+      setCurrentPasswordForPasswordChange('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (error) {
+      toast.error('Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -533,8 +595,8 @@ export default function ProfilePage() {
                                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                                 <Input 
                                   type={showPassword ? "text" : "password"}
-                                  value={currentPassword}
-                                  onChange={(e) => setCurrentPassword(e.target.value)}
+                                  value={currentPasswordForEmailChange}
+                                  onChange={(e) => setCurrentPasswordForEmailChange(e.target.value)}
                                   className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                                   placeholder="Enter current password"
                                 />
@@ -626,7 +688,7 @@ export default function ProfilePage() {
                               <div>
                                 <h3 className="text-sm font-medium text-yellow-800 mb-1">Verification Required</h3>
                                 <p className="text-sm text-yellow-700">
-                                  We've sent a verification code to <strong>{pendingEmailChange.newEmail}</strong>. 
+                                  We've sent a verification code to <strong>{pendingEmailChange?.newEmail || 'your new email address'}</strong>. 
                                   Please check your email and enter the code below.
                                 </p>
                               </div>
@@ -785,6 +847,109 @@ export default function ProfilePage() {
                           </div>
                         </motion.div>
 
+                        {/* Password Change Section */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="space-y-6 border-t pt-6"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Lock size={20} className="text-gray-600" />
+                            <h3 className="text-lg font-medium text-gray-900">Change Password</h3>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">Current Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type={showCurrentPassword ? "text" : "password"}
+                                  value={currentPasswordForPasswordChange}
+                                  onChange={(e) => setCurrentPasswordForPasswordChange(e.target.value)}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter current password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">New Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type={showNewPassword ? "text" : "password"}
+                                  value={newPassword}
+                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Enter new password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowNewPassword(!showNewPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <label className="block text-gray-700 font-medium text-sm">Confirm New Password</label>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                                <Input 
+                                  type={showConfirmPassword ? "text" : "password"}
+                                  value={confirmNewPassword}
+                                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  placeholder="Confirm new password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {(currentPasswordForPasswordChange || newPassword || confirmNewPassword) && (
+                            <motion.button
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              type="button"
+                              onClick={handlePasswordChange}
+                              disabled={isChangingPassword || !currentPasswordForPasswordChange || !newPassword || !confirmNewPassword || newPassword !== confirmNewPassword}
+                              className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 px-6 rounded-xl font-medium hover:from-orange-700 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                              {isChangingPassword ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  Changing Password...
+                                </>
+                              ) : (
+                                <>
+                                  <Lock size={18} />
+                                  Change Password
+                                </>
+                              )}
+                            </motion.button>
+                          )}
+                        </motion.div>
+
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -844,7 +1009,10 @@ export default function ProfilePage() {
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => setIsChangingEmail(true)}
+                      onClick={() => {
+                        setIsChangingEmail(true);
+                        setIsEditing(false); // Close edit profile form when opening email change
+                      }}
                       className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 text-left group"
                     >
                       <div className="flex items-center gap-3">
