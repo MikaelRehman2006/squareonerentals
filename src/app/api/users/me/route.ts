@@ -95,7 +95,7 @@ export async function GET() {
       
       // Fallback to estimation if metadata collection fails
       for (const listing of userListings) {
-        const listingImages = listing.images;
+        const listingImages = listing.images as string | string[] | undefined;
         const images = typeof listingImages === 'string' 
           ? listingImages.split(',').filter(Boolean) 
           : Array.isArray(listingImages) 

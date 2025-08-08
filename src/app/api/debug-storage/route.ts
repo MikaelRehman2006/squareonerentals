@@ -63,7 +63,7 @@ export async function GET() {
     let estimatedImageCount = 0;
     
     for (const listing of userListings) {
-      const listingImages = listing.images;
+      const listingImages = listing.images as string | string[] | undefined;
       const images = typeof listingImages === 'string' 
         ? listingImages.split(',').filter(Boolean) 
         : Array.isArray(listingImages) 
@@ -165,7 +165,7 @@ export async function POST() {
     
     // Collect all valid image URLs from listings
     for (const listing of userListings) {
-      const listingImages = listing.images;
+      const listingImages = listing.images as string | string[] | undefined;
       const images = typeof listingImages === 'string' 
         ? listingImages.split(',').filter(Boolean) 
         : Array.isArray(listingImages) 
