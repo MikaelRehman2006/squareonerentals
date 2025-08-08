@@ -75,12 +75,10 @@ export default function ProfilePage() {
   // Email change states
   const [newEmail, setNewEmail] = useState('');
   const [confirmNewEmail, setConfirmNewEmail] = useState('');
-  const [currentPasswordForEmailChange, setCurrentPasswordForEmailChange] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [pendingEmailChange, setPendingEmailChange] = useState<PendingEmailChange | null>(null);
   const [countdown, setCountdown] = useState(0);
-  const [showCurrentPasswordForEmail, setShowCurrentPasswordForEmail] = useState(false);
   
   // Password change states
   const [currentPasswordForPasswordChange, setCurrentPasswordForPasswordChange] = useState('');
@@ -204,7 +202,7 @@ export default function ProfilePage() {
   // Email change handlers
   const handleRequestEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail || !confirmNewEmail || !currentPasswordForEmailChange) {
+    if (!newEmail || !confirmNewEmail) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -223,7 +221,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/user/change-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newEmail, currentPassword: currentPasswordForEmailChange }),
+        body: JSON.stringify({ newEmail }),
       });
 
       const data = await response.json();
@@ -253,7 +251,6 @@ export default function ProfilePage() {
         });
       }
       
-      setCurrentPasswordForEmailChange('');
       setNewEmail('');
       setConfirmNewEmail('');
     } catch (error) {
@@ -272,8 +269,7 @@ export default function ProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          newEmail: pendingEmailChange.newEmail, 
-          currentPassword: currentPasswordForEmailChange || '' 
+          newEmail: pendingEmailChange.newEmail
         }),
       });
 
@@ -324,7 +320,6 @@ export default function ProfilePage() {
       toast.success('Email changed successfully!');
       setPendingEmailChange(null);
       setVerificationCode('');
-      setCurrentPasswordForEmailChange('');
       setNewEmail('');
       setConfirmNewEmail('');
       
@@ -351,7 +346,6 @@ export default function ProfilePage() {
     
     setPendingEmailChange(null);
     setVerificationCode('');
-    setCurrentPasswordForEmailChange('');
     setNewEmail('');
     setConfirmNewEmail('');
     setCountdown(0);
@@ -647,28 +641,7 @@ export default function ProfilePage() {
                           {!pendingEmailChange ? (
                             // Email change request form
                             <div className="space-y-6">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="space-y-2">
-                                  <label className="block text-gray-700 font-medium text-sm">Current Password</label>
-                                  <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                                    <Input 
-                                      type={showCurrentPasswordForEmail ? "text" : "password"}
-                                      value={currentPasswordForEmailChange}
-                                      onChange={(e) => setCurrentPasswordForEmailChange(e.target.value)}
-                                      className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
-                                      placeholder="Enter current password"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => setShowCurrentPasswordForEmail(!showCurrentPasswordForEmail)}
-                                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    >
-                                      {showCurrentPasswordForEmail ? <EyeOff size={18} /> : <Eye size={18} />}
-                                    </button>
-                                  </div>
-                                </div>
-                                
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                   <label className="block text-gray-700 font-medium text-sm">New Email Address</label>
                                   <div className="relative">
@@ -677,7 +650,7 @@ export default function ProfilePage() {
                                       type="email"
                                       value={newEmail}
                                       onChange={(e) => setNewEmail(e.target.value)}
-                                      className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                      className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900"
                                       placeholder="Enter new email address"
                                     />
                                   </div>
@@ -691,14 +664,14 @@ export default function ProfilePage() {
                                       type="email"
                                       value={confirmNewEmail}
                                       onChange={(e) => setConfirmNewEmail(e.target.value)}
-                                      className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                      className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900"
                                       placeholder="Confirm new email address"
                                     />
                                   </div>
                                 </div>
                               </div>
 
-                              {(currentPasswordForEmailChange || newEmail || confirmNewEmail) && (
+                              {(newEmail || confirmNewEmail) && (
                                 <motion.button
                                   initial={{ opacity: 0 }}
                                   animate={{ opacity: 1 }}
@@ -706,7 +679,7 @@ export default function ProfilePage() {
                                   whileTap={{ scale: 0.98 }}
                                   type="button"
                                   onClick={handleRequestEmailChange}
-                                  disabled={countdown > 0 || !currentPasswordForEmailChange || !newEmail || !confirmNewEmail || newEmail !== confirmNewEmail || newEmail === email}
+                                  disabled={countdown > 0 || !newEmail || !confirmNewEmail || newEmail !== confirmNewEmail || newEmail === email}
                                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                   {countdown > 0 ? (
@@ -747,7 +720,7 @@ export default function ProfilePage() {
                                     type="text"
                                     value={verificationCode}
                                     onChange={(e) => setVerificationCode(e.target.value)}
-                                    className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-center text-lg font-mono tracking-widest"
+                                    className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-center text-lg font-mono tracking-widest text-gray-900"
                                     placeholder="000000"
                                     maxLength={6}
                                   />
@@ -832,7 +805,7 @@ export default function ProfilePage() {
                                   type={showCurrentPassword ? "text" : "password"}
                                   value={currentPasswordForPasswordChange}
                                   onChange={(e) => setCurrentPasswordForPasswordChange(e.target.value)}
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900"
                                   placeholder="Enter current password"
                                 />
                                 <button
@@ -853,7 +826,7 @@ export default function ProfilePage() {
                                   type={showNewPassword ? "text" : "password"}
                                   value={newPassword}
                                   onChange={(e) => setNewPassword(e.target.value)}
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900"
                                   placeholder="Enter new password"
                                 />
                                 <button
@@ -874,7 +847,7 @@ export default function ProfilePage() {
                                   type={showConfirmPassword ? "text" : "password"}
                                   value={confirmNewPassword}
                                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
+                                  className="w-full pl-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl text-gray-900"
                                   placeholder="Confirm new password"
                                 />
                                 <button

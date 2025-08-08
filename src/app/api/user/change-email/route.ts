@@ -23,11 +23,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { newEmail, currentPassword } = await request.json();
+    const { newEmail } = await request.json();
     
-    if (!newEmail || !currentPassword) {
+    if (!newEmail) {
       return NextResponse.json({ 
-        error: 'New email and current password are required' 
+        error: 'New email is required' 
       }, { status: 400 });
     }
 
@@ -49,14 +49,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Verify current password (you'll need to implement this based on your auth system)
-    const currentUser = await User.findOne({ email: session.user.email });
-    if (!currentUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Check if new email is different from current email
+    if (newEmail === session.user.email) {
+      return NextResponse.json({ 
+        error: 'New email must be different from current email' 
+      }, { status: 400 });
     }
-
-    // For now, we'll skip password verification since it depends on your auth system
-    // In a real implementation, you'd verify the current password here
 
     // Check rate limiting
     if (isRateLimited(newEmail)) {
@@ -98,26 +96,35 @@ export async function POST(request: NextRequest) {
     // Store pending email change in user document
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
-      { 
-        pendingEmailChange: {
-          newEmail,
-          verificationCode,
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
-          createdAt: new Date()
+      {
+        $set: {
+          pendingEmailChange: {
+            newEmail,
+            verificationCode,
+            expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+            createdAt: new Date()
+          }
         }
       },
       { new: true }
     );
 
+    if (!updatedUser) {
+      return NextResponse.json({ error: 'Failed to store pending email change' }, { status: 500 });
+    }
+
+    // Return the pending email change with dates converted to ISO strings
+    const pendingEmailChange = updatedUser.pendingEmailChange ? {
+      newEmail: updatedUser.pendingEmailChange.newEmail,
+      verificationCode: updatedUser.pendingEmailChange.verificationCode,
+      expiresAt: updatedUser.pendingEmailChange.expiresAt.toISOString(),
+      createdAt: updatedUser.pendingEmailChange.createdAt.toISOString()
+    } : null;
+
     return NextResponse.json({
       success: true,
       message: 'Verification code sent to new email address',
-      pendingEmailChange: updatedUser?.pendingEmailChange ? {
-        newEmail: updatedUser.pendingEmailChange.newEmail,
-        verificationCode: updatedUser.pendingEmailChange.verificationCode,
-        expiresAt: updatedUser.pendingEmailChange.expiresAt.toISOString(),
-        createdAt: updatedUser.pendingEmailChange.createdAt.toISOString()
-      } : null
+      pendingEmailChange
     });
 
   } catch (error) {
