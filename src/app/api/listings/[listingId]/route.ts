@@ -233,7 +233,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
       propertyType: body.propertyType,
       listingType: body.listingType,
       leaseType: body.leaseType,
-      availableDate: new Date(body.availableDate),
+      availableDate: new Date(body.availableDate + 'T00:00:00'),
       status: body.status ? body.status.toUpperCase() : 'ACTIVE',
       featured: body.featured || false,
       phoneNumber: body.phoneNumber || '',

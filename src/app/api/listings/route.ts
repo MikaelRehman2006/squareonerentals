@@ -301,7 +301,7 @@ export async function POST(request: NextRequest) {
       propertyType: propertyType || 'Apartment',
       listingType: listingType || 'RENT',
       leaseType: leaseType || 'FULL',
-      availableDate: availableDate ? new Date(availableDate) : new Date(),
+      availableDate: availableDate ? new Date(availableDate + 'T00:00:00') : new Date(),
       status: 'ACTIVE',
       featured: false,
       userId: user._id,

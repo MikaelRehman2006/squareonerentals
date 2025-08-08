@@ -127,7 +127,7 @@ export default async function EditListingPage({
             propertyType: listing.propertyType,
             listingType: listing.listingType,
             leaseType: listing.leaseType || 'fixed',
-            availableDate: new Date(listing.availableDate).toISOString().split('T')[0],
+            availableDate: new Date(listing.availableDate + 'T00:00:00').toISOString().split('T')[0],
             parking: listing.parking || 'None',
             featured: listing.featured || false,
             status: listing.status,

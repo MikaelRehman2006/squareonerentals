@@ -173,7 +173,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
           propertyType: data.propertyType || 'APARTMENT',
           listingType: data.listingType || 'LONG_TERM',
           leaseType: data.leaseType || 'FIXED',
-          availableDate: data.availableDate ? new Date(data.availableDate).toISOString().split('T')[0] : '',
+          availableDate: data.availableDate ? new Date(data.availableDate + 'T00:00:00').toISOString().split('T')[0] : '',
           parking: data.parking || 'None',
           featured: data.featured || false,
           status: data.status || 'ACTIVE',
@@ -727,7 +727,7 @@ export default function EditListingPage({ params }: { params: { listingId: strin
   const initialData = {
     ...listing,
     leaseType: listing.leaseType || 'FIXED',
-    availableDate: listing.availableDate ? new Date(listing.availableDate).toISOString().split('T')[0] : '',
+              availableDate: listing.availableDate ? new Date(listing.availableDate + 'T00:00:00').toISOString().split('T')[0] : '',
   };
 
   return (
