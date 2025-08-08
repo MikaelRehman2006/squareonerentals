@@ -272,7 +272,7 @@ export default function ProfilePage() {
         setPendingEmailChange({
           newEmail,
           verificationCode: '',
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
           createdAt: new Date().toISOString()
         });
       }
@@ -808,6 +808,32 @@ export default function ProfilePage() {
                               </div>
                             </div>
                           )}
+                        </motion.div>
+
+                        {/* Email Change Info Note */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.25 }}
+                          className="space-y-4 border-t pt-6"
+                        >
+                          <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                            <div className="flex items-start gap-3">
+                              <div className="text-blue-600 mt-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="12" cy="12" r="10"/>
+                                  <path d="m9 12 2 2 4-4"/>
+                                </svg>
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-medium text-blue-800 mb-1">Important Note About Email Changes</h3>
+                                <p className="text-sm text-blue-700">
+                                  After changing your email, you may need to use your <strong>previous email address</strong> when contacting Stripe support for billing-related issues. 
+                                  However, all app functions including subscription cancellations will work normally with your new email.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </motion.div>
 
                         {/* Password Change Section */}

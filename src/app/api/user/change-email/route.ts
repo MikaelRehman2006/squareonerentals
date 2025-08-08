@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           pendingEmailChange: {
             newEmail,
             verificationCode,
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
+            expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
             createdAt: new Date()
           }
         }
