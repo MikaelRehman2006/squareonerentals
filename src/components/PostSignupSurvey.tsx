@@ -574,26 +574,46 @@ export default function PostSignupSurvey() { // Define the main component functi
             const data = await response.json();
             console.log('Loaded existing preferences:', data);
             
-            // Load existing user types
-            if (data.userTypes && data.userTypes.length > 0) {
-              setSelectedTypes(data.userTypes);
-              console.log('Set existing user types:', data.userTypes);
-            }
-            
-            // Load existing form data for each role
-            if (data.preferences) {
-              const existingRoleForms = { ...roleForms };
-              Object.keys(data.preferences).forEach(role => {
-                if (data.preferences[role]) {
-                  existingRoleForms[role] = data.preferences[role];
-                }
-              });
-              setRoleForms(existingRoleForms);
-              console.log('Set existing form data:', existingRoleForms);
+            // Only load existing user types if the survey is being reopened and user has already started
+            // For first-time users or users who haven't completed the survey, always start at the role selection page
+            if (data.userTypes && data.userTypes.length > 0 && data.onboardingCompleted === false) {
+              // Only load existing data if the user has already started the survey
+              // Check if there's actual form data, not just empty preferences
+              const hasFormData = data.preferences && Object.keys(data.preferences).length > 0;
+              if (hasFormData) {
+                setSelectedTypes(data.userTypes);
+                console.log('Set existing user types:', data.userTypes);
+                
+                // Load existing form data for each role
+                const existingRoleForms = { ...roleForms };
+                Object.keys(data.preferences).forEach(role => {
+                  if (data.preferences[role]) {
+                    existingRoleForms[role] = data.preferences[role];
+                  }
+                });
+                setRoleForms(existingRoleForms);
+                console.log('Set existing form data:', existingRoleForms);
+              } else {
+                // Reset to initial state for new users or users without form data
+                setSelectedTypes([]);
+                setCurrentType('');
+                setRoleForms({});
+                console.log('Reset to initial state - no existing form data');
+              }
+            } else {
+              // Reset to initial state for new users
+              setSelectedTypes([]);
+              setCurrentType('');
+              setRoleForms({});
+              console.log('Reset to initial state - new user or completed onboarding');
             }
           }
         } catch (error) {
           console.error('Error loading existing preferences:', error);
+          // Reset to initial state on error
+          setSelectedTypes([]);
+          setCurrentType('');
+          setRoleForms({});
         }
       }
     };

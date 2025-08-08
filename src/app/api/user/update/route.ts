@@ -8,19 +8,34 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const data = await request.json();
-    const userId = session.user.id;
     
     // Connect to database
     await connectDB();
     
+    let user;
+    
+    // Try to find user by ID first, then by email
+    if (session.user.id) {
+      user = await User.findById(session.user.id);
+    }
+    
+    // If user not found by ID, try to find by email (for cases where email was changed)
+    if (!user && session.user.email) {
+      user = await User.findOne({ email: session.user.email });
+    }
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
     // Find the user and update their profile
     const updatedUser = await User.findByIdAndUpdate(
-      userId,
+      user._id,
       { $set: data },
       { new: true, runValidators: true }
     ).select('-password');
