@@ -363,9 +363,28 @@ export async function DELETE(request: NextRequest, { params }: Props) {
         ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
       }
 
-      // Delete all image metadata associated with this listing
-      const deleteResult = await ImageMetadata.deleteMany({ listingId: params.listingId });
-      console.log(`Deleted ${deleteResult.deletedCount} image metadata records for listing ${params.listingId}`);
+      // Get the listing's image URLs
+      const listingImages = listing.images;
+      const images = Array.isArray(listingImages) 
+        ? listingImages 
+        : typeof listingImages === 'string' 
+          ? listingImages.split(',').filter(Boolean)
+          : [];
+
+      // Delete metadata records that match the listing's image URLs
+      let deletedCount = 0;
+      if (images.length > 0) {
+        const deleteResult = await ImageMetadata.deleteMany({
+          url: { $in: images }
+        });
+        deletedCount = deleteResult.deletedCount;
+      }
+
+      // Also delete metadata records with this listingId (for records that were properly associated)
+      const deleteByListingIdResult = await ImageMetadata.deleteMany({ listingId: params.listingId });
+      deletedCount += deleteByListingIdResult.deletedCount;
+
+      console.log(`Deleted ${deletedCount} image metadata records for listing ${params.listingId}`);
     } catch (metadataError) {
       console.error('Error cleaning up image metadata:', metadataError);
       // Continue with listing deletion even if metadata cleanup fails

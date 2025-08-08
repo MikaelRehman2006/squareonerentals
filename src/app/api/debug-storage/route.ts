@@ -159,7 +159,7 @@ export async function POST() {
     // Get all image metadata for the user
     const metadata = await ImageMetadata.find({ userId: user._id.toString() }).lean();
     
-    // Find orphaned metadata records (metadata without corresponding listing images)
+    // Find orphaned metadata records
     const orphanedRecords = [];
     const validUrls = new Set();
     
@@ -175,10 +175,15 @@ export async function POST() {
       images.forEach(url => validUrls.add(url));
     }
     
-    // Find metadata records that don't correspond to any listing images
-    for (const record of metadata) {
-      if (!validUrls.has(record.url)) {
-        orphanedRecords.push(record);
+    // If there are no listings, all metadata records are orphaned
+    if (userListings.length === 0) {
+      orphanedRecords.push(...metadata);
+    } else {
+      // Find metadata records that don't correspond to any listing images
+      for (const record of metadata) {
+        if (!validUrls.has(record.url)) {
+          orphanedRecords.push(record);
+        }
       }
     }
 
@@ -195,7 +200,9 @@ export async function POST() {
       message: 'Cleanup completed',
       orphanedRecords: orphanedRecords.length,
       deletedCount,
-      orphanedUrls: orphanedRecords.map(r => r.url)
+      orphanedUrls: orphanedRecords.map(r => r.url),
+      totalMetadataBefore: metadata.length,
+      totalListings: userListings.length
     });
     
   } catch (error) {

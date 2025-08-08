@@ -234,20 +234,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/listings: Starting request');
-    
-    // Connect to MongoDB
-    try {
-      await connectDB();
-      console.log('MongoDB connection successful');
-    } catch (dbError) {
-      console.error('MongoDB connection failed:', dbError);
-      return NextResponse.json(
-        { error: 'Database connection failed' },
-        { status: 500 }
-      );
-    }
-
+    await connectDB();
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -257,173 +244,117 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let user = await User.findOne({ email: session.user.email });
-    
-    // If user not found by email, try to find by ID (for cases where email was changed)
-    if (!user && session.user.id) {
-      user = await User.findById(session.user.id);
-    }
-    
+    const user = await User.findOne({ email: session.user.email });
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
-    
-    // Check if user has an active membership
-    if (!user.membership || user.membership.status !== 'active') {
-      return NextResponse.json(
-        { error: 'Active membership required to create listings', redirectUrl: '/memberships' },
-        { status: 403 }
-      );
-    }
-    
-    // Check if membership has expired
-    if (user.membership.endDate && new Date(user.membership.endDate) < new Date()) {
-      return NextResponse.json(
-        { error: 'Your membership has expired. Please renew to create listings', redirectUrl: '/memberships' },
-        { status: 403 }
-      );
-    }
-    
-    // Check for listing limits - both membership types are limited to 1 listing
-    const activeListingsCount = await Listing.countDocuments({ 
-      userId: user._id, 
-      status: 'ACTIVE' 
-    });
-    
-    console.log(`User has ${activeListingsCount} active listings with ${user.membership.type} membership`);
-    
-    if (activeListingsCount >= 1) {
-      return NextResponse.json(
-        { 
-          error: 'Your membership allows only one active listing at a time. Please archive your existing listing before creating a new one.',
-          redirectUrl: '/dashboard'
-        },
-        { status: 403 }
-      );
-    }
 
     const body = await request.json();
+    const {
+      title,
+      description,
+      price,
+      location,
+      address,
+      images,
+      bedrooms,
+      bathrooms,
+      squareFeet,
+      amenities,
+      buildingAmenities,
+      features,
+      utilities,
+      propertyType,
+      listingType,
+      leaseType,
+      availableDate,
+      phoneNumber,
+      facebookUrl
+    } = body;
 
-    // Ensure required fields are present
-    if (!body.listingType) {
+    // Validate required fields
+    if (!title || !description || !price || !location || !address) {
       return NextResponse.json(
-        { error: 'listingType is required' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    if (!body.leaseType) {
-      return NextResponse.json(
-        { error: 'leaseType is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!body.squareFeet) {
-      return NextResponse.json(
-        { error: 'Square footage is required' },
-        { status: 400 }
-      );
-    }
-
-    if (!body.availableDate) {
-      return NextResponse.json(
-        { error: 'Available date is required' },
-        { status: 400 }
-      );
-    }
-
-    // Log what we're receiving from the client
-    console.log('Received request body for new listing:', {
-      address: body.address,
-      images: Array.isArray(body.images) ? `${body.images.length} images` : typeof body.images,
-      amenities: body.amenities,
-      buildingAmenities: body.buildingAmenities,
-      features: body.features,
-      utilities: body.utilities
-    });
-    
-    // Check if user has Featured membership to automatically set listing as featured
-    const hasFeaturedMembership = user.membership?.type === 'FEATURED' && user.membership.status === 'active';
-    
-    // Sanitize and validate all input data
-    const sanitizedData = sanitizeListingInput({
-      ...body,
+    // Create the listing
+    const listing = new Listing({
+      title,
+      description,
+      price,
+      location,
+      address,
+      images: images || [],
+      bedrooms: bedrooms || 0,
+      bathrooms: bathrooms || 0,
+      squareFeet: squareFeet || 0,
+      amenities: amenities || [],
+      buildingAmenities: buildingAmenities || [],
+      features: features || {},
+      utilities: utilities || {},
+      propertyType: propertyType || 'Apartment',
+      listingType: listingType || 'RENT',
+      leaseType: leaseType || 'FULL',
+      availableDate: availableDate ? new Date(availableDate) : new Date(),
+      status: 'ACTIVE',
+      featured: false,
       userId: user._id,
-      featured: hasFeaturedMembership ? true : (body.featured || false)
+      phoneNumber,
+      facebookUrl
     });
-    
-    console.log('Sanitized listing data:', {
-      title: sanitizedData.title,
-      address: sanitizedData.address,
-      images: sanitizedData.images.length
-    });
-
-    const listing = new Listing(sanitizedData);
 
     await listing.save();
 
-    // Try to post to Facebook if integration is configured
-    if (process.env.FACEBOOK_AUTO_POST === 'true' && process.env.FACEBOOK_ACCESS_TOKEN && (process.env.FACEBOOK_PAGE_ID || process.env.FACEBOOK_GROUP_ID)) {
+    // Update image metadata records with the listing ID
+    if (images && images.length > 0) {
       try {
-        console.log('Facebook auto-post triggered for listing:', listing._id.toString());
-        
-        // Prepare message for Facebook post
-        const listingUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://squareone-rentals.com'}/listings/${listing._id}`;
-        const message = `🏠 New Listing: ${sanitizedData.title}\n\n💰 Price: $${sanitizedData.price}/month\n📍 Location: ${sanitizedData.location}\n\n${sanitizedData.description.substring(0, 200)}${sanitizedData.description.length > 200 ? '...' : ''}\n\nView full listing: ${listingUrl}`;
-
-        // Get the first image if available
-        const imageUrl = sanitizedData.images && sanitizedData.images.length > 0 ? sanitizedData.images[0] : undefined;
-
-        const postData = {
-          message,
-          link: listingUrl,
-          listingId: listing._id.toString(),
-          title: sanitizedData.title,
-          price: sanitizedData.price,
-          location: sanitizedData.location,
-          imageUrl
-        };
-        
-        console.log('Calling Facebook API with post data:', JSON.stringify(postData));
-
-        // Post to Facebook
-        const fbResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/facebook/post-to-group`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(postData)
-        });
-
-        const fbResult = await fbResponse.json();
-        console.log('Facebook API response status:', fbResponse.status);
-        
-        if (!fbResponse.ok) {
-          console.error('Failed to post to Facebook:', fbResult);
-          // Don't return an error, just log it - the listing was still created successfully
-        } else {
-          console.log('Successfully posted to Facebook:', fbResult);
+        // Get or initialize the ImageMetadata model
+        let ImageMetadata: mongoose.Model<any>;
+        try {
+          ImageMetadata = mongoose.model('ImageMetadata');
+        } catch (e) {
+          const ImageMetadataSchema = new mongoose.Schema({
+            userId: { type: String, required: true, index: true },
+            url: { type: String, required: true, unique: true },
+            publicId: { type: String, required: true },
+            size: { type: Number, required: true },
+            listingId: { type: String, index: true },
+            createdAt: { type: Date, default: Date.now }
+          });
+          
+          ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
         }
-      } catch (fbError) {
-        console.error('Error posting to Facebook:', fbError);
-        // Don't return an error, just log it - the listing was still created successfully
+
+        // Update metadata records for the uploaded images
+        const updateResult = await ImageMetadata.updateMany(
+          { 
+            userId: user._id.toString(),
+            url: { $in: images },
+            listingId: { $exists: false } // Only update records without listingId
+          },
+          { listingId: listing._id.toString() }
+        );
+
+        console.log(`Updated ${updateResult.modifiedCount} image metadata records with listing ID ${listing._id}`);
+      } catch (metadataError) {
+        console.error('Error updating image metadata:', metadataError);
+        // Continue even if metadata update fails
       }
-    } else {
-      console.log('Facebook auto-post not triggered. Environment check:', {
-        autoPostEnabled: process.env.FACEBOOK_AUTO_POST === 'true',
-        hasAccessToken: !!process.env.FACEBOOK_ACCESS_TOKEN,
-        hasPageId: !!process.env.FACEBOOK_PAGE_ID,
-        hasGroupId: !!process.env.FACEBOOK_GROUP_ID
-      });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: 'Listing created successfully',
-      id: listing._id?.toString()
+      listing: {
+        id: listing._id,
+        title: listing.title,
+        status: listing.status
+      }
     });
   } catch (error) {
     console.error('Error in POST /api/listings:', error);
@@ -432,8 +363,7 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    // Don't disconnect as it might affect other requests
-    // await disconnectDB();
+    await disconnectDB();
   }
 }
 
@@ -488,6 +418,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    
     // Check ownership
     if (listing.userId.toString() !== session.user.id) {
       return NextResponse.json(

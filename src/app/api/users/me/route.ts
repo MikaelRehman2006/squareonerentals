@@ -80,13 +80,57 @@ export async function GET() {
         console.log(`Metadata ${index + 1}: url=${item.url}, size=${item.size}, listingId=${item.listingId}`);
       });
       
-      // Calculate total size from actual metadata
-      totalStorageUsed = metadata.reduce((total: number, item: any) => {
-        const itemSize = item && typeof item.size === 'number' ? item.size : 0;
-        return total + itemSize;
-      }, 0);
+      // Check for orphaned metadata records (metadata without corresponding listing images)
+      const orphanedRecords = [];
+      const validUrls = new Set();
       
-      totalImageCount = metadata.length;
+      // Collect all valid image URLs from listings
+      for (const listing of userListings) {
+        const listingImages = listing.images as string | string[] | undefined;
+        const images = typeof listingImages === 'string' 
+          ? listingImages.split(',').filter(Boolean) 
+          : Array.isArray(listingImages) 
+            ? listingImages.filter(Boolean)
+            : [];
+        
+        images.forEach(url => validUrls.add(url));
+      }
+      
+      // If there are no listings, all metadata records are orphaned
+      if (userListings.length === 0) {
+        orphanedRecords.push(...metadata);
+      } else {
+        // Find metadata records that don't correspond to any listing images
+        for (const record of metadata) {
+          if (!validUrls.has(record.url)) {
+            orphanedRecords.push(record);
+          }
+        }
+      }
+      
+      // Automatically clean up orphaned records if found
+      if (orphanedRecords.length > 0) {
+        console.log(`Found ${orphanedRecords.length} orphaned metadata records, cleaning up...`);
+        const deleteResult = await ImageMetadata.deleteMany({
+          _id: { $in: orphanedRecords.map(r => r._id) }
+        });
+        console.log(`Cleaned up ${deleteResult.deletedCount} orphaned metadata records`);
+        
+        // Re-fetch metadata after cleanup
+        const cleanedMetadata = await ImageMetadata.find({ userId: user._id.toString() }).lean();
+        totalStorageUsed = cleanedMetadata.reduce((total: number, item: any) => {
+          const itemSize = item && typeof item.size === 'number' ? item.size : 0;
+          return total + itemSize;
+        }, 0);
+        totalImageCount = cleanedMetadata.length;
+      } else {
+        // Calculate total size from actual metadata
+        totalStorageUsed = metadata.reduce((total: number, item: any) => {
+          const itemSize = item && typeof item.size === 'number' ? item.size : 0;
+          return total + itemSize;
+        }, 0);
+        totalImageCount = metadata.length;
+      }
       
       console.log(`Total storage used: ${totalStorageUsed} bytes (${(totalStorageUsed / (1024 * 1024)).toFixed(2)} MB)`);
       console.log(`Total image count: ${totalImageCount}`);
