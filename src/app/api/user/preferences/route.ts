@@ -14,13 +14,17 @@ export async function GET() {
 
     console.log('🔍 GET preferences - Session user:', { email: session.user.email, id: session.user.id });
 
+    console.log('🔍 Connecting to database...');
     await connectDB();
+    console.log('✅ Database connected successfully');
     
+    console.log('🔍 Looking up user by email:', session.user.email);
     let user = await User.findOne({ email: session.user.email });
     console.log('🔍 GET preferences - User found by email:', !!user);
     
     // If user not found by email, try to find by ID (for cases where email was changed)
     if (!user && session.user.id) {
+      console.log('🔍 Looking up user by ID:', session.user.id);
       user = await User.findById(session.user.id);
       console.log('🔍 GET preferences - User found by ID:', !!user);
     }
@@ -34,6 +38,7 @@ export async function GET() {
 
     // Get user preferences
     const userPrefs = (user.preferences as any) || {};
+    console.log('🔍 Raw user preferences from database:', JSON.stringify(userPrefs, null, 2));
 
     // Return comprehensive preferences object
     const allPreferences = {
@@ -81,7 +86,15 @@ export async function GET() {
     });
   } catch (error) {
     console.error('❌ Error fetching user preferences:', error);
-    return NextResponse.json({ error: 'Failed to fetch preferences' }, { status: 500 });
+    console.error('❌ Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      name: error instanceof Error ? error.name : 'Unknown error type'
+    });
+    return NextResponse.json({ 
+      error: 'Failed to fetch preferences',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
