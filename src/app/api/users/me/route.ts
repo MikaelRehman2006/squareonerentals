@@ -6,6 +6,7 @@ import { authOptions } from '@/lib/auth';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/User';
 import { Listing } from '@/models/Listing';
+import mongoose from 'mongoose';
 
 interface ListingType {
   _id: string;
@@ -46,45 +47,53 @@ export async function GET() {
       userId: user._id
     }).select('images id').lean() as ListingType[];
 
-    // Count the total number of images across all listings
-    let totalImageCount = 0;
+    // Get actual storage usage from ImageMetadata collection
     let totalStorageUsed = 0;
+    let totalImageCount = 0;
 
-    // Process each listing
-    for (const listing of userListings) {
-      // Handle both string and array image formats
-      const listingImages = listing.images;
-      const images = typeof listingImages === 'string' 
-        ? listingImages.split(',').filter(Boolean) 
-        : Array.isArray(listingImages) 
-          ? listingImages.filter(Boolean)
-          : [];
-          
-      totalImageCount += images.length;
-      
+    try {
+      // Get or initialize the ImageMetadata model
+      let ImageMetadata: mongoose.Model<any>;
       try {
-        // Try to get actual image sizes from metadata if available
-        const imageSizes = await Listing.find({
-          _id: listing.id
-        }).select('size').lean() as ImageSize[];
+        ImageMetadata = mongoose.model('ImageMetadata');
+      } catch (e) {
+        const ImageMetadataSchema = new mongoose.Schema({
+          userId: { type: String, required: true, index: true },
+          url: { type: String, required: true, unique: true },
+          publicId: { type: String, required: true },
+          size: { type: Number, required: true },
+          listingId: { type: String, index: true },
+          createdAt: { type: Date, default: Date.now }
+        });
         
-        // Sum up actual sizes if available
-        if (imageSizes && imageSizes.length > 0) {
-          // Calculate the sum from the image sizes
-          const sizeSum = imageSizes.reduce((sum: number, img: ImageSize) => {
-            const imgSize = img && typeof img.size === 'number' ? img.size : 0;
-            return sum + imgSize;
-          }, 0);
-          
-          // Add the sum to the total
-          totalStorageUsed += sizeSum;
-        } else {
-          // Fallback to estimate - 400KB per image (average compressed size)
-          totalStorageUsed += images.length * 400 * 1024;
-        }
-      } catch (error) {
-        console.error('Error getting image sizes:', error);
-        // Fallback to estimate if there's an error
+        ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
+      }
+
+      // Get all image metadata for the user
+      const metadata = await ImageMetadata.find({ userId: user._id.toString() }).lean();
+      
+      // Calculate total size from actual metadata
+      totalStorageUsed = metadata.reduce((total: number, item: any) => {
+        const itemSize = item && typeof item.size === 'number' ? item.size : 0;
+        return total + itemSize;
+      }, 0);
+      
+      totalImageCount = metadata.length;
+    } catch (error) {
+      console.error('Error getting image metadata:', error);
+      
+      // Fallback to estimation if metadata collection fails
+      for (const listing of userListings) {
+        const listingImages = listing.images;
+        const images = typeof listingImages === 'string' 
+          ? listingImages.split(',').filter(Boolean) 
+          : Array.isArray(listingImages) 
+            ? listingImages.filter(Boolean)
+            : [];
+            
+        totalImageCount += images.length;
+        
+        // Estimate storage: ~400KB per image
         totalStorageUsed += images.length * 400 * 1024;
       }
     }

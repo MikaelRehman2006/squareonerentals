@@ -344,7 +344,15 @@ export default function SubmitListingPage() {
         }
         
         // Refresh storage usage after successful upload
-        fetchStorageUsage();
+        try {
+          const response = await fetch('/api/users/me');
+          if (response.ok) {
+            const data = await response.json();
+            setStorageUsage(data.storageUsage?.bytes || 0);
+          }
+        } catch (error) {
+          console.error('Error fetching updated storage usage:', error);
+        }
       } catch (error: any) {
         toast.dismiss(loadingToast);
         
@@ -685,7 +693,7 @@ export default function SubmitListingPage() {
                       <Input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/*"
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/svg+xml,image/avif,image/heic,image/heif"
                         multiple
                         onChange={handleImageUpload}
                         className="bg-transparent text-gray-300 border-0 cursor-pointer file:mr-4 file:py-2 file:px-4
@@ -698,7 +706,7 @@ export default function SubmitListingPage() {
                         }}
                       />
                       <p className="text-sm text-gray-400 mt-2">
-                        Drag and drop images here, or click to browse. Supported formats: JPG, PNG, WebP.
+                        Drag and drop images here, or click to browse. Supported formats: JPG, PNG, GIF, WebP, BMP, TIFF, SVG, AVIF, HEIC.
                       </p>
                     </div>
                   </div>

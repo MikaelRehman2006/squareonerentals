@@ -62,29 +62,41 @@ const validateFile = async (file: File): Promise<{ valid: boolean; error?: strin
     return { valid: false, error: `File size exceeds the 5MB limit` };
   }
   
+  // Accept all common image formats
+  const allowedTypes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
+    'image/webp', 'image/bmp', 'image/tiff', 'image/svg+xml',
+    'image/avif', 'image/heic', 'image/heif'
+  ];
+  
+  if (!allowedTypes.includes(file.type.toLowerCase())) {
+    return { valid: false, error: `Unsupported image format: ${file.type}. Supported formats: JPG, PNG, GIF, WebP, BMP, TIFF, SVG, AVIF, HEIC` };
+  }
+  
   // Check image dimensions to prevent unusually large images
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    // Simple check for image file headers
-    // JPEG starts with FF D8
-    if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
-      // It's a JPEG
-    } 
-    // PNG starts with 89 50 4E 47
-    else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
-      // It's a PNG
-    }
-    // GIF starts with GIF8
-    else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
-      // It's a GIF
-    } 
-    else {
-      return { valid: false, error: 'Invalid image format' };
+    // Check for common image file headers
+    const isJPEG = buffer[0] === 0xFF && buffer[1] === 0xD8;
+    const isPNG = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+    const isGIF = buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38;
+    const isWebP = buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46;
+    const isBMP = buffer[0] === 0x42 && buffer[1] === 0x4D;
+    const isTIFF = (buffer[0] === 0x49 && buffer[1] === 0x49) || (buffer[0] === 0x4D && buffer[1] === 0x4D);
+    
+    // If it's a recognized image format, accept it
+    if (isJPEG || isPNG || isGIF || isWebP || isBMP || isTIFF) {
+      return { valid: true };
     }
     
-    return { valid: true };
+    // For other formats (SVG, AVIF, HEIC), trust the MIME type
+    if (file.type.startsWith('image/')) {
+      return { valid: true };
+    }
+    
+    return { valid: false, error: 'Invalid image format' };
   } catch (error) {
     console.error('Error validating file:', error);
     return { valid: false, error: 'Failed to validate file' };
@@ -120,6 +132,7 @@ export async function POST(request: Request) {
     // Storage check - get user's current storage usage
     const userId = user._id.toString();
     const storageUsed = await getUserStorageUsed(userId);
+    console.log(`Current storage used for user ${userId}: ${storageUsed} bytes (${(storageUsed / (1024 * 1024)).toFixed(2)} MB)`);
     
     const formData = await request.formData();
     const file = formData.get('file');
@@ -141,7 +154,10 @@ export async function POST(request: Request) {
     const membershipType = user.membership?.type || 'DEFAULT';
     const storageLimit = STORAGE_LIMITS[membershipType] || STORAGE_LIMITS.DEFAULT;
     
+    console.log(`Storage check: used=${storageUsed}, fileSize=${fileSize}, limit=${storageLimit}, membershipType=${membershipType}`);
+    
     if (storageUsed + fileSize > storageLimit) {
+      console.log(`Storage limit exceeded: ${storageUsed + fileSize} > ${storageLimit}`);
       return NextResponse.json({ 
         error: 'Storage limit exceeded',
         storageUsed,
@@ -182,12 +198,14 @@ export async function POST(request: Request) {
 
     // Store the file size in the database for accurate tracking
     try {
+      console.log(`Storing image metadata: userId=${userId}, url=${uploadResult.secure_url}, size=${uploadResult.bytes || fileSize}`);
       await storeImageMetadata({
         userId: userId,
         url: uploadResult.secure_url,
         publicId: uploadResult.public_id,
         size: uploadResult.bytes || fileSize
       });
+      console.log('Image metadata stored successfully');
     } catch (error) {
       console.error("Failed to store image metadata:", error);
       // Continue anyway - the image was uploaded successfully
@@ -208,13 +226,37 @@ export async function POST(request: Request) {
 // Helper function to get a user's total storage used
 async function getUserStorageUsed(userId: string): Promise<number> {
   try {
-    // Attempt to get from the ImageMetadata collection first (most accurate)
-    const result = await fetch(`/api/users/${userId}/storage`);
-    if (result.ok) {
-      const data = await result.json();
-      return data.storageUsage?.bytes || 0;
+    await connectDB();
+    
+    // Get or initialize the ImageMetadata model
+    let ImageMetadata: mongoose.Model<any>;
+    try {
+      ImageMetadata = mongoose.model('ImageMetadata');
+    } catch (e) {
+      const ImageMetadataSchema = new mongoose.Schema({
+        userId: { type: String, required: true, index: true },
+        url: { type: String, required: true, unique: true },
+        publicId: { type: String, required: true },
+        size: { type: Number, required: true },
+        listingId: { type: String, index: true },
+        createdAt: { type: Date, default: Date.now }
+      });
+      
+      ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
     }
-    return 0;
+
+    // Get all image metadata for the user
+    const metadata = await ImageMetadata.find({ userId }).lean();
+    console.log(`Found ${metadata.length} image metadata records for user ${userId}`);
+    
+    // Calculate total size from actual metadata
+    const totalSize = metadata.reduce((total: number, item: any) => {
+      const itemSize = item && typeof item.size === 'number' ? item.size : 0;
+      return total + itemSize;
+    }, 0);
+    
+    console.log(`Total storage used for user ${userId}: ${totalSize} bytes (${(totalSize / (1024 * 1024)).toFixed(2)} MB)`);
+    return totalSize;
   } catch (error) {
     console.error("Error getting storage usage:", error);
     return 0; // Default to 0 if there's an error

@@ -941,8 +941,8 @@ export default function PostSignupSurvey() { // Define the main component functi
                       {/* Realtor/Landlord Multi-Step Form - Fixed Pixel Layout */}
                       {['realtor', 'landlord'].includes(currentType) ? ( // Conditional rendering for realtor/landlord specific fields
                         <div style={{ width: '100%', padding: '0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}> {/* Main container with fixed padding and centered content */}
-                          {/* Stepper Progress Bar - Centered */}
-                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '16px', width: '100%', margin: '0 auto 16px auto' }} className="sm:mb-8 sm:w-full mb-1 w-full"> {/* Stepper container centered - mobile compact */}
+                          {/* Stepper Progress Bar - Right Aligned on Mobile */}
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px', width: '100%', margin: '0 auto 16px auto', paddingRight: '20px' }} className="sm:justify-center sm:mb-8 sm:w-full mb-1 w-full"> {/* Stepper container right-aligned on mobile, centered on desktop */}
                             {REALTOR_STEPS.map((step, idx) => ( // Map through steps
                               <div key={step} style={{ display: 'flex', alignItems: 'center' }}> {/* Individual step */}
                                 <div style={{ 

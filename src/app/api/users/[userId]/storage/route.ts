@@ -110,7 +110,10 @@ export async function GET(
     return NextResponse.json({
       success: true,
       userId,
-      storageUsage,
+      storageUsage: {
+        bytes: storageUsage,
+        count: imageCount
+      },
       imageCount,
       limit: storageLimit,
       percentage: Math.min(100, Math.round((storageUsage / storageLimit) * 100))
