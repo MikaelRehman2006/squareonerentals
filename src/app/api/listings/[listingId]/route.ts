@@ -344,6 +344,33 @@ export async function DELETE(request: NextRequest, { params }: Props) {
       );
     }
 
+    // Clean up image metadata before deleting the listing
+    try {
+      // Get or initialize the ImageMetadata model
+      let ImageMetadata: mongoose.Model<any>;
+      try {
+        ImageMetadata = mongoose.model('ImageMetadata');
+      } catch (e) {
+        const ImageMetadataSchema = new mongoose.Schema({
+          userId: { type: String, required: true, index: true },
+          url: { type: String, required: true, unique: true },
+          publicId: { type: String, required: true },
+          size: { type: Number, required: true },
+          listingId: { type: String, index: true },
+          createdAt: { type: Date, default: Date.now }
+        });
+        
+        ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
+      }
+
+      // Delete all image metadata associated with this listing
+      const deleteResult = await ImageMetadata.deleteMany({ listingId: params.listingId });
+      console.log(`Deleted ${deleteResult.deletedCount} image metadata records for listing ${params.listingId}`);
+    } catch (metadataError) {
+      console.error('Error cleaning up image metadata:', metadataError);
+      // Continue with listing deletion even if metadata cleanup fails
+    }
+
     await listing.deleteOne();
     return NextResponse.json({ message: 'Listing deleted successfully' });
   } catch (error) {

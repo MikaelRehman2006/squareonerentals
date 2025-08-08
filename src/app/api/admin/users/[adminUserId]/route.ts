@@ -96,6 +96,33 @@ export async function DELETE(
       return NextResponse.json({ error: 'Cannot delete the owner account' }, { status: 403 });
     }
 
+    // Clean up image metadata for all user's listings before deleting them
+    try {
+      // Get or initialize the ImageMetadata model
+      let ImageMetadata: mongoose.Model<any>;
+      try {
+        ImageMetadata = mongoose.model('ImageMetadata');
+      } catch (e) {
+        const ImageMetadataSchema = new mongoose.Schema({
+          userId: { type: String, required: true, index: true },
+          url: { type: String, required: true, unique: true },
+          publicId: { type: String, required: true },
+          size: { type: Number, required: true },
+          listingId: { type: String, index: true },
+          createdAt: { type: Date, default: Date.now }
+        });
+        
+        ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
+      }
+
+      // Delete all image metadata associated with this user
+      const deleteResult = await ImageMetadata.deleteMany({ userId });
+      console.log(`Deleted ${deleteResult.deletedCount} image metadata records for user ${userId}`);
+    } catch (metadataError) {
+      console.error('Error cleaning up image metadata:', metadataError);
+      // Continue with user deletion even if metadata cleanup fails
+    }
+
     // Delete user's listings
     await Listing.deleteMany({ userId });
     

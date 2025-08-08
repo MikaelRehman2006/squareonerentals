@@ -5,6 +5,7 @@ import { connectDB } from '@/lib/mongodb';
 import { Listing } from '@/models/Listing';
 import { getAdminRole } from '@/lib/admin';
 import { notifyAdminStatusChange } from '@/lib/notification';
+import mongoose from 'mongoose';
 
 // GET all listings (admin access)
 export async function GET(request: NextRequest) {
@@ -162,6 +163,33 @@ export async function DELETE(request: NextRequest) {
     const listing = await Listing.findById(id);
     if (!listing) {
       return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    }
+
+    // Clean up image metadata before deleting the listing
+    try {
+      // Get or initialize the ImageMetadata model
+      let ImageMetadata: mongoose.Model<any>;
+      try {
+        ImageMetadata = mongoose.model('ImageMetadata');
+      } catch (e) {
+        const ImageMetadataSchema = new mongoose.Schema({
+          userId: { type: String, required: true, index: true },
+          url: { type: String, required: true, unique: true },
+          publicId: { type: String, required: true },
+          size: { type: Number, required: true },
+          listingId: { type: String, index: true },
+          createdAt: { type: Date, default: Date.now }
+        });
+        
+        ImageMetadata = mongoose.model('ImageMetadata', ImageMetadataSchema);
+      }
+
+      // Delete all image metadata associated with this listing
+      const deleteResult = await ImageMetadata.deleteMany({ listingId: id });
+      console.log(`Deleted ${deleteResult.deletedCount} image metadata records for listing ${id}`);
+    } catch (metadataError) {
+      console.error('Error cleaning up image metadata:', metadataError);
+      // Continue with listing deletion even if metadata cleanup fails
     }
 
     await listing.deleteOne();

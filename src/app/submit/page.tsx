@@ -198,6 +198,18 @@ export default function SubmitListingPage() {
   useEffect(() => {
     fetchStorageUsage();
   }, []);
+
+  // Refresh storage usage when user returns to the page (e.g., after deleting a listing)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchStorageUsage();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
   
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
