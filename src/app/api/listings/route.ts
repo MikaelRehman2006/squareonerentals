@@ -257,7 +257,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ email: session.user.email });
+    let user = await User.findOne({ email: session.user.email });
+    
+    // If user not found by email, try to find by ID (for cases where email was changed)
+    if (!user && session.user.id) {
+      user = await User.findById(session.user.id);
+    }
+    
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },

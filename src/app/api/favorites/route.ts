@@ -30,9 +30,16 @@ export async function GET() {
     }
 
     // Get user by email with populated favorites
-    const user = await User.findOne({ email: session.user.email })
+    let user = await User.findOne({ email: session.user.email })
       .populate<{ favorites: IListing[] }>('favorites')
       .lean() as (IUser & { favorites: IListing[] }) | null;
+
+    // If user not found by email, try to find by ID (for cases where email was changed)
+    if (!user && session.user.id) {
+      user = await User.findById(session.user.id)
+        .populate<{ favorites: IListing[] }>('favorites')
+        .lean() as (IUser & { favorites: IListing[] }) | null;
+    }
 
     if (!user) {
       return NextResponse.json(

@@ -30,7 +30,13 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     // Find user
-    const user = await User.findOne({ email: session.user.email });
+    let user = await User.findOne({ email: session.user.email });
+    
+    // If user not found by email, try to find by ID (for cases where email was changed)
+    if (!user && session.user.id) {
+      user = await User.findById(session.user.id);
+    }
+    
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -53,8 +59,8 @@ export async function POST(request: NextRequest) {
     const hashedNewPassword = await bcrypt.hash(newPassword, 12);
 
     // Update password
-    await User.findOneAndUpdate(
-      { email: session.user.email },
+    await User.findByIdAndUpdate(
+      user._id,
       { password: hashedNewPassword }
     );
 

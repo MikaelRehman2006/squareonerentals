@@ -125,7 +125,13 @@ export const authOptions: NextAuthOptions = {
       try {
         if (session.user && token.email) {
           await connectDB();
-          const dbUser = await User.findOne({ email: token.email });
+          let dbUser = await User.findOne({ email: token.email });
+          
+          // If user not found by email, try to find by ID (for cases where email was changed)
+          if (!dbUser && token.id) {
+            dbUser = await User.findById(token.id);
+          }
+          
           if (dbUser) {
             session.user.id = dbUser._id.toString();
             session.user.email = dbUser.email;

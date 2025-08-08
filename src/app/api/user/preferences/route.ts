@@ -14,7 +14,13 @@ export async function GET() {
 
     await connectDB();
     
-    const user = await User.findOne({ email: session.user.email });
+    let user = await User.findOne({ email: session.user.email });
+    
+    // If user not found by email, try to find by ID (for cases where email was changed)
+    if (!user && session.user.id) {
+      user = await User.findById(session.user.id);
+    }
+    
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -85,7 +91,13 @@ export async function POST(request: Request) {
 
     await connectDB();
     
-    const user = await User.findOne({ email: session.user.email });
+    let user = await User.findOne({ email: session.user.email });
+    
+    // If user not found by email, try to find by ID (for cases where email was changed)
+    if (!user && session.user.id) {
+      user = await User.findById(session.user.id);
+    }
+    
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -112,8 +124,8 @@ export async function POST(request: Request) {
       console.log('💾 Saving user preferences:', user.preferences);
       
       // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
-      const updateResult = await User.findOneAndUpdate(
-        { email: session.user.email },
+      const updateResult = await User.findByIdAndUpdate(
+        user._id,
         { preferences: user.preferences },
         { new: true }
       );
@@ -133,8 +145,8 @@ export async function POST(request: Request) {
       (user.preferences as any).notificationSettings = requestData.notificationSettings;
       
       // Use findOneAndUpdate for more reliable saving - removed runValidators to prevent validation errors
-      const updateResult = await User.findOneAndUpdate(
-        { email: session.user.email },
+      const updateResult = await User.findByIdAndUpdate(
+        user._id,
         { preferences: user.preferences },
         { new: true }
       );
