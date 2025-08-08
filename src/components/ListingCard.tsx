@@ -23,9 +23,12 @@ function isEmptyOrDefault(value: any, defaultValue: any = 0): boolean {
 }
 
 // Helper function to format field value
-function formatFieldValue(value: any, defaultValue: any = 0): string {
+function formatFieldValue(value: any, defaultValue: any = 0, suffix: string = ''): string {
   if (isEmptyOrDefault(value, defaultValue)) {
     return 'Unknown';
+  }
+  if (suffix) {
+    return `${value}${suffix}`;
   }
   return String(value);
 }
