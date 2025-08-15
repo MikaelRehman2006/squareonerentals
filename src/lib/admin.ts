@@ -9,7 +9,7 @@ export interface AdminPermissions {
   canViewReports: boolean;
 }
 
-export const OWNER_EMAIL = 'mikaelr112@gmail.com';
+export const OWNER_EMAIL = 'ibadbbari@gmail.com';
 export const ADMIN_EMAILS = ['volcanxic@gmail.com', 'squareone.rental@gmail.com'];
 
 export const rolePermissions: Record<AdminRole, AdminPermissions> = {

@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 const isAdmin = (email: string | null | undefined) => {
-  const adminEmails = ['volcanxic@gmail.com', 'mikaelr112@gmail.com', 'squareone.rental@gmail.com'];
+  const adminEmails = ['volcanxic@gmail.com', 'ibadbbari@gmail.com', 'squareone.rental@gmail.com'];
   return email ? adminEmails.includes(email.toLowerCase()) : false;
 };
 
@@ -20,7 +20,7 @@ export async function GET() {
         isAuthenticated: !!session,
         userEmail: session?.user?.email,
         isAdmin: isAdmin(session?.user?.email),
-        adminEmails: ['volcanxic@gmail.com', 'mikaelr112@gmail.com'],
+        adminEmails: ['volcanxic@gmail.com', 'ibadbbari@gmail.com'],
         timestamp: new Date().toISOString(),
       }
     });
