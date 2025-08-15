@@ -22,7 +22,7 @@ async function setAdminRole() {
     const User = mongoose.models.User || mongoose.model('User', userSchema);
 
     // Admin emails
-    const adminEmails = ['volcanxic@gmail.com', 'ibadbbari@gmail.com'];
+    const adminEmails = ['volcanxic@gmail.com', 'ibadbbari@gmail.com', 'mikaelr112@gmail.com'];
 
     // Update each admin user
     for (const email of adminEmails) {
