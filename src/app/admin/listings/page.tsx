@@ -250,14 +250,14 @@ export default function ListingsPage() {
 
       <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
         <Table className="min-w-full">
-          <TableHeader className="bg-gray-50 dark:bg-gray-700">
-            <TableRow className="border-b border-gray-200 dark:border-gray-600">
-              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Title</TableHead>
-              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">User</TableHead>
-              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Status</TableHead>
-              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Price</TableHead>
-              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider">Posted</TableHead>
-              <TableHead className="py-3 px-4 text-right text-xs font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wider w-[100px]">Actions</TableHead>
+          <TableHeader className="bg-gray-800 dark:bg-gray-700">
+            <TableRow className="border-b border-gray-200 dark:border-gray-600 hover:bg-gray-800 dark:hover:bg-gray-700">
+              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-white dark:text-gray-100 uppercase tracking-wider">Title</TableHead>
+              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-white dark:text-gray-100 uppercase tracking-wider">User</TableHead>
+              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-white dark:text-gray-100 uppercase tracking-wider">Status</TableHead>
+              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-white dark:text-gray-100 uppercase tracking-wider">Price</TableHead>
+              <TableHead className="py-3 px-4 text-left text-xs font-semibold text-white dark:text-gray-100 uppercase tracking-wider">Posted</TableHead>
+              <TableHead className="py-3 px-4 text-right text-xs font-semibold text-white dark:text-gray-100 uppercase tracking-wider w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

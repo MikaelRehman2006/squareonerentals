@@ -247,14 +247,14 @@ export default function ManageListingsPage() {
               ) : (
                 <div className="overflow-hidden rounded-md border border-gray-200">
                   <Table>
-                    <TableHeader className="bg-gray-50">
-                      <TableRow>
-                        <TableHead className="font-medium">Title</TableHead>
-                        <TableHead className="font-medium">Price</TableHead>
-                        <TableHead className="font-medium hidden md:table-cell">Location</TableHead>
-                        <TableHead className="font-medium hidden md:table-cell">Created</TableHead>
-                        <TableHead className="font-medium">Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                    <TableHeader className="bg-gray-800">
+                      <TableRow className="hover:bg-gray-800">
+                        <TableHead className="font-medium text-white">Title</TableHead>
+                        <TableHead className="font-medium text-white">Price</TableHead>
+                        <TableHead className="font-medium text-white hidden md:table-cell">Location</TableHead>
+                        <TableHead className="font-medium text-white hidden md:table-cell">Created</TableHead>
+                        <TableHead className="font-medium text-white">Status</TableHead>
+                        <TableHead className="text-right text-white">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

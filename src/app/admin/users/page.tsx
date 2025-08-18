@@ -295,13 +295,13 @@ export default function UsersPage() {
       </div>
 
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Joined</TableHead>
-            <TableHead className="w-[100px]"></TableHead>
+        <TableHeader className="bg-gray-800">
+          <TableRow className="hover:bg-gray-800">
+            <TableHead className="text-white">User</TableHead>
+            <TableHead className="text-white">Email</TableHead>
+            <TableHead className="text-white">Role</TableHead>
+            <TableHead className="text-white">Joined</TableHead>
+            <TableHead className="w-[100px] text-white"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

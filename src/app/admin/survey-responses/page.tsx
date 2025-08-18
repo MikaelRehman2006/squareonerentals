@@ -92,13 +92,13 @@ export default function SurveyResponsesPage() {
 
             <TabsContent value={activeTab}>
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>User Types</TableHead>
-                    <TableHead>Sign Up Date</TableHead>
-                    <TableHead>Details</TableHead>
+                <TableHeader className="bg-gray-800">
+                  <TableRow className="hover:bg-gray-800">
+                    <TableHead className="text-white">Name</TableHead>
+                    <TableHead className="text-white">Email</TableHead>
+                    <TableHead className="text-white">User Types</TableHead>
+                    <TableHead className="text-white">Sign Up Date</TableHead>
+                    <TableHead className="text-white">Details</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -181,11 +181,11 @@ export function LocationDistributionChart({ listings = [] }: LocationDistributio
           </DialogHeader>
           <div className="mt-4">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Location</TableHead>
-                  <TableHead className="text-right">Number of Listings</TableHead>
-                  <TableHead className="text-right">Percentage</TableHead>
+              <TableHeader className="bg-gray-800">
+                <TableRow className="hover:bg-gray-800">
+                  <TableHead className="text-white">Location</TableHead>
+                  <TableHead className="text-right text-white">Number of Listings</TableHead>
+                  <TableHead className="text-right text-white">Percentage</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

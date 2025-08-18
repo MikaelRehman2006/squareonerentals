@@ -255,16 +255,16 @@ export default function ReportsPage() {
 
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Listing</TableHead>
-              <TableHead>Reported By</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Reason</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+          <TableHeader className="bg-gray-800">
+            <TableRow className="hover:bg-gray-800">
+              <TableHead className="text-white">Listing</TableHead>
+              <TableHead className="text-white">Reported By</TableHead>
+              <TableHead className="text-white">Owner</TableHead>
+              <TableHead className="text-white">Reason</TableHead>
+              <TableHead className="text-white">Description</TableHead>
+              <TableHead className="text-white">Status</TableHead>
+              <TableHead className="text-white">Date</TableHead>
+              <TableHead className="w-[100px] text-white"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
