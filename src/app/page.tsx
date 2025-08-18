@@ -160,7 +160,7 @@ export default function Home() {
               asChild
               size="lg"
               variant="outline"
-              className="text-lg px-8 py-6 rounded-xl"
+              className="text-lg px-8 py-6 rounded-xl border-2 border-primary bg-primary text-white hover:bg-primary/90 transition-all duration-300 hover:scale-105"
             >
               <Link href="/listings">View All Listings</Link>
             </Button>
