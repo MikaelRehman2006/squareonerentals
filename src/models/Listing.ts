@@ -37,7 +37,7 @@ const listingSchema = new Schema<IListing>({
   price: { type: Number, required: true },
   location: { type: String, required: true },
   address: { type: String, required: false },
-  images: { type: [String], required: true, validate: [val => val.length > 0, 'At least one image is required'] },
+  images: { type: [String], required: true, validate: [(val: string[]) => val.length > 0, 'At least one image is required'] },
   bedrooms: { type: Number, required: true },
   bathrooms: { type: Number, required: true },
   squareFeet: { type: Number, required: true },
