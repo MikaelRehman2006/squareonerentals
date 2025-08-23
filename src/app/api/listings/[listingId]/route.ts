@@ -210,6 +210,14 @@ export async function PATCH(request: NextRequest, { params }: Props) {
     const images = validateImageUrls(body.images || []);
     console.log('Processed images for edit:', images.length, 'valid images');
     
+    // Validate that at least one image is provided
+    if (images.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one image is required' },
+        { status: 400 }
+      );
+    }
+    
     // Ensure we have the address field 
     const address = body.address || ''; 
     console.log('Address for edit:', address);

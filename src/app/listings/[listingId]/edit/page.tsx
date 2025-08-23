@@ -34,7 +34,7 @@ const listingSchema = z.object({
   location: z.string().min(1, 'Location is required'),
   address: z.string().min(1, 'Address is required'),
   squareFeet: z.number().min(0, 'Square feet must be positive'),
-  images: z.array(z.string()).default([]),
+  images: z.array(z.string()).min(1, 'At least one image is required'),
   bedrooms: z.number().min(0, 'Number of bedrooms must be positive'),
   bathrooms: z.number().min(0, 'Number of bathrooms must be positive'),
   amenities: z.array(z.string()).default([]),
@@ -110,7 +110,6 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       location: '',
       address: '',
       squareFeet: 0,
-      images: [],
       bedrooms: 0,
       bathrooms: 0,
       amenities: [],
@@ -541,6 +540,12 @@ export default function EditListingPage({ params }: { params: { listingId: strin
   };
 
   const removeImage = (indexToRemove: number) => {
+    // Prevent removing the last image since at least one is required
+    if (uploadedImages.length <= 1) {
+      toast.error('At least one image is required');
+      return;
+    }
+    
     setUploadedImages(prev => {
       const newImages = prev.filter((_, index) => index !== indexToRemove);
       form.setValue('images', newImages, { shouldValidate: true });
@@ -558,6 +563,13 @@ export default function EditListingPage({ params }: { params: { listingId: strin
       if (!data.title || !data.description || !data.location) {
         console.error('Missing required fields');
         toast.error('Please fill in all required fields');
+        return;
+      }
+
+      // Validate that at least one image is uploaded
+      if (!uploadedImages || uploadedImages.length === 0) {
+        console.error('No images uploaded');
+        toast.error('At least one image is required');
         return;
       }
 
@@ -1132,19 +1144,26 @@ export default function EditListingPage({ params }: { params: { listingId: strin
                 {/* Image Upload Section with Drag & Drop */}
                 <div className="flex flex-col gap-4">
                   <div className="border-2 border-dashed border-gray-600 hover:border-blue-500 transition-colors duration-200 rounded-xl p-5 bg-gray-700/30">
-                    <Input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/svg+xml,image/avif,image/heic,image/heif"
-                      multiple
-                      onChange={handleImageUpload}
-                      className="bg-transparent text-gray-300 border-0 cursor-pointer file:mr-4 file:py-2 file:px-4
-                        file:rounded-xl file:border-0 file:text-sm file:font-medium
-                        file:bg-blue-600 file:text-white hover:file:bg-blue-500"
-                    />
-                    <p className="text-sm text-gray-400 mt-2">
-                      Drag and drop images here, or click to browse. Supported formats: JPG, PNG, GIF, WebP, BMP, TIFF, SVG, AVIF, HEIC.
-                    </p>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-300">
+                        Images <span className="text-red-500">*</span>
+                      </label>
+                      <p className="text-xs text-gray-400">
+                        Upload at least one image of your property. Maximum 10 images allowed.
+                      </p>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        multiple
+                        disabled={isSubmitting}
+                        onChange={handleImageUpload}
+                        className="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer cursor-pointer"
+                      />
+                      {uploadedImages.length === 0 && (
+                        <p className="text-sm text-red-500">At least one image is required</p>
+                      )}
+                    </div>
                   </div>
                 </div>
 

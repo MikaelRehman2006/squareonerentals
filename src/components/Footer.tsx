@@ -34,6 +34,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li><Link href="/rental-guide" className="text-gray-400 hover:text-white">Rental Guide</Link></li>
             <li><Link href="/landlord-guide" className="text-gray-400 hover:text-white">Landlord Guide</Link></li>
+            <li><Link href="/realtor-guide" className="text-gray-400 hover:text-white">Realtor Guide</Link></li>
             <li><Link href="/market-insights" className="text-gray-400 hover:text-white">Market Insights</Link></li>
             <li><Link href="/rental-calculator" className="text-gray-400 hover:text-white">Rental Calculator</Link></li>
           </ul>

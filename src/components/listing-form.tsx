@@ -16,6 +16,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -79,7 +80,7 @@ const formSchema = z.object({
   price: z.coerce.number().min(0, "Price must be a positive number"),
   location: z.string().min(1, "Location is required"),
   address: z.string().min(1, "Address is required"),
-  images: z.array(z.string()).default([]),
+  images: z.array(z.string()).min(1, "At least one image is required"),
   bedrooms: z.coerce.number().min(0, "Bedrooms must be a positive number"),
   bathrooms: z.coerce.number().min(0, "Bathrooms must be a positive number"),
   squareFeet: z.coerce.number().min(0, "Square feet must be a positive number"),
@@ -495,55 +496,72 @@ export const ListingForm = ({
             </TooltipProvider>
           </div>
           <div className="flex flex-col gap-4">
-            <Input
-              type="file"
-              accept="image/*"
-              multiple
-              disabled={uploadingImages}
-              onChange={async (e) => {
-                const files = e.target.files;
-                if (!files || files.length === 0) return;
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-300">
+                    Images <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormDescription className="text-xs text-gray-400">
+                    Upload at least one image of your property. Maximum 10 images allowed.
+                  </FormDescription>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      disabled={uploadingImages}
+                      onChange={async (e) => {
+                        const files = e.target.files;
+                        if (!files || files.length === 0) return;
 
-                // Check file sizes
-                const oversizedFiles = Array.from(files).filter(file => file.size > MAX_FILE_SIZE);
-                if (oversizedFiles.length > 0) {
-                  toast.error(`Some files exceed the 5MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
-                  return;
-                }
+                        // Check file sizes
+                        const oversizedFiles = Array.from(files).filter(file => file.size > MAX_FILE_SIZE);
+                        if (oversizedFiles.length > 0) {
+                          toast.error(`Some files exceed the 5MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
+                          return;
+                        }
 
-                // Check total number of images
-                const currentImages = form.getValues('images') || [];
-                if (currentImages.length + files.length > 10) {
-                  toast.error('Maximum 10 images allowed');
-                  return;
-                }
+                        // Check total number of images
+                        const currentImages = form.getValues('images') || [];
+                        if (currentImages.length + files.length > 10) {
+                          toast.error('Maximum 10 images allowed');
+                          return;
+                        }
 
-                try {
-                  setUploadingImages(true);
-                  const formData = new FormData();
-                  for (let i = 0; i < files.length; i++) {
-                    formData.append('files', files[i]);
-                  }
+                        try {
+                          setUploadingImages(true);
+                          const formData = new FormData();
+                          for (let i = 0; i < files.length; i++) {
+                            formData.append('files', files[i]);
+                          }
 
-                  const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                  });
+                          const response = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData,
+                          });
 
-                  if (!response.ok) {
-                    throw new Error('Failed to upload images');
-                  }
+                          if (!response.ok) {
+                            throw new Error('Failed to upload images');
+                          }
 
-                  const data = await response.json();
-                  form.setValue('images', [...currentImages, ...data.urls]);
-                  toast.success('Images uploaded successfully');
-                } catch (error) {
-                  console.error('Error uploading images:', error);
-                  toast.error('Failed to upload images');
-                } finally {
-                  setUploadingImages(false);
-                }
-              }}
+                          const data = await response.json();
+                          form.setValue('images', [...currentImages, ...data.urls]);
+                          toast.success('Images uploaded successfully');
+                        } catch (error) {
+                          console.error('Error uploading images:', error);
+                          toast.error('Failed to upload images');
+                        } finally {
+                          setUploadingImages(false);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             {uploadingImages && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

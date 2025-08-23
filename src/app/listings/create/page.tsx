@@ -63,6 +63,12 @@ export default function CreateListingPage() {
 
   const handleSubmit = async (data: any) => {
     try {
+      // Validate that at least one image is provided
+      if (!data.images || data.images.length === 0) {
+        toast.error('At least one image is required');
+        return;
+      }
+      
       setIsSubmitting(true);
       
       // Format data for API

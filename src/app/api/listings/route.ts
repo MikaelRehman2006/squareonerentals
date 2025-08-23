@@ -283,6 +283,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate that at least one image is provided
+    if (!images || images.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one image is required' },
+        { status: 400 }
+      );
+    }
+
     // Create the listing
     const listing = new Listing({
       title,
