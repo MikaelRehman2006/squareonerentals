@@ -74,31 +74,35 @@ export default function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      const formDataObj = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        formDataObj.append(key, value);
-      });
-      
-      formDataObj.append('_honeypot', '');
-
-      const response = await fetch('https://formsubmit.co/squareone.rental@gmail.com', {
+      const response = await fetch('/api/contact', {
         method: 'POST',
-        body: formDataObj,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
+      const result = await response.json();
+
+      if (response.ok) {
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: '',
+        });
+
+        if (result.warning) {
+          toast.success(result.message, {
+            description: result.warning
+          });
+        } else {
+          toast.success(result.message || 'Message sent successfully! We will get back to you soon.');
+        }
+      } else {
+        throw new Error(result.error || 'Failed to send message');
       }
-
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-      });
-
-      toast.success('Message sent successfully! We will get back to you soon.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again later.');
       console.error('Error sending message:', error);
