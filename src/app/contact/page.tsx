@@ -93,13 +93,7 @@ export default function ContactPage() {
           message: '',
         });
 
-        if (result.warning) {
-          toast.success(result.message, {
-            description: result.warning
-          });
-        } else {
-          toast.success(result.message || 'Message sent successfully! We will get back to you soon.');
-        }
+        toast.success(result.message || 'Message sent successfully! We will get back to you soon.');
       } else {
         throw new Error(result.error || 'Failed to send message');
       }

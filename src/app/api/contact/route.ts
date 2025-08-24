@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendContactEmail } from '@/utils/sendgrid';
-import { contactFormRateLimit } from '@/lib/rateLimiter';
 import { connectDB } from '@/lib/mongodb';
 import { Contact } from '@/models/Contact';
 
 export async function POST(request: NextRequest) {
-  // Apply rate limiting
-  const rateLimitResponse = await contactFormRateLimit(request);
-  if (rateLimitResponse.status === 429) {
-    return rateLimitResponse;
-  }
-
   try {
     // Log that we received a contact form request
     console.log('Contact form submission received');
@@ -60,25 +52,6 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Contact submission stored in database:', contactSubmission._id);
-
-    // Use SendGrid for reliable email delivery
-    const result = await sendContactEmail({
-      name,
-      email,
-      phone,
-      subject,
-      message
-    });
-
-    if (!result.success) {
-      console.error('Failed to send email but contact was stored:', result.error);
-      // Still return success since the contact was stored
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Contact form submitted successfully. We will get back to you soon.',
-        warning: 'Email delivery failed but your message was received.'
-      });
-    }
 
     return NextResponse.json({ 
       success: true, 
