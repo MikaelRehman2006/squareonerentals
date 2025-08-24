@@ -21,12 +21,14 @@ import {
   X,
   AlertCircle,
   Bug,
+  MessageSquare,
 } from 'lucide-react';
 
 const adminTabs = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Users', href: '/admin/users', icon: Users },
   { name: 'Listings', href: '/admin/listings', icon: Home },
+  { name: 'Contact Submissions', href: '/admin/contact-submissions', icon: MessageSquare },
   { name: 'Survey Responses', href: '/admin/survey-responses', icon: ClipboardList },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Reports', href: '/admin/reports', icon: FileText },
